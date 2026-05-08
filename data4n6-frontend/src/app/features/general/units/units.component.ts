@@ -226,8 +226,6 @@ interface PersonSummary {
     </div>
   `,
   styles: [`
-    :host { font-family: Roboto, 'Helvetica Neue', sans-serif; }
-
     /* ── Grid ────────────────────────────────────────────────────────────────── */
     .quad-layout {
       display: grid;
@@ -290,7 +288,6 @@ interface PersonSummary {
       background: #f9fafb;
       flex-shrink: 0;
       min-height: 32px;
-      font-family: Roboto, 'Helvetica Neue', sans-serif;
     }
 
     .panel-title {
@@ -315,7 +312,6 @@ interface PersonSummary {
     .btn-new {
       font-size: 0.75rem; height: 24px; line-height: 24px;
       padding: 0 8px; margin-left: 6px;
-      font-family: Roboto, 'Helvetica Neue', sans-serif;
     }
     .btn-new mat-icon { font-size: 14px; width: 14px; height: 14px; vertical-align: middle; margin-right: 3px; }
 
@@ -349,7 +345,6 @@ interface PersonSummary {
       border-left: 3px solid transparent;
       transition: background 0.1s, border-color 0.1s;
       min-height: 30px;
-      font-family: Roboto, 'Helvetica Neue', sans-serif;
     }
     .node-row:hover { background: #e8f5f0; border-left-color: #007d5c; }
     .node-row.node-selected { background: #007d5c; border-left-color: #005a44; }
@@ -374,7 +369,7 @@ interface PersonSummary {
 
     /* ── Tablas ──────────────────────────────────────────────────────────────── */
     .table-scroll { overflow: auto; flex: 1; }
-    .full-width   { width: 100%; font-family: Roboto, 'Helvetica Neue', sans-serif; }
+    .full-width   { width: 100%; }
 
     .striped tr.mat-mdc-row:nth-child(even) td { background: #f7faf9; }
     .striped tr.mat-mdc-row:nth-child(odd)  td { background: #ffffff; }

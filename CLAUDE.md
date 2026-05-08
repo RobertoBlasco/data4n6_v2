@@ -53,7 +53,7 @@ Tabla embebida con footer que incluye: contador de registros, fila de totales de
 Solo **Angular Material** (`@angular/material`). PrimeNG está instalado pero no se usa — ignorarlo.
 
 ### Fuente
-**Roboto** en toda la aplicación (`font-family: Roboto, 'Helvetica Neue', sans-serif`). Aplicar en `:host` en componentes standalone.
+**Roboto** en toda la aplicación. Definida **una sola vez** en `styles.scss` (tema de Material + `html/body`). **Nunca** declarar `font-family` en componentes individuales — se hereda automáticamente.
 
 ### Layout pantalla Unidades
 Cuatro paneles en grid 2×2 con divisores arrastrables (vertical y horizontal):
@@ -77,3 +77,12 @@ Cuatro paneles en grid 2×2 con divisores arrastrables (vertical y horizontal):
 - Al intentar salir con cambios sin guardar → **diálogo de confirmación** (`CanDeactivate` guard)
 - El menú de navegación permanece **siempre activo** (nunca se deshabilita)
 - Razón: los drawers no son efectivos en tablets y pantallas pequeñas
+
+### Estilo de formularios
+- Fondo de página gris suave (`#f3f4f6`) con la tarjeta del formulario centrada
+- Tarjeta: `max-width: 660px`, `margin: auto`, borde + sombra suave, `border-radius: 10px`
+- Cabecera de tarjeta diferenciada (`#f9fafb`) con borde inferior: botón volver + título + contexto
+- Secciones separadas con línea verde suave y etiqueta en mayúsculas pequeñas (`0.68rem`, `#007d5c`)
+- Campos compactos: `--mat-form-field-container-height: 48px`
+- Anchos ajustados al contenido (no todo al 100%): `field-grow`, `field-280`, `field-180`, `field-160`, `field-130`
+- Botones de acción alineados a la derecha, separados del formulario con borde superior
