@@ -5,8 +5,8 @@ import { MatTreeModule, MatTreeNestedDataSource } from '@angular/material/tree';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTableModule } from '@angular/material/table';
 import { DatePipe } from '@angular/common';
+import { TableModule } from 'primeng/table';
 import { forkJoin } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { CaseSummary } from '../../../core/services/cases.service';
@@ -31,8 +31,8 @@ interface PersonSummary {
   standalone: true,
   imports: [
     RouterLink, DatePipe,
-    MatTreeModule, MatIconModule, MatButtonModule,
-    MatProgressSpinnerModule, MatTableModule,
+    MatTreeModule, MatIconModule, MatButtonModule, MatProgressSpinnerModule,
+    TableModule,
   ],
   template: `
     <div #container class="quad-layout"
@@ -81,7 +81,7 @@ interface PersonSummary {
         </div>
       </div>
 
-      <!-- Divisor vertical (abarca todas las filas) ───────────────────────── -->
+      <!-- Divisor vertical ───────────────────────────────────────────────── -->
       <div class="resizer resizer-col" (mousedown)="startResizeCol($event)">
         <div class="resizer-dots"></div>
       </div>
@@ -111,7 +111,7 @@ interface PersonSummary {
         </div>
       </div>
 
-      <!-- Divisor horizontal (abarca todas las columnas) ─────────────────── -->
+      <!-- Divisor horizontal ─────────────────────────────────────────────── -->
       <div class="resizer resizer-row" (mousedown)="startResizeRow($event)">
         <div class="resizer-dots resizer-dots-h"></div>
       </div>
@@ -136,35 +136,23 @@ interface PersonSummary {
           } @else if (loadingRight()) {
             <div class="spinner-center"><mat-spinner diameter="28" /></div>
           } @else {
-            <div class="table-scroll">
-              <table mat-table [dataSource]="persons()" class="full-width striped">
-                <ng-container matColumnDef="avatar">
-                  <th mat-header-cell *matHeaderCellDef></th>
-                  <td mat-cell *matCellDef="let p" class="avatar-cell">
-                    <div class="avatar">{{ initials(p) }}</div>
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="name">
-                  <th mat-header-cell *matHeaderCellDef>Nombre</th>
-                  <td mat-cell *matCellDef="let p">
-                    <span class="person-name">{{ p.lastName }}, {{ p.firstName }}</span>
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="role">
-                  <th mat-header-cell *matHeaderCellDef>Rol</th>
-                  <td mat-cell *matCellDef="let p">
-                    <span class="role-chip">{{ p.roleName }}</span>
-                  </td>
-                </ng-container>
-                <tr mat-header-row *matHeaderRowDef="personColumns; sticky: true"></tr>
-                <tr mat-row *matRowDef="let row; columns: personColumns;"></tr>
-                <tr class="mat-mdc-row" *matNoDataRow>
-                  <td class="mat-mdc-cell no-data-cell" [attr.colspan]="personColumns.length">
-                    No hay personas vinculadas a esta unidad
-                  </td>
+            <p-table [value]="persons()" [scrollable]="true" scrollHeight="flex"
+                     styleClass="p-datatable-sm panel-table">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th class="col-avatar"></th>
+                  <th>Nombre</th>
+                  <th>Rol</th>
                 </tr>
-              </table>
-            </div>
+              </ng-template>
+              <ng-template pTemplate="body" let-p>
+                <tr>
+                  <td class="col-avatar"><div class="avatar">{{ initials(p) }}</div></td>
+                  <td><span class="person-name">{{ p.lastName }}, {{ p.firstName }}</span></td>
+                  <td><span class="role-chip">{{ p.roleName }}</span></td>
+                </tr>
+              </ng-template>
+            </p-table>
           }
         </div>
       </div>
@@ -186,39 +174,29 @@ interface PersonSummary {
           } @else if (loadingRight()) {
             <div class="spinner-center"><mat-spinner diameter="28" /></div>
           } @else {
-            <div class="table-scroll">
-              <table mat-table [dataSource]="cases()" class="full-width striped">
-                <ng-container matColumnDef="code">
-                  <th mat-header-cell *matHeaderCellDef>Nº Exp.</th>
-                  <td mat-cell *matCellDef="let c">
-                    <a [routerLink]="['/data4n6/cases', c.id]" class="case-link">{{ c.code }}</a>
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="title">
-                  <th mat-header-cell *matHeaderCellDef>Título</th>
-                  <td mat-cell *matCellDef="let c">{{ c.title }}</td>
-                </ng-container>
-                <ng-container matColumnDef="status">
-                  <th mat-header-cell *matHeaderCellDef>Estado</th>
-                  <td mat-cell *matCellDef="let c">
+            <p-table [value]="cases()" [scrollable]="true" scrollHeight="flex"
+                     styleClass="p-datatable-sm panel-table">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Nº Exp.</th>
+                  <th>Título</th>
+                  <th>Estado</th>
+                  <th>Fecha alta</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-c>
+                <tr>
+                  <td><a [routerLink]="['/data4n6/cases', c.id]" class="case-link">{{ c.code }}</a></td>
+                  <td>{{ c.title }}</td>
+                  <td>
                     <span class="status-chip" [style.background-color]="c.status.color">
                       {{ c.status.name }}
                     </span>
                   </td>
-                </ng-container>
-                <ng-container matColumnDef="createdAt">
-                  <th mat-header-cell *matHeaderCellDef>Fecha alta</th>
-                  <td mat-cell *matCellDef="let c">{{ c.createdAt | date:'dd/MM/yyyy' }}</td>
-                </ng-container>
-                <tr mat-header-row *matHeaderRowDef="caseColumns; sticky: true"></tr>
-                <tr mat-row *matRowDef="let row; columns: caseColumns;"></tr>
-                <tr class="mat-mdc-row" *matNoDataRow>
-                  <td class="mat-mdc-cell no-data-cell" [attr.colspan]="caseColumns.length">
-                    No hay casos asignados a esta unidad
-                  </td>
+                  <td>{{ c.createdAt | date:'dd/MM/yyyy' }}</td>
                 </tr>
-              </table>
-            </div>
+              </ng-template>
+            </p-table>
           }
         </div>
       </div>
@@ -238,7 +216,7 @@ interface PersonSummary {
       background: #fff;
     }
 
-    /* ── Posición de paneles ──────────────────────────────────────────────────── */
+    /* ── Posición de paneles ─────────────────────────────────────────────────── */
     .panel { display: flex; flex-direction: column; overflow: hidden; }
 
     .panel-tree    { grid-column: 1; grid-row: 1; background: #f9fafb; }
@@ -250,69 +228,44 @@ interface PersonSummary {
     .resizer {
       background: #e5e7eb;
       display: flex; align-items: center; justify-content: center;
-      position: relative; z-index: 10;
-      transition: background 0.15s;
+      position: relative; z-index: 10; transition: background 0.15s;
     }
     .resizer:hover  { background: #cbd5e1; }
     .resizer:active { background: #007d5c; }
     .resizer::before { content: ''; position: absolute; inset: -4px; }
 
-    .resizer-col {
-      grid-column: 2; grid-row: 1 / span 3;
-      cursor: col-resize; flex-direction: column;
-    }
+    .resizer-col { grid-column: 2; grid-row: 1 / span 3; cursor: col-resize; flex-direction: column; }
+    .resizer-row { grid-column: 1 / span 3; grid-row: 2; cursor: row-resize; }
 
-    .resizer-row {
-      grid-column: 1 / span 3; grid-row: 2;
-      cursor: row-resize;
-    }
-
-    .resizer-dots {
-      display: flex; flex-direction: column; gap: 3px; pointer-events: none;
-    }
-    .resizer-dots::before,
-    .resizer-dots::after {
-      content: ''; width: 3px; height: 3px;
-      background: #9ca3af; border-radius: 50%;
+    .resizer-dots { display: flex; flex-direction: column; gap: 3px; pointer-events: none; }
+    .resizer-dots::before, .resizer-dots::after {
+      content: ''; width: 3px; height: 3px; background: #9ca3af; border-radius: 50%;
     }
     .resizer:hover .resizer-dots::before,
     .resizer:hover .resizer-dots::after { background: #6b7280; }
-
     .resizer-dots-h { flex-direction: row; }
 
     /* ── Panel header ────────────────────────────────────────────────────────── */
     .panel-header {
       display: flex; align-items: center; gap: 8px;
-      padding: 5px 12px;
-      border-bottom: 1px solid #e5e7eb;
-      background: #f9fafb;
-      flex-shrink: 0;
-      min-height: 32px;
+      padding: 5px 12px; border-bottom: 1px solid #e5e7eb;
+      background: #f9fafb; flex-shrink: 0; min-height: 32px;
     }
-
     .panel-title {
       font-size: 0.72rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.07em;
-      color: #6b7280;
+      text-transform: uppercase; letter-spacing: 0.07em; color: #6b7280;
     }
-
     .panel-subtitle {
       font-size: 0.72rem; color: #9ca3af;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;
     }
-
     .panel-count {
       display: inline-flex; align-items: center; justify-content: center;
       min-width: 18px; height: 18px; padding: 0 5px;
       background: #007d5c; color: #fff;
-      font-size: 0.65rem; font-weight: 700; border-radius: 9px;
-      margin-left: auto;
+      font-size: 0.65rem; font-weight: 700; border-radius: 9px; margin-left: auto;
     }
-
-    .btn-new {
-      font-size: 0.75rem; height: 24px; line-height: 24px;
-      padding: 0 8px; margin-left: 6px;
-    }
+    .btn-new { font-size: 0.75rem; height: 24px; line-height: 24px; padding: 0 8px; margin-left: 6px; }
     .btn-new mat-icon { font-size: 14px; width: 14px; height: 14px; vertical-align: middle; margin-right: 3px; }
 
     /* ── Panel body ──────────────────────────────────────────────────────────── */
@@ -326,9 +279,7 @@ interface PersonSummary {
     }
     .empty-icon { font-size: 32px; width: 32px; height: 32px; color: #d1d5db; }
     .empty-text { margin: 0; font-size: 0.78rem; color: #9ca3af; }
-
     .spinner-center { display: flex; justify-content: center; align-items: center; flex: 1; }
-
     .stats-placeholder {
       display: flex; flex-direction: column; align-items: center;
       justify-content: center; flex: 1; gap: 6px; color: #9ca3af;
@@ -338,12 +289,10 @@ interface PersonSummary {
 
     /* ── Árbol ───────────────────────────────────────────────────────────────── */
     .unit-tree { background: transparent; }
-
     .node-row {
       display: flex; align-items: center; gap: 6px;
       padding: 4px 8px 4px 0; cursor: pointer;
-      border-left: 3px solid transparent;
-      transition: background 0.1s, border-color 0.1s;
+      border-left: 3px solid transparent; transition: background 0.1s, border-color 0.1s;
       min-height: 30px;
     }
     .node-row:hover { background: #e8f5f0; border-left-color: #007d5c; }
@@ -351,52 +300,70 @@ interface PersonSummary {
     .node-row.node-selected .node-name { color: #fff; }
     .node-row.node-selected .unit-badge { background: rgba(255,255,255,.2); color: #fff; }
     .node-row.node-selected .toggle-icon { color: rgba(255,255,255,.8); }
-
     .node-spacer { width: 36px; flex-shrink: 0; }
     .toggle-btn  { flex-shrink: 0; width: 36px; height: 36px; }
     .toggle-icon { font-size: 16px; color: #6b7280; }
     .hidden { display: none; }
-
     .unit-badge {
       font-size: 0.65rem; font-weight: 700; letter-spacing: 0.04em;
       color: #007d5c; background: #d1fae5;
       padding: 1px 6px; border-radius: 4px; white-space: nowrap; flex-shrink: 0;
     }
     .badge-inactive { color: #9ca3af; background: #f3f4f6; }
-
     .node-name { font-size: 0.82rem; color: #374151; line-height: 1.3; }
     .node-name-bold { font-weight: 600; }
 
-    /* ── Tablas ──────────────────────────────────────────────────────────────── */
-    .table-scroll { overflow: auto; flex: 1; }
-    .full-width   { width: 100%; }
-
-    .striped tr.mat-mdc-row:nth-child(even) td { background: #f7faf9; }
-    .striped tr.mat-mdc-row:nth-child(odd)  td { background: #ffffff; }
-    .striped tr.mat-mdc-row:hover           td { background: #e8f5f0 !important; }
-
-    .no-data-cell {
-      padding: 20px !important; color: #9ca3af;
-      font-style: italic; font-size: 0.82rem; text-align: center;
+    /* ── PrimeNG p-table: llenar panel y rayas en espacio vacío ─────────────── */
+    ::ng-deep .panel-table.p-datatable-flex-scrollable {
+      height: 100%;
     }
 
-    .avatar-cell { width: 40px; padding-right: 0 !important; }
+    /* Gradiente de fondo: rayas visibles en el espacio sin filas */
+    ::ng-deep .panel-table .p-datatable-table-container {
+      background: repeating-linear-gradient(
+        to bottom,
+        #ffffff 0px, #ffffff 35px,
+        #f7faf9 36px, #f7faf9 71px
+      );
+      background-position: 0 36px; /* desplaza las rayas para que empiecen tras la cabecera */
+    }
+
+    /* Celdas de cabecera */
+    ::ng-deep .panel-table .p-datatable-thead > tr > th {
+      background: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 6px 10px;
+      font-size: 0.72rem; font-weight: 600; color: #6b7280;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+
+    /* Celdas de datos: fondo alternado alineado con el gradiente */
+    ::ng-deep .panel-table .p-datatable-tbody > tr:nth-child(odd)  > td { background: #ffffff; }
+    ::ng-deep .panel-table .p-datatable-tbody > tr:nth-child(even) > td { background: #f7faf9; }
+    ::ng-deep .panel-table .p-datatable-tbody > tr:hover            > td { background: #e8f5f0 !important; }
+
+    ::ng-deep .panel-table .p-datatable-tbody > tr > td {
+      padding: 6px 10px;
+      border-bottom: 1px solid #f3f4f6;
+      font-size: 0.82rem;
+    }
+
+    /* ── Contenido de celdas ─────────────────────────────────────────────────── */
+    .col-avatar { width: 36px; padding-right: 0 !important; }
     .avatar {
-      width: 28px; height: 28px; border-radius: 50%;
+      width: 24px; height: 24px; border-radius: 50%;
       background: #007d5c; color: #fff;
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.62rem; font-weight: 700;
+      font-size: 0.58rem; font-weight: 700;
     }
-    .person-name { font-weight: 500; font-size: 0.82rem; color: #111827; }
-
+    .person-name { font-weight: 500; color: #111827; }
     .role-chip {
       display: inline-block; padding: 1px 8px; border-radius: 10px;
       background: #d1fae5; color: #065f46; font-size: 0.72rem; font-weight: 500;
     }
-
-    .case-link { color: #007d5c; text-decoration: none; font-weight: 500; font-size: 0.82rem; }
+    .case-link { color: #007d5c; text-decoration: none; font-weight: 500; }
     .case-link:hover { text-decoration: underline; }
-
     .status-chip {
       display: inline-block; padding: 1px 8px; border-radius: 12px;
       color: #fff; font-size: 0.72rem; font-weight: 500;
@@ -423,8 +390,8 @@ export class UnitsComponent implements OnInit {
 
   @ViewChild('container') containerRef!: ElementRef<HTMLElement>;
 
-  leftPct = signal(30);
-  topPct  = signal(45);
+  leftPct  = signal(30);
+  topPct   = signal(45);
   gridCols = computed(() => `${this.leftPct()}% 5px 1fr`);
   gridRows = computed(() => `${this.topPct()}% 5px 1fr`);
 
@@ -437,9 +404,6 @@ export class UnitsComponent implements OnInit {
   stats        = signal<UnitStats | null>(null);
   persons      = signal<PersonSummary[]>([]);
   cases        = signal<CaseSummary[]>([]);
-
-  personColumns = ['avatar', 'name', 'role'];
-  caseColumns   = ['code', 'title', 'status', 'createdAt'];
 
   hasChild = (_: number, node: UnitNode) => node.children.length > 0;
 
@@ -476,9 +440,7 @@ export class UnitsComponent implements OnInit {
   startResizeCol(e: MouseEvent): void {
     e.preventDefault();
     const container = this.containerRef.nativeElement;
-    const startX = e.clientX;
-    const startPct = this.leftPct();
-
+    const startX = e.clientX, startPct = this.leftPct();
     const onMove = (ev: MouseEvent) => {
       const delta = ev.clientX - startX;
       this.leftPct.set(Math.round(Math.min(65, Math.max(15, startPct + (delta / container.offsetWidth) * 100))));
@@ -498,9 +460,7 @@ export class UnitsComponent implements OnInit {
   startResizeRow(e: MouseEvent): void {
     e.preventDefault();
     const container = this.containerRef.nativeElement;
-    const startY = e.clientY;
-    const startPct = this.topPct();
-
+    const startY = e.clientY, startPct = this.topPct();
     const onMove = (ev: MouseEvent) => {
       const delta = ev.clientY - startY;
       this.topPct.set(Math.round(Math.min(70, Math.max(20, startPct + (delta / container.offsetHeight) * 100))));
