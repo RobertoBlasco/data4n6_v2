@@ -1,0 +1,29 @@
+# ── Backend ────────────────────────────────────────────────────────────────────
+data4n6-backend/target/
+data4n6-backend/home/
+data4n6-backend/.mvn/wrapper/maven-wrapper.jar
+data4n6-backend/*.log
+data4n6-backend/logs/
+
+# ── Frontend ────────────────────────────────────────────────────────────────────
+data4n6-frontend/node_modules/
+data4n6-frontend/dist/
+data4n6-frontend/.angular/
+data4n6-frontend/*.log
+
+# ── Claude Code ─────────────────────────────────────────────────────────────────
+.claude/settings.local.json
+
+# ── IDEs ────────────────────────────────────────────────────────────────────────
+.idea/
+*.iml
+.vscode/
+*.suo
+*.user
+
+# ── OS ──────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Secrets / Local overrides ───────────────────────────────────────────────────
+# application-local.properties  ← uncomment if you move secrets here
