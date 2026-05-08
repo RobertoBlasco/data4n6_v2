@@ -113,10 +113,10 @@ import {
             </button>
             <button mat-flat-button color="primary" type="submit"
                     [disabled]="form.invalid || saving()">
+              <mat-icon [style.display]="saving() ? 'none' : ''">save</mat-icon>
               @if (saving()) {
                 <mat-spinner diameter="20" />
               } @else {
-                <mat-icon>save</mat-icon>
                 {{ isEdit() ? 'Guardar cambios' : 'Crear caso' }}
               }
             </button>
