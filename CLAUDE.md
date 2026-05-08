@@ -48,3 +48,32 @@ Tabla embebida con footer que incluye: contador de registros, fila de totales de
   <!-- columnas mat-table -->
 </app-grid-secondary-footer>
 ```
+
+### Librería UI
+Solo **Angular Material** (`@angular/material`). PrimeNG está instalado pero no se usa — ignorarlo.
+
+### Fuente
+**Roboto** en toda la aplicación (`font-family: Roboto, 'Helvetica Neue', sans-serif`). Aplicar en `:host` en componentes standalone.
+
+### Layout pantalla Unidades
+Cuatro paneles en grid 2×2 con divisores arrastrables (vertical y horizontal):
+
+```
+┌─────────────┬───────────────────┐
+│ ① Árbol     │ ② Estadísticas    │  ← fila superior (topPct%, defecto 45%)
+├─────────────┼───────────────────┤
+│ ③ Personas  │ ④ Casos           │  ← fila inferior
+└─────────────┴───────────────────┘
+  30% (izq)       70% (der)
+```
+
+- Columnas: `leftPct% 5px 1fr` (defecto 30/70, límites 15–65%)
+- Filas: `topPct% 5px 1fr` (defecto 45/55, límites 20–70%)
+- Cabeceras de panel: compactas (`min-height: 32px`), título en mayúsculas pequeñas
+- En móvil (`≤767px`): divisores ocultos, paneles apilados verticalmente
+
+### Comportamiento de formularios
+- Los formularios de alta/edición navegan a una **ruta separada** (no modal, no drawer)
+- Al intentar salir con cambios sin guardar → **diálogo de confirmación** (`CanDeactivate` guard)
+- El menú de navegación permanece **siempre activo** (nunca se deshabilita)
+- Razón: los drawers no son efectivos en tablets y pantallas pequeñas
