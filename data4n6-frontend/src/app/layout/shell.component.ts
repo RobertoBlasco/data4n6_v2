@@ -1,183 +1,229 @@
-import { Component, inject } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatSidenavModule } from '@angular/material/sidenav';
-
-type SubItem = { label: string; route: string; divider?: false } | { divider: true };
-
-interface NavItem {
-  label: string;
-  route: string;
-  segment: string;
-  children: SubItem[];
-}
+import { Component } from '@angular/core';
+import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { MegaMenuItem } from 'primeng/api';
+import { DrawerModule } from 'primeng/drawer';
+import { MegaMenuModule } from 'primeng/megamenu';
 
 @Component({
   selector: 'app-shell',
   standalone: true,
   imports: [
     RouterOutlet, RouterLink, RouterLinkActive,
-    MatToolbarModule, MatButtonModule, MatIconModule,
-    MatMenuModule, MatDividerModule, MatSidenavModule,
+    DrawerModule, MegaMenuModule,
   ],
   template: `
-    <mat-sidenav-container class="shell-wrapper">
+    <div class="shell-wrapper">
 
       <!-- ── Drawer móvil ─────────────────────────────────────────── -->
-      <mat-sidenav #sidenav mode="over" class="mobile-drawer">
-        <div class="drawer-header">
-          <mat-icon>security</mat-icon>
-          <span class="drawer-brand">data4n6</span>
-          <span class="spacer"></span>
-          <button mat-icon-button (click)="sidenav.close()">
-            <mat-icon>close</mat-icon>
-          </button>
-        </div>
+      <p-drawer [(visible)]="drawerVisible" position="left" styleClass="mobile-drawer">
+        <ng-template #header>
+          <div class="drawer-header-content">
+            <i class="pi pi-shield"></i>
+            <span class="drawer-brand">data4n6</span>
+          </div>
+        </ng-template>
 
         <nav class="drawer-nav">
           <a routerLink="/" class="drawer-link drawer-home"
-             (click)="sidenav.close()">
-            <mat-icon>home</mat-icon> Inicio
+             (click)="drawerVisible = false">
+            <i class="pi pi-home"></i> Inicio
           </a>
 
-          @for (item of navItems; track item.segment) {
-            @if (item.children.length === 0) {
-              <a class="drawer-link" [routerLink]="item.route"
+          @for (item of megaMenuItems; track item.label) {
+            @if (!item.items?.length) {
+              <a class="drawer-link" [routerLink]="item.routerLink"
                  routerLinkActive="drawer-link-active"
-                 (click)="sidenav.close()">
+                 (click)="drawerVisible = false">
                 {{ item.label }}
               </a>
             } @else {
               <div class="drawer-group">
                 <span class="drawer-group-title">{{ item.label }}</span>
-                @for (child of item.children; track $index) {
-                  @if (!child.divider) {
-                    <a class="drawer-sub-link" [routerLink]="child.route"
-                       routerLinkActive="drawer-link-active"
-                       (click)="sidenav.close()">
-                      {{ child.label }}
-                    </a>
+                @for (col of item.items!; track $index) {
+                  @for (group of col; track $index) {
+                    @if (group.label) {
+                      <span class="drawer-sub-group">{{ group.label }}</span>
+                    }
+                    @for (child of group.items ?? []; track $index) {
+                      @if (!child.separator) {
+                        <a class="drawer-sub-link" [routerLink]="child.routerLink"
+                           routerLinkActive="drawer-link-active"
+                           (click)="drawerVisible = false">
+                          {{ child.label }}
+                        </a>
+                      }
+                    }
                   }
                 }
               </div>
             }
           }
         </nav>
-      </mat-sidenav>
+      </p-drawer>
 
       <!-- ── Contenido principal ──────────────────────────────────── -->
-      <mat-sidenav-content class="shell-content">
+      <div class="shell-content">
 
-        <mat-toolbar class="topbar">
-          <!-- Hamburger: visible solo en móvil -->
-          <button mat-icon-button class="hamburger-btn" (click)="sidenav.open()">
-            <mat-icon>menu</mat-icon>
+        <div class="topbar">
+          <button class="icon-btn hamburger-btn" (click)="drawerVisible = true" title="Menú">
+            <i class="pi pi-bars"></i>
           </button>
           <a routerLink="/" class="brand-link">
-            <mat-icon>security</mat-icon>
+            <i class="pi pi-shield"></i>
             <span class="brand-name">data4n6</span>
           </a>
           <span class="spacer"></span>
-          <a routerLink="/" mat-icon-button title="Inicio" class="home-btn">
-            <mat-icon>home</mat-icon>
+          <a routerLink="/" class="icon-btn" title="Inicio">
+            <i class="pi pi-home"></i>
           </a>
-        </mat-toolbar>
+        </div>
 
         <!-- Navegación horizontal — oculta en móvil -->
         <nav class="module-nav">
-          @for (item of navItems; track item.segment) {
-            @if (item.children.length === 0) {
-              <a [routerLink]="item.route"
-                 routerLinkActive="nav-active"
-                 [routerLinkActiveOptions]="{ exact: false }"
-                 class="nav-item">
-                {{ item.label }}
-              </a>
-            } @else {
-              <button class="nav-item nav-item-btn"
-                      [class.nav-active]="isActive(item.segment)"
-                      [matMenuTriggerFor]="menu">
-                {{ item.label }}
-                <mat-icon class="dropdown-arrow">arrow_drop_down</mat-icon>
-              </button>
-              <mat-menu #menu="matMenu">
-                @for (child of item.children; track $index) {
-                  @if (child.divider) {
-                    <mat-divider class="menu-divider" />
-                  } @else {
-                    <a mat-menu-item [routerLink]="child.route"
-                       routerLinkActive="menu-item-active">
-                      {{ child.label }}
-                    </a>
-                  }
-                }
-              </mat-menu>
-            }
-          }
+          <p-megamenu [model]="megaMenuItems" breakpoint="0px" />
         </nav>
 
         <main class="content-area">
           <router-outlet />
         </main>
 
-      </mat-sidenav-content>
-    </mat-sidenav-container>
+      </div>
+    </div>
   `,
   styles: [`
     /* ── Estructura ───────────────────────────────────────────────── */
-    .shell-wrapper { height: 100vh; }
+    .shell-wrapper { height: 100vh; display: flex; flex-direction: column; }
 
     .shell-content {
       display: flex;
       flex-direction: column;
-      height: 100%;
-      overflow: hidden;
+      flex: 1;
+      min-height: 0;
     }
 
     /* ── Topbar ───────────────────────────────────────────────────── */
     .topbar {
-      background-color: #01603e !important;
+      background-color: #01603e;
       color: #ffffff;
       height: 56px;
       flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 8px;
     }
 
     .brand-link {
       display: flex; align-items: center; gap: 8px;
       text-decoration: none; color: #ffffff;
+      font-size: 1.1rem;
     }
     .brand-name { font-size: 1.2rem; font-weight: 700; }
     .spacer { flex: 1 1 auto; }
 
-    /* Hamburger oculto en escritorio */
-    .hamburger-btn { display: none; color: #fff; margin-right: 4px; }
+    .icon-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: none; border: none; cursor: pointer;
+      color: #fff; font-size: 1.1rem;
+      transition: background 0.15s;
+      text-decoration: none;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,0.15); }
 
-    /* ── Nav horizontal ───────────────────────────────────────────── */
+    .hamburger-btn { display: none; }
+
+    /* ── Nav wrapper + tokens del MegaMenu ───────────────────────── */
     .module-nav {
-      background-color: #007d5c;
-      display: flex;
       flex-shrink: 0;
-      padding: 0 16px;
-      overflow-x: auto;
+
+      /* Tokens del componente — se heredan al p-megamenu interno */
+      --p-megamenu-background:                     #007d5c;
+      --p-megamenu-border-color:                   transparent;
+      --p-megamenu-border-radius:                  0;
+      --p-megamenu-color:                          rgba(255,255,255,0.85);
+      --p-megamenu-horizontal-orientation-padding: 0 8px;
+      --p-megamenu-gap:                            0;
+
+      /* Items raíz (barra horizontal) */
+      --p-megamenu-item-color:             rgba(255,255,255,0.8);
+      --p-megamenu-item-focus-color:       #fff;
+      --p-megamenu-item-active-color:      #fff;
+      --p-megamenu-item-focus-background:  rgba(255,255,255,0.1);
+      --p-megamenu-item-active-background: rgba(255,255,255,0.12);
+      --p-megamenu-item-border-radius:     0;
+      --p-megamenu-item-icon-color:        rgba(255,255,255,0.8);
+      --p-megamenu-item-icon-focus-color:  #fff;
+      --p-megamenu-item-icon-active-color: #fff;
+
+      /* Panel desplegable */
+      --p-megamenu-overlay-background:    #006b50;
+      --p-megamenu-overlay-border-color:  rgba(255,255,255,0.22);
+      --p-megamenu-overlay-border-radius: 0 0 6px 6px;
+      --p-megamenu-overlay-color:         rgba(255,255,255,0.9);
+      --p-megamenu-overlay-shadow:        0 6px 20px rgba(0,0,0,0.3);
+
+      /* Submenu dentro del panel */
+      --p-megamenu-submenu-label-background: transparent;
+      --p-megamenu-submenu-label-color:      #fff;
+      --p-megamenu-submenu-icon-color:       rgba(255,255,255,0.7);
+      --p-megamenu-submenu-icon-focus-color:  #fff;
+      --p-megamenu-submenu-icon-active-color: #fff;
+
+      /* Separador */
+      --p-megamenu-separator-border-color: rgba(255,255,255,0.28);
     }
 
-    .nav-item {
-      display: inline-flex; align-items: center; gap: 2px;
-      padding: 0 16px; height: 44px;
-      color: rgba(255,255,255,0.8);
-      text-decoration: none; font-size: 0.875rem; font-weight: 500;
+    /* Altura fija 44px + indicador inferior en items raíz */
+    ::ng-deep .module-nav .p-megamenu-root-list
+        > .p-megamenu-item > .p-megamenu-item-content > .p-megamenu-item-link {
+      height: 44px;
+      border-radius: 0;
       border-bottom: 3px solid transparent;
-      transition: color 0.15s, background-color 0.15s;
+      font-size: 0.875rem;
+      font-weight: 500;
       white-space: nowrap;
     }
-    .nav-item:hover { color: #fff; background-color: rgba(255,255,255,0.08); }
-    .nav-item.nav-active { color: #fff; border-bottom-color: #fff; background-color: rgba(255,255,255,0.1); }
-    .nav-item-btn { background: none; border: none; cursor: pointer; font-family: inherit; border-radius: 0; }
-    .dropdown-arrow { font-size: 18px; width: 18px; height: 18px; }
+    ::ng-deep .module-nav .p-megamenu-root-list
+        > .p-megamenu-item.p-megamenu-item-active
+        > .p-megamenu-item-content > .p-megamenu-item-link {
+      border-bottom-color: rgba(255,255,255,0.85);
+    }
+
+    /* Panel: ancho ajustado al contenido */
+    ::ng-deep .module-nav .p-megamenu-panel { width: fit-content; }
+    ::ng-deep .module-nav .p-megamenu-grid  { width: fit-content; }
+
+    /* Fuente uniforme en todo el megamenu */
+    ::ng-deep .module-nav .p-megamenu,
+    ::ng-deep .module-nav .p-megamenu * {
+      font-family: Roboto, 'Helvetica Neue', sans-serif !important;
+    }
+
+    /* Tamaño de fuente: items del panel = igual que la barra */
+    ::ng-deep .module-nav .p-megamenu-submenu .p-megamenu-item-label {
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    /* Hover en items del submenú */
+    ::ng-deep .module-nav .p-megamenu-submenu .p-megamenu-item.p-focus
+        > .p-megamenu-item-content > .p-megamenu-item-link,
+    ::ng-deep .module-nav .p-megamenu-submenu .p-megamenu-item
+        > .p-megamenu-item-content > .p-megamenu-item-link:hover {
+      color: #f1b800 !important;
+    }
+
+    /* Cabeceras de grupo */
+    ::ng-deep .module-nav .p-megamenu-submenu-item,
+    ::ng-deep .module-nav .p-megamenu-submenu-item span,
+    ::ng-deep .module-nav .p-megamenu-submenu-item-label,
+    ::ng-deep .module-nav .p-megamenu-submenu-label {
+      font-size: 0.875rem !important;
+      font-weight: 700 !important;
+      color: #fff !important;
+      text-decoration: none !important;
+    }
 
     /* ── Contenido ────────────────────────────────────────────────── */
     .content-area {
@@ -187,24 +233,21 @@ interface NavItem {
     }
 
     /* ── Drawer móvil ─────────────────────────────────────────────── */
-    .mobile-drawer { width: 300px; }
+    ::ng-deep .mobile-drawer { width: 300px !important; }
 
-    .drawer-header {
+    .drawer-header-content {
       display: flex; align-items: center; gap: 8px;
-      padding: 12px 8px 12px 16px;
-      background: #01603e; color: #fff;
-      flex-shrink: 0;
+      color: #007d5c; font-size: 1rem;
     }
     .drawer-brand { font-size: 1.1rem; font-weight: 700; }
 
-    .drawer-nav { overflow-y: auto; padding: 4px 0 16px; }
+    .drawer-nav { padding: 4px 0 16px; }
 
     .drawer-home {
       display: flex; align-items: center; gap: 10px;
       border-bottom: 1px solid #e5e7eb;
       padding-bottom: 8px; margin-bottom: 4px;
     }
-    .drawer-home mat-icon { font-size: 20px; width: 20px; height: 20px; color: #007d5c; }
 
     .drawer-group { border-top: 1px solid #f3f4f6; }
 
@@ -233,7 +276,14 @@ interface NavItem {
 
     .drawer-link-active { color: #007d5c !important; font-weight: 600; }
 
-    /* ── Responsive breakpoints ───────────────────────────────────── */
+    .drawer-sub-group {
+      display: block; padding: 8px 16px 2px 16px;
+      font-size: 0.68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      color: #9ca3af;
+    }
+
+    /* ── Responsive ───────────────────────────────────────────────── */
     @media (max-width: 1023px) {
       .hamburger-btn { display: inline-flex; }
       .module-nav { display: none; }
@@ -246,64 +296,99 @@ interface NavItem {
   `],
 })
 export class ShellComponent {
-  private readonly router = inject(Router);
+  drawerVisible = false;
 
-  navItems: NavItem[] = [
-    { label: 'Administración',  segment: 'admin',    route: '/data4n6/admin',    children: [] },
-    { label: 'Configuración',   segment: 'config',   route: '/data4n6/config',   children: [] },
+  megaMenuItems: MegaMenuItem[] = [
+    { label: 'Administración', routerLink: '/data4n6/admin' },
+    { label: 'Configuración',  routerLink: '/data4n6/config' },
     {
-      label: 'Datos Generales', segment: 'general',  route: '/data4n6/general',
-      children: [
-        { label: 'Listado Unidades',   route: '/data4n6/general/units' },
-        { divider: true },
-        { label: 'Listado Personas',   route: '/data4n6/general/persons' },
-        { divider: true },
-        { label: 'Listado Documentos', route: '/data4n6/general/documents' },
-        { label: 'Listado Fotos',      route: '/data4n6/general/photos' },
+      label: 'Datos Generales',
+      items: [[
+        {
+          label: 'Listados',
+          items: [
+            { label: 'Unidades',   routerLink: '/data4n6/general/units' },
+            { label: 'Personas',   routerLink: '/data4n6/general/persons' },
+            { label: 'Documentos', routerLink: '/data4n6/general/documents' },
+            { label: 'Fotos',      routerLink: '/data4n6/general/photos' },
+          ],
+        },
+      ]],
+    },
+    {
+      label: 'Casos',
+      items: [
+        [{
+          label: 'Acciones',
+          items: [
+            { label: 'Alta Caso',     routerLink: '/data4n6/cases/new' },
+            { label: 'Listado Casos', routerLink: '/data4n6/cases' },
+          ],
+        }],
+        [{
+          label: 'Catálogos',
+          items: [
+            { label: 'Estados',       routerLink: '/data4n6/cases/statuses' },
+            { label: 'Clasificación', routerLink: '/data4n6/cases/levels' },
+            { label: 'Resultados',    routerLink: '/data4n6/cases/outcomes' },
+            { label: 'Dominios',      routerLink: '/data4n6/cases/domains' },
+          ],
+        }],
       ],
     },
     {
-      label: 'Casos', segment: 'cases', route: '/data4n6/cases',
-      children: [
-        { label: 'Alta Caso',                route: '/data4n6/cases/new' },
-        { label: 'Listado Casos',            route: '/data4n6/cases' },
-        { divider: true },
-        { label: 'Estados de Caso',          route: '/data4n6/cases/statuses' },
-        { label: 'Niveles de Clasificación', route: '/data4n6/cases/levels' },
-        { label: 'Resultados de Caso',       route: '/data4n6/cases/outcomes' },
-        { label: 'Dominios',                 route: '/data4n6/cases/domains' },
+      label: 'Eventos',
+      items: [
+        [{
+          label: 'Acciones',
+          items: [
+            { label: 'Alta Evento',    routerLink: '/data4n6/events/new' },
+            { label: 'Listado Eventos', routerLink: '/data4n6/events' },
+          ],
+        }],
+        [{
+          label: 'Catálogos',
+          items: [
+            { label: 'Estados', routerLink: '/data4n6/events/statuses' },
+          ],
+        }],
       ],
     },
     {
-      label: 'Eventos', segment: 'events', route: '/data4n6/events',
-      children: [
-        { label: 'Alta Evento',       route: '/data4n6/events/new' },
-        { label: 'Listado Eventos',   route: '/data4n6/events' },
-        { divider: true },
-        { label: 'Estados de Evento', route: '/data4n6/events/statuses' },
+      label: 'Efectos',
+      items: [
+        [{
+          label: 'Acciones',
+          items: [
+            { label: 'Alta Efecto',    routerLink: '/data4n6/exhibits/new' },
+            { label: 'Listado Efectos', routerLink: '/data4n6/exhibits' },
+          ],
+        }],
+        [{
+          label: 'Catálogos',
+          items: [
+            { label: 'Estados', routerLink: '/data4n6/exhibits/statuses' },
+          ],
+        }],
       ],
     },
     {
-      label: 'Efectos', segment: 'exhibits', route: '/data4n6/exhibits',
-      children: [
-        { label: 'Alta Efecto',        route: '/data4n6/exhibits/new' },
-        { label: 'Listado Efectos',    route: '/data4n6/exhibits' },
-        { divider: true },
-        { label: 'Estados de Efecto',  route: '/data4n6/exhibits/statuses' },
-      ],
-    },
-    {
-      label: 'Evidencias', segment: 'evidence', route: '/data4n6/evidence',
-      children: [
-        { label: 'Alta Evidencia',       route: '/data4n6/evidence/new' },
-        { label: 'Listado Evidencias',   route: '/data4n6/evidence' },
-        { divider: true },
-        { label: 'Estados de Evidencia', route: '/data4n6/evidence/statuses' },
+      label: 'Evidencias',
+      items: [
+        [{
+          label: 'Acciones',
+          items: [
+            { label: 'Alta Evidencia',    routerLink: '/data4n6/evidence/new' },
+            { label: 'Listado Evidencias', routerLink: '/data4n6/evidence' },
+          ],
+        }],
+        [{
+          label: 'Catálogos',
+          items: [
+            { label: 'Estados', routerLink: '/data4n6/evidence/statuses' },
+          ],
+        }],
       ],
     },
   ];
-
-  isActive(segment: string): boolean {
-    return this.router.url.startsWith(`/data4n6/${segment}`);
-  }
 }

@@ -1,45 +1,37 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { MatTableModule } from '@angular/material/table';
-import { MatCardModule } from '@angular/material/card';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { GridBaseComponent } from '../../../shared/components/grid-base/grid-base.component';
 import { CasesService, CaseOutcomeOption } from '../../../core/services/cases.service';
 
 @Component({
   selector: 'app-case-outcomes',
   standalone: true,
-  imports: [MatTableModule, MatCardModule, MatProgressSpinnerModule],
+  imports: [GridBaseComponent],
   template: `
     <h1 class="page-title">Resultados de caso</h1>
-    @if (loading()) {
-      <div class="spinner-center"><mat-spinner diameter="40" /></div>
-    } @else {
-      <mat-card>
-        <table mat-table [dataSource]="outcomes()" class="full-width">
-          <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef>Nombre</th>
-            <td mat-cell *matCellDef="let o">{{ o.name }}</td>
-          </ng-container>
-          <ng-container matColumnDef="active">
-            <th mat-header-cell *matHeaderCellDef>Activo</th>
-            <td mat-cell *matCellDef="let o">{{ o.active ? 'Sí' : 'No' }}</td>
-          </ng-container>
-          <tr mat-header-row *matHeaderRowDef="columns"></tr>
-          <tr mat-row *matRowDef="let row; columns: columns;"></tr>
-        </table>
-      </mat-card>
-    }
+    <app-grid-base [data]="outcomes()" [loading]="loading()"
+                   [showGridlines]="true" [stripedRows]="true" size="small">
+      <ng-template #header>
+        <tr>
+          <th>Nombre</th>
+          <th>Activo</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-o>
+        <tr>
+          <td>{{ o.name }}</td>
+          <td>{{ o.active ? 'Sí' : 'No' }}</td>
+        </tr>
+      </ng-template>
+    </app-grid-base>
   `,
   styles: [`
     .page-title { margin: 0 0 20px; font-size: 1.5rem; color: #01603e; }
-    .spinner-center { display: flex; justify-content: center; padding: 40px; }
-    .full-width { width: 100%; }
   `],
 })
 export class CaseOutcomesComponent implements OnInit {
   private readonly casesService = inject(CasesService);
   outcomes = signal<CaseOutcomeOption[]>([]);
-  loading = signal(true);
-  columns = ['name', 'active'];
+  loading  = signal(true);
 
   ngOnInit(): void {
     this.casesService.getOutcomes().subscribe({

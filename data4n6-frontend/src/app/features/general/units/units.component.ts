@@ -137,17 +137,17 @@ interface PersonSummary {
             <div class="spinner-center"><mat-spinner diameter="28" /></div>
           } @else {
             <p-table [value]="persons()" [scrollable]="true" scrollHeight="flex"
-                     styleClass="p-datatable-sm panel-table">
-              <ng-template pTemplate="header">
+                     showGridlines stripedRows size="small" class="panel-table">
+              <ng-template #header>
                 <tr>
-                  <th class="col-avatar"></th>
+                  <th style="width:36px"></th>
                   <th>Nombre</th>
                   <th>Rol</th>
                 </tr>
               </ng-template>
-              <ng-template pTemplate="body" let-p>
+              <ng-template #body let-p>
                 <tr>
-                  <td class="col-avatar"><div class="avatar">{{ initials(p) }}</div></td>
+                  <td><div class="avatar">{{ initials(p) }}</div></td>
                   <td><span class="person-name">{{ p.lastName }}, {{ p.firstName }}</span></td>
                   <td><span class="role-chip">{{ p.roleName }}</span></td>
                 </tr>
@@ -175,8 +175,8 @@ interface PersonSummary {
             <div class="spinner-center"><mat-spinner diameter="28" /></div>
           } @else {
             <p-table [value]="cases()" [scrollable]="true" scrollHeight="flex"
-                     styleClass="p-datatable-sm panel-table">
-              <ng-template pTemplate="header">
+                     showGridlines stripedRows size="small" class="panel-table">
+              <ng-template #header>
                 <tr>
                   <th>Nº Exp.</th>
                   <th>Título</th>
@@ -184,7 +184,7 @@ interface PersonSummary {
                   <th>Fecha alta</th>
                 </tr>
               </ng-template>
-              <ng-template pTemplate="body" let-c>
+              <ng-template #body let-c>
                 <tr>
                   <td><a [routerLink]="['/data4n6/cases', c.id]" class="case-link">{{ c.code }}</a></td>
                   <td>{{ c.title }}</td>
@@ -313,51 +313,17 @@ interface PersonSummary {
     .node-name { font-size: 0.82rem; color: #374151; line-height: 1.3; }
     .node-name-bold { font-weight: 600; }
 
-    /* ── PrimeNG p-table: llenar panel y rayas en espacio vacío ─────────────── */
-    ::ng-deep .panel-table.p-datatable-flex-scrollable {
-      height: 100%;
-    }
-
-    /* Gradiente de fondo: rayas visibles en el espacio sin filas */
-    ::ng-deep .panel-table .p-datatable-table-container {
-      background: repeating-linear-gradient(
-        to bottom,
-        #ffffff 0px, #ffffff 35px,
-        #f7faf9 36px, #f7faf9 71px
-      );
-      background-position: 0 36px; /* desplaza las rayas para que empiecen tras la cabecera */
-    }
-
-    /* Celdas de cabecera */
-    ::ng-deep .panel-table .p-datatable-thead > tr > th {
-      background: #f9fafb;
-      border-bottom: 1px solid #e5e7eb;
-      padding: 6px 10px;
-      font-size: 0.72rem; font-weight: 600; color: #6b7280;
-      text-transform: uppercase; letter-spacing: 0.05em;
-      white-space: nowrap;
-    }
-
-    /* Celdas de datos: fondo alternado alineado con el gradiente */
-    ::ng-deep .panel-table .p-datatable-tbody > tr:nth-child(odd)  > td { background: #ffffff; }
-    ::ng-deep .panel-table .p-datatable-tbody > tr:nth-child(even) > td { background: #f7faf9; }
-    ::ng-deep .panel-table .p-datatable-tbody > tr:hover            > td { background: #e8f5f0 !important; }
-
-    ::ng-deep .panel-table .p-datatable-tbody > tr > td {
-      padding: 6px 10px;
-      border-bottom: 1px solid #f3f4f6;
-      font-size: 0.82rem;
-    }
+    /* ── PrimeNG p-table ─────────────────────────────────────────────────────── */
+    ::ng-deep .panel-table.p-datatable-flex-scrollable { height: 100%; }
 
     /* ── Contenido de celdas ─────────────────────────────────────────────────── */
-    .col-avatar { width: 36px; padding-right: 0 !important; }
     .avatar {
       width: 24px; height: 24px; border-radius: 50%;
       background: #007d5c; color: #fff;
       display: flex; align-items: center; justify-content: center;
       font-size: 0.58rem; font-weight: 700;
     }
-    .person-name { font-weight: 500; color: #111827; }
+    .person-name { font-weight: 500; }
     .role-chip {
       display: inline-block; padding: 1px 8px; border-radius: 10px;
       background: #d1fae5; color: #065f46; font-size: 0.72rem; font-weight: 500;
