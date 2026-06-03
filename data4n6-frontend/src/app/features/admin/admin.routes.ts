@@ -6,4 +6,9 @@ export const adminRoutes: Routes = [
     loadComponent: () =>
       import('./admin.component').then(m => m.AdminComponent),
   },
+  {
+    path: 'app-tables',
+    loadComponent: () =>
+      import('./app-tables.component').then(m => m.AppTablesComponent),
+  },
 ];

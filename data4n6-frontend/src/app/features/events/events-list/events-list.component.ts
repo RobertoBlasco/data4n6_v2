@@ -1,16 +1,14 @@
-import { Component } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
   selector: 'app-events-list',
   standalone: true,
-  imports: [MatIconModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [],
   template: `
-    <div class="page-header">
-      <h1>Eventos</h1>
+    <div class="p-8 text-center text-muted-foreground">
+      <p class="text-sm">🚧 Componente en migración a Tailwind + Spartan</p>
     </div>
-    <p style="color:#6b7280">Módulo en construcción</p>
   `,
-  styles: [`.page-header { margin-bottom: 24px; } h1 { margin: 0; font-size: 1.6rem; color: #01603e; }`],
 })
 export class EventsListComponent {}

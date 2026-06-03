@@ -1,0 +1,3 @@
+ALTER TABLE inventario.t300_eventos
+    ADD COLUMN fecha_ini TIMESTAMP WITH TIME ZONE,
+    ADD COLUMN fecha_fin TIMESTAMP WITH TIME ZONE;

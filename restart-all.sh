@@ -75,7 +75,7 @@ wait_docker_healthy data4n6-minio
 # ── Backend ───────────────────────────────────────────────────────────────────
 info "Arrancando backend → $BACKEND_LOG"
 cd "$BACKEND"
-nohup mvn spring-boot:run < /dev/null > "$BACKEND_LOG" 2>&1 &
+nohup mvn clean spring-boot:run < /dev/null > "$BACKEND_LOG" 2>&1 &
 wait_backend
 
 # ── Frontend ──────────────────────────────────────────────────────────────────

@@ -1,17 +1,14 @@
-import { Component } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
   selector: 'app-general',
   standalone: true,
-  imports: [MatIconModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [],
   template: `
-    <h1 class="page-title">Datos Generales</h1>
-    <p class="placeholder">Países, divisiones administrativas, catálogos de referencia...</p>
+    <div class="p-8 text-center text-muted-foreground">
+      <p class="text-sm">🚧 Componente en migración a Tailwind + Spartan</p>
+    </div>
   `,
-  styles: [`
-    .page-title { margin: 0 0 8px; font-size: 1.6rem; color: #01603e; }
-    .placeholder { color: #6b7280; }
-  `],
 })
 export class GeneralComponent {}

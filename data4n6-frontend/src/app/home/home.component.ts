@@ -1,13 +1,20 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { MatRippleModule } from '@angular/material/core';
-import { MatIconModule } from '@angular/material/icon';
+import { NgClass } from '@angular/common';
+import { provideIcons } from '@ng-icons/core';
+import {
+  lucideFlaskConical,
+  lucideWarehouse,
+  lucideDatabase,
+  lucideZap,
+  lucideArrowRight,
+} from '@ng-icons/lucide';
+import { HlmIconImports } from '@spartan-ng/helm/icon';
 
-interface ModuleCard {
+interface Module {
   title: string;
-  subtitle: string;
+  description: string;
   icon: string;
-  color: string;
   route: string;
   available: boolean;
 }
@@ -15,130 +22,98 @@ interface ModuleCard {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [MatRippleModule, MatIconModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [NgClass, HlmIconImports],
+  providers: [provideIcons({ lucideFlaskConical, lucideWarehouse, lucideDatabase, lucideZap, lucideArrowRight })],
   template: `
-    <div class="home-wrapper">
-      <header class="home-header">
-        <div class="brand">
-          <mat-icon class="brand-icon">security</mat-icon>
-          <span class="brand-name">data4n6</span>
+    <div class="min-h-screen bg-background flex flex-col">
+
+      <!-- Brand header -->
+      <header class="border-b border-border px-8 py-6">
+        <div class="max-w-2xl">
+          <h1 class="text-xl font-semibold tracking-tight text-foreground">data4n6</h1>
+          <p class="text-sm text-muted-foreground mt-0.5">Sistema integrado de gestión forense y control de inventario</p>
         </div>
-        <p class="brand-tagline">Plataforma de gestión forense digital</p>
       </header>
 
-      <div class="modules-grid">
-        @for (m of modules; track m.route) {
-          <div
-            class="module-card"
-            [class.unavailable]="!m.available"
-            matRipple
-            [matRippleDisabled]="!m.available"
-            (click)="navigate(m)">
-            <div class="card-icon-wrap" [style.background-color]="m.color + '1a'">
-              <mat-icon [style.color]="m.color">{{ m.icon }}</mat-icon>
+      <!-- Modules -->
+      <main class="flex-1 px-8 py-8">
+        <p class="text-xs text-muted-foreground uppercase tracking-wider mb-4">Módulos</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl">
+          @for (m of modules; track m.route) {
+            <div
+              class="group flex flex-col border border-border rounded-lg p-5 bg-card transition-all duration-150"
+              [ngClass]="m.available
+                ? 'cursor-pointer hover:border-primary/60 hover:shadow-sm'
+                : 'opacity-55 cursor-default'"
+              (click)="navigate(m)"
+            >
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-2.5">
+                  <ng-icon hlmIcon [name]="m.icon" size="sm"
+                    [class.text-primary]="m.available"
+                    [class.text-muted-foreground]="!m.available" />
+                  <span class="text-sm font-semibold text-foreground">{{ m.title }}</span>
+                </div>
+                @if (!m.available) {
+                  <span class="text-[10px] uppercase tracking-wider border border-border rounded px-1.5 py-0.5 text-muted-foreground shrink-0">
+                    Próximamente
+                  </span>
+                }
+              </div>
+
+              <p class="text-xs text-muted-foreground leading-relaxed flex-1">{{ m.description }}</p>
+
+              @if (m.available) {
+                <div class="flex items-center gap-1 mt-4 text-xs font-medium text-primary">
+                  Acceder
+                  <ng-icon hlmIcon name="lucideArrowRight" size="xs"
+                    class="transition-transform duration-150 group-hover:translate-x-0.5" />
+                </div>
+              }
             </div>
-            <div class="card-body">
-              <h2>{{ m.title }}</h2>
-              <p>{{ m.subtitle }}</p>
-            </div>
-            @if (!m.available) {
-              <span class="badge-soon">Próximamente</span>
-            } @else {
-              <mat-icon class="arrow-icon">chevron_right</mat-icon>
-            }
-          </div>
-        }
-      </div>
+          }
+        </div>
+      </main>
+
     </div>
   `,
-  styles: [`
-    .home-wrapper {
-      min-height: 100vh;
-      background: #f5f5f5;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 60px 24px 40px;
-    }
-    .home-header { text-align: center; margin-bottom: 56px; }
-    .brand {
-      display: flex; align-items: center; justify-content: center;
-      gap: 12px; margin-bottom: 8px;
-    }
-    .brand-icon { font-size: 48px; width: 48px; height: 48px; color: #007d5c; }
-    .brand-name { font-size: 2.8rem; font-weight: 700; color: #01603e; letter-spacing: -1px; }
-    .brand-tagline { margin: 0; color: #6b7280; font-size: 1rem; }
-    .modules-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-      width: 100%;
-      max-width: 960px;
-    }
-    .module-card {
-      background: #ffffff;
-      border-radius: 8px;
-      padding: 24px;
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      cursor: pointer;
-      border: 1px solid #e5e7eb;
-      transition: box-shadow 0.2s, transform 0.15s;
-      position: relative;
-      overflow: hidden;
-    }
-    .module-card:not(.unavailable):hover {
-      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-      transform: translateY(-2px);
-    }
-    .module-card.unavailable { cursor: default; opacity: 0.6; }
-    .card-icon-wrap {
-      width: 56px; height: 56px; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-    .card-icon-wrap mat-icon { font-size: 28px; width: 28px; height: 28px; }
-    .card-body { flex: 1; }
-    .card-body h2 { margin: 0 0 4px; font-size: 1.1rem; font-weight: 600; color: #111827; }
-    .card-body p { margin: 0; font-size: 0.875rem; color: #6b7280; }
-    .arrow-icon { color: #9ca3af; }
-    .badge-soon {
-      font-size: 0.7rem; font-weight: 600; background: #e5e7eb;
-      color: #6b7280; padding: 2px 8px; border-radius: 12px; white-space: nowrap;
-    }
-  `],
 })
 export class HomeComponent {
   private readonly router = inject(Router);
 
-  modules: ModuleCard[] = [
+  readonly modules: Module[] = [
     {
       title: 'data4n6',
-      subtitle: 'Gestión de evidencias, efectos y cadena de custodia',
-      icon: 'fingerprint',
-      color: '#007d5c',
+      description: 'Gestión de casos, cadena de custodia, evidencias digitales y efectos judiciales.',
+      icon: 'lucideFlaskConical',
       route: '/data4n6/cases',
       available: true,
     },
     {
       title: 'Inventario',
-      subtitle: 'Control de equipamiento y material técnico',
-      icon: 'inventory_2',
-      color: '#2563eb',
-      route: '/inventario',
-      available: false,
+      description: 'Control de equipamiento técnico, almacenes, propuestas y órdenes de material.',
+      icon: 'lucideWarehouse',
+      route: '/inventory/items',
+      available: true,
+    },
+    {
+      title: 'Datos Comunes',
+      description: 'Catálogos y datos compartidos entre módulos: unidades, tipos de documento y clasificaciones.',
+      icon: 'lucideDatabase',
+      route: '/common/admin/t100_units',
+      available: true,
     },
     {
       title: 'Herramientas',
-      subtitle: 'Utilidades de análisis forense y generación de informes',
-      icon: 'build',
-      color: '#7c3aed',
+      description: 'Análisis forense y generación de informes. Integración con herramientas externas.',
+      icon: 'lucideZap',
       route: '/herramientas',
       available: false,
     },
   ];
 
-  navigate(m: ModuleCard): void {
+  navigate(m: Module): void {
     if (m.available) this.router.navigate([m.route]);
   }
 }

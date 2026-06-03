@@ -1,6 +1,5 @@
 @use '@angular/material' as mat;
 @use 'sass:map';
-@import 'primeicons/primeicons.css';
 
 // Guardia Civil palette — primary green #007d5c
 $gc-primary-palette: (
@@ -125,19 +124,27 @@ $theme: mat.m2-define-light-theme((
   .mat-mdc-menu-item-text { color: #ffffff !important; font-weight: 600; }
 }
 
-// Global resets
-*, *::before, *::after { box-sizing: border-box; }
+// Global resets — Roboto en toda la aplicación
+*, *::before, *::after {
+  box-sizing: border-box;
+  font-family: Roboto, 'Helvetica Neue', sans-serif !important;
+}
 
 html, body {
   height: 100%;
   margin: 0;
   font-family: Roboto, 'Helvetica Neue', sans-serif;
-}
-
-body {
-  font-family: Roboto, 'Helvetica Neue', sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
   background-color: #f5f5f5;
   color: #333333;
+}
+
+// Forzar fuente en elementos de tabla (no heredan por defecto en todos los navegadores)
+table, thead, tbody, tfoot, tr, th, td, caption {
+  font-family: Roboto, 'Helvetica Neue', sans-serif !important;
+  font-size: inherit !important;
+  line-height: 1.4 !important;
 }
 
 // Utility classes

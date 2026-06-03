@@ -1,42 +1,14 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { GridBaseComponent } from '../../../shared/components/grid-base/grid-base.component';
-import { CasesService, CaseOutcomeOption } from '../../../core/services/cases.service';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
   selector: 'app-case-outcomes',
   standalone: true,
-  imports: [GridBaseComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [],
   template: `
-    <h1 class="page-title">Resultados de caso</h1>
-    <app-grid-base [data]="outcomes()" [loading]="loading()"
-                   [showGridlines]="true" [stripedRows]="true" size="small">
-      <ng-template #header>
-        <tr>
-          <th>Nombre</th>
-          <th>Activo</th>
-        </tr>
-      </ng-template>
-      <ng-template #body let-o>
-        <tr>
-          <td>{{ o.name }}</td>
-          <td>{{ o.active ? 'Sí' : 'No' }}</td>
-        </tr>
-      </ng-template>
-    </app-grid-base>
+    <div class="p-8 text-center text-muted-foreground">
+      <p class="text-sm">🚧 Componente en migración a Tailwind + Spartan</p>
+    </div>
   `,
-  styles: [`
-    .page-title { margin: 0 0 20px; font-size: 1.5rem; color: #01603e; }
-  `],
 })
-export class CaseOutcomesComponent implements OnInit {
-  private readonly casesService = inject(CasesService);
-  outcomes = signal<CaseOutcomeOption[]>([]);
-  loading  = signal(true);
-
-  ngOnInit(): void {
-    this.casesService.getOutcomes().subscribe({
-      next: data => { this.outcomes.set(data); this.loading.set(false); },
-      error: () => this.loading.set(false),
-    });
-  }
-}
+export class CaseOutcomesComponent {}

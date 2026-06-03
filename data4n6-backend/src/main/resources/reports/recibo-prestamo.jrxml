@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports
+                http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="recibo-prestamo" language="java"
+              pageWidth="595" pageHeight="842"
+              leftMargin="40" rightMargin="40"
+              topMargin="30" bottomMargin="30"
+              columnWidth="515">
+
+  <!-- ── Estilos ─────────────────────────────────────────────────────────── -->
+  <style name="base"    isDefault="true" fontName="DejaVu Sans" fontSize="8"
+         pdfFontName="DejaVu Sans" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+  <style name="bold"    style="base"  isBold="true"/>
+  <style name="small"   style="base"  fontSize="7"/>
+  <style name="header"  style="bold"  fontSize="14" forecolor="#FFFFFF"/>
+  <style name="section" style="bold"  fontSize="7"  forecolor="#005a3b"/>
+  <style name="thCell"  style="bold"  fontSize="7"  forecolor="#FFFFFF"/>
+
+  <!-- ── Parámetros ──────────────────────────────────────────────────────── -->
+  <parameter name="NUMERO_REFERENCIA" class="java.lang.String"/>
+  <parameter name="FECHA_CREACION"    class="java.lang.String"/>
+  <parameter name="UNIDAD_ORIGEN"     class="java.lang.String"/>
+  <parameter name="AGENTE_ORIGEN"     class="java.lang.String"/>
+  <parameter name="UNIDAD_DESTINO"    class="java.lang.String"/>
+  <parameter name="AGENTE_DESTINO"    class="java.lang.String"/>
+  <parameter name="FECHA_INICIO"      class="java.lang.String"/>
+  <parameter name="FECHA_DEVOLUCION"  class="java.lang.String"/>
+  <parameter name="CASO_REFERENCIA"   class="java.lang.String"/>
+
+  <!-- ── Campos del datasource ───────────────────────────────────────────── -->
+  <field name="tipo"    class="java.lang.String"/>
+  <field name="marca"   class="java.lang.String"/>
+  <field name="modelo"  class="java.lang.String"/>
+  <field name="nSerie"  class="java.lang.String"/>
+  <field name="almacen" class="java.lang.String"/>
+
+  <!-- ── Banda título ────────────────────────────────────────────────────── -->
+  <title>
+    <band height="152" splitType="Stretch">
+
+      <!-- Barra verde cabecera -->
+      <rectangle>
+        <reportElement x="0" y="0" width="515" height="48" backcolor="#005a3b" mode="Opaque" forecolor="#005a3b"/>
+      </rectangle>
+      <textField>
+        <reportElement x="6" y="8" width="380" height="18" style="header"/>
+        <textFieldExpression><![CDATA["RECIBO DE PRÉSTAMO DE MATERIAL"]]></textFieldExpression>
+      </textField>
+      <textField>
+        <reportElement x="6" y="28" width="220" height="14" style="base" forecolor="#FFFFFF"/>
+        <textFieldExpression><![CDATA["Ref.: " + $P{NUMERO_REFERENCIA}]]></textFieldExpression>
+      </textField>
+      <textField>
+        <reportElement x="340" y="28" width="175" height="14" style="base" forecolor="#FFFFFF"/>
+        <textElement textAlignment="Right"/>
+        <textFieldExpression><![CDATA[$P{FECHA_CREACION}]]></textFieldExpression>
+      </textField>
+
+      <!-- ── Origen ── -->
+      <staticText>
+        <reportElement x="0" y="56" width="245" height="12" style="section"/>
+        <text><![CDATA[ORIGEN (PRESTADOR)]]></text>
+      </staticText>
+      <line>
+        <reportElement x="0" y="69" width="245" height="1" forecolor="#005a3b"/>
+      </line>
+      <staticText>
+        <reportElement x="0" y="73" width="48" height="13" style="bold"/>
+        <text><![CDATA[Unidad:]]></text>
+      </staticText>
+      <textField isBlankWhenNull="true">
+        <reportElement x="50" y="73" width="195" height="13" style="base"/>
+        <textFieldExpression><![CDATA[$P{UNIDAD_ORIGEN}]]></textFieldExpression>
+      </textField>
+      <staticText>
+        <reportElement x="0" y="88" width="48" height="13" style="bold"/>
+        <text><![CDATA[Agente:]]></text>
+      </staticText>
+      <textField isBlankWhenNull="true">
+        <reportElement x="50" y="88" width="195" height="13" style="base"/>
+        <textFieldExpression><![CDATA[$P{AGENTE_ORIGEN}]]></textFieldExpression>
+      </textField>
+
+      <!-- ── Destino ── -->
+      <staticText>
+        <reportElement x="270" y="56" width="245" height="12" style="section"/>
+        <text><![CDATA[DESTINO (ADJUDICATARIO)]]></text>
+      </staticText>
+      <line>
+        <reportElement x="270" y="69" width="245" height="1" forecolor="#005a3b"/>
+      </line>
+      <staticText>
+        <reportElement x="270" y="73" width="48" height="13" style="bold"/>
+        <text><![CDATA[Unidad:]]></text>
+      </staticText>
+      <textField isBlankWhenNull="true">
+        <reportElement x="320" y="73" width="195" height="13" style="base"/>
+        <textFieldExpression><![CDATA[$P{UNIDAD_DESTINO}]]></textFieldExpression>
+      </textField>
+      <staticText>
+        <reportElement x="270" y="88" width="48" height="13" style="bold"/>
+        <text><![CDATA[Agente:]]></text>
+      </staticText>
+      <textField isBlankWhenNull="true">
+        <reportElement x="320" y="88" width="195" height="13" style="base"/>
+        <textFieldExpression><![CDATA[$P{AGENTE_DESTINO}]]></textFieldExpression>
+      </textField>
+
+      <!-- ── Fechas y caso ── -->
+      <staticText>
+        <reportElement x="0" y="108" width="38" height="13" style="bold"/>
+        <text><![CDATA[Inicio:]]></text>
+      </staticText>
+      <textField isBlankWhenNull="true">
+        <reportElement x="40" y="108" width="90" height="13" style="base"/>
+        <textFieldExpression><![CDATA[$P{FECHA_INICIO}]]></textFieldExpression>
+      </textField>
+      <staticText>
+        <reportElement x="140" y="108" width="70" height="13" style="bold"/>
+        <text><![CDATA[Dev. prevista:]]></text>
+      </staticText>
+      <textField isBlankWhenNull="true">
+        <reportElement x="212" y="108" width="90" height="13" style="base"/>
+        <textFieldExpression><![CDATA[$P{FECHA_DEVOLUCION}]]></textFieldExpression>
+      </textField>
+      <staticText>
+        <reportElement x="316" y="108" width="30" height="13" style="bold"/>
+        <text><![CDATA[Caso:]]></text>
+      </staticText>
+      <textField isBlankWhenNull="true">
+        <reportElement x="348" y="108" width="167" height="13" style="base"/>
+        <textFieldExpression><![CDATA[$P{CASO_REFERENCIA}]]></textFieldExpression>
+      </textField>
+
+      <!-- ── Sección artículos ── -->
+      <staticText>
+        <reportElement x="0" y="128" width="515" height="12" style="section"/>
+        <text><![CDATA[ARTÍCULOS]]></text>
+      </staticText>
+      <line>
+        <reportElement x="0" y="141" width="515" height="1" forecolor="#005a3b"/>
+      </line>
+
+    </band>
+  </title>
+
+  <!-- ── Cabecera de columnas ────────────────────────────────────────────── -->
+  <columnHeader>
+    <band height="18">
+      <rectangle>
+        <reportElement x="0" y="0" width="515" height="18" backcolor="#005a3b" mode="Opaque" forecolor="#005a3b"/>
+      </rectangle>
+      <staticText>
+        <reportElement x="2"   y="3" width="18"  height="12" style="thCell"/>
+        <text><![CDATA[#]]></text>
+      </staticText>
+      <staticText>
+        <reportElement x="22"  y="3" width="108" height="12" style="thCell"/>
+        <text><![CDATA[Tipo]]></text>
+      </staticText>
+      <staticText>
+        <reportElement x="132" y="3" width="88"  height="12" style="thCell"/>
+        <text><![CDATA[Marca]]></text>
+      </staticText>
+      <staticText>
+        <reportElement x="222" y="3" width="123" height="12" style="thCell"/>
+        <text><![CDATA[Modelo]]></text>
+      </staticText>
+      <staticText>
+        <reportElement x="347" y="3" width="113" height="12" style="thCell"/>
+        <text><![CDATA[N.º Serie]]></text>
+      </staticText>
+      <staticText>
+        <reportElement x="462" y="3" width="53"  height="12" style="thCell"/>
+        <text><![CDATA[Almacén]]></text>
+      </staticText>
+    </band>
+  </columnHeader>
+
+  <!-- ── Detalle ──────────────────────────────────────────────────────────── -->
+  <detail>
+    <band height="16" splitType="Stretch">
+      <rectangle>
+        <reportElement x="0" y="0" width="515" height="16" backcolor="#EDF7F2" mode="Opaque" forecolor="#EDF7F2">
+          <printWhenExpression><![CDATA[$V{REPORT_COUNT} % 2 == 0]]></printWhenExpression>
+        </reportElement>
+      </rectangle>
+      <textField>
+        <reportElement x="2"   y="2" width="18"  height="12" style="small"/>
+        <textFieldExpression><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+      </textField>
+      <textField isBlankWhenNull="true">
+        <reportElement x="22"  y="2" width="108" height="12" style="small"/>
+        <textFieldExpression><![CDATA[$F{tipo}]]></textFieldExpression>
+      </textField>
+      <textField isBlankWhenNull="true">
+        <reportElement x="132" y="2" width="88"  height="12" style="small"/>
+        <textFieldExpression><![CDATA[$F{marca}]]></textFieldExpression>
+      </textField>
+      <textField isBlankWhenNull="true">
+        <reportElement x="222" y="2" width="123" height="12" style="small"/>
+        <textFieldExpression><![CDATA[$F{modelo}]]></textFieldExpression>
+      </textField>
+      <textField isBlankWhenNull="true">
+        <reportElement x="347" y="2" width="113" height="12" style="small"/>
+        <textFieldExpression><![CDATA[$F{nSerie}]]></textFieldExpression>
+      </textField>
+      <textField isBlankWhenNull="true">
+        <reportElement x="462" y="2" width="53"  height="12" style="small"/>
+        <textFieldExpression><![CDATA[$F{almacen}]]></textFieldExpression>
+      </textField>
+      <line>
+        <reportElement x="0" y="15" width="515" height="1" forecolor="#E0E0E0"/>
+      </line>
+    </band>
+  </detail>
+
+  <!-- ── Resumen ──────────────────────────────────────────────────────────── -->
+  <summary>
+    <band height="130" splitType="Stretch">
+      <line>
+        <reportElement x="0" y="6" width="515" height="1" forecolor="#005a3b"/>
+      </line>
+      <staticText>
+        <reportElement x="370" y="12" width="90" height="13" style="bold"/>
+        <textElement textAlignment="Right"/>
+        <text><![CDATA[Total artículos:]]></text>
+      </staticText>
+      <textField>
+        <reportElement x="462" y="12" width="53" height="13" style="bold"/>
+        <textElement textAlignment="Right"/>
+        <textFieldExpression><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+      </textField>
+
+      <!-- Firma prestador -->
+      <staticText>
+        <reportElement x="0" y="42" width="230" height="13" style="section"/>
+        <textElement textAlignment="Center"/>
+        <text><![CDATA[Firma del Prestador]]></text>
+      </staticText>
+      <rectangle>
+        <reportElement x="0" y="58" width="230" height="60" forecolor="#CCCCCC" mode="Transparent"/>
+      </rectangle>
+      <staticText>
+        <reportElement x="0" y="120" width="230" height="10" style="small" forecolor="#888888"/>
+        <textElement textAlignment="Center"/>
+        <text><![CDATA[Fecha y firma]]></text>
+      </staticText>
+
+      <!-- Firma receptor -->
+      <staticText>
+        <reportElement x="285" y="42" width="230" height="13" style="section"/>
+        <textElement textAlignment="Center"/>
+        <text><![CDATA[Firma del Receptor]]></text>
+      </staticText>
+      <rectangle>
+        <reportElement x="285" y="58" width="230" height="60" forecolor="#CCCCCC" mode="Transparent"/>
+      </rectangle>
+      <staticText>
+        <reportElement x="285" y="120" width="230" height="10" style="small" forecolor="#888888"/>
+        <textElement textAlignment="Center"/>
+        <text><![CDATA[Fecha y firma]]></text>
+      </staticText>
+    </band>
+  </summary>
+
+</jasperReport>

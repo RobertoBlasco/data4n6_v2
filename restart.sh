@@ -19,10 +19,38 @@ kill_port() {
   local port=$1
   local pids
   pids=$(lsof -ti:"$port" 2>/dev/null || true)
-  if [[ -n "$pids" ]]; then
-    echo "$pids" | xargs kill -9 2>/dev/null || true
-    warn "Proceso en puerto $port detenido"
-  fi
+  [[ -z "$pids" ]] && return
+
+  # Build list of ancestor PIDs to protect (current shell + all parents up to init)
+  local protected=()
+  local p=$$
+  while [[ "$p" -gt 1 ]]; do
+    protected+=("$p")
+    p=$(ps -p "$p" -o ppid= 2>/dev/null | tr -d ' ') || break
+  done
+
+  local killed=0
+  while IFS= read -r pid; do
+    [[ -z "$pid" ]] && continue
+    # Skip if ancestor of this shell
+    for anc in "${protected[@]}"; do
+      if [[ "$pid" == "$anc" ]]; then
+        warn "Omitiendo PID $pid en puerto $port (proceso de la sesión actual)"
+        continue 2
+      fi
+    done
+    # Skip SSH or terminal processes
+    local comm
+    comm=$(ps -p "$pid" -o comm= 2>/dev/null || true)
+    if [[ "$comm" == *ssh* || "$comm" == *ttyd* || "$comm" == *wetty* ]]; then
+      warn "Omitiendo $comm (PID $pid) en puerto $port"
+      continue
+    fi
+    kill -9 "$pid" 2>/dev/null || true
+    killed=1
+  done <<< "$pids"
+
+  [[ $killed -eq 1 ]] && warn "Proceso en puerto $port detenido"
 }
 
 wait_backend() {
@@ -52,13 +80,14 @@ sleep 1
 # ── Backend ───────────────────────────────────────────────────────────────────
 info "Arrancando backend → $BACKEND_LOG"
 cd "$BACKEND"
-nohup mvn spring-boot:run < /dev/null > "$BACKEND_LOG" 2>&1 &
+nohup mvn clean spring-boot:run < /dev/null > "$BACKEND_LOG" 2>&1 &
 wait_backend
 
 # ── Frontend ──────────────────────────────────────────────────────────────────
 info "Arrancando frontend → $FRONTEND_LOG"
 cd "$FRONTEND"
-nohup ng serve --host 0.0.0.0 --port 4200 --configuration development \
+nohup env PATH="/opt/plesk/node/24/bin:$PATH" \
+  node_modules/.bin/ng serve --host 0.0.0.0 --port 4200 --configuration development \
   < /dev/null > "$FRONTEND_LOG" 2>&1 &
 
 info "Esperando que el frontend compile..."

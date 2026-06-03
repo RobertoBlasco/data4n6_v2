@@ -1,0 +1,10 @@
+ALTER TABLE inventario.t300_eventos
+    DROP CONSTRAINT t300_eventos_t100_almacenes_origen_id_fkey,
+    DROP CONSTRAINT t300_eventos_t100_almacenes_destino_id_fkey,
+    DROP COLUMN t100_almacenes_origen_id,
+    DROP COLUMN t100_almacenes_destino_id,
+    DROP COLUMN adjudicatario_anterior_id,
+    DROP COLUMN adjudicatario_anterior_tabla,
+    DROP COLUMN adjudicatario_nuevo_id,
+    DROP COLUMN adjudicatario_nuevo_tabla,
+    DROP COLUMN realizado_por;

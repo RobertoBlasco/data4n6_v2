@@ -1,17 +1,23 @@
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withComponentInputBinding, withInMemoryScrolling, withViewTransitions } from '@angular/router';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { providePrimeNG } from 'primeng/config';
-import Lara from '@primeng/themes/lara';
+import { provideNgIconsConfig, withExceptionLogger } from '@ng-icons/core';
+import { provideHlmSidebarConfig } from '@spartan-ng/helm/sidebar';
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
+    provideRouter(
+      routes,
+      withViewTransitions(),
+      withComponentInputBinding(),
+      withInMemoryScrolling({ scrollPositionRestoration: 'enabled' })
+    ),
     provideHttpClient(withInterceptorsFromDi()),
     provideAnimationsAsync(),
-    providePrimeNG({ theme: { preset: Lara } }),
+    provideNgIconsConfig({}, withExceptionLogger()),
+    provideHlmSidebarConfig({ closeMobileSidebarOnMenuButtonClick: true }),
   ],
 };

@@ -1,0 +1,18 @@
+package com.data4n6.inventory.orden.repository;
+
+import com.data4n6.inventory.orden.OrdenEntrada;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+public interface OrdenEntradaRepository extends JpaRepository<OrdenEntrada, UUID> {
+
+    @Query("SELECT oe FROM OrdenEntrada oe JOIN FETCH oe.orden o JOIN FETCH oe.tipoEntrada LEFT JOIN FETCH o.estadoOrden")
+    List<OrdenEntrada> findAllWithDetails();
+
+    @Query("SELECT oe FROM OrdenEntrada oe JOIN FETCH oe.orden o JOIN FETCH oe.tipoEntrada LEFT JOIN FETCH o.estadoOrden WHERE oe.id = :id")
+    Optional<OrdenEntrada> findByIdWithDetails(UUID id);
+}

@@ -8,8 +8,21 @@ export const routes: Routes = [
       import('./home/home.component').then(m => m.HomeComponent),
   },
   {
+    path: 'inventory',
+    component: ShellComponent,
+    data: { module: 'inventory' },
+    children: [
+      {
+        path: '',
+        loadChildren: () =>
+          import('./features/inventory/inventory.routes').then(m => m.inventoryRoutes),
+      },
+    ],
+  },
+  {
     path: 'data4n6',
     component: ShellComponent,
+    data: { module: 'data4n6' },
     children: [
       { path: '', redirectTo: 'cases', pathMatch: 'full' },
       {
@@ -46,6 +59,18 @@ export const routes: Routes = [
         path: 'admin',
         loadChildren: () =>
           import('./features/admin/admin.routes').then(m => m.adminRoutes),
+      },
+    ],
+  },
+  {
+    path: 'common',
+    component: ShellComponent,
+    data: { module: 'common' },
+    children: [
+      {
+        path: '',
+        loadChildren: () =>
+          import('./features/common/common.routes').then(m => m.commonRoutes),
       },
     ],
   },
