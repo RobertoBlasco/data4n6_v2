@@ -83,7 +83,7 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-entrada';
 
         @if (selectionCount() === 0) {
           <h1 class="text-sm font-semibold flex items-center gap-1.5">
-            <ng-icon hlmIcon size="sm" name="lucidePackagePlus" />Entrada Almacén
+            <ng-icon hlmIcon size="sm" name="lucidePackagePlus" />{{ gridTitle() }}
           </h1>
           <div class="flex items-center gap-0.5">
             <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Recargar" (click)="reload()">
@@ -403,10 +403,11 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-entrada';
   `,
 })
 export class WarehouseEntriesComponent extends GridBase<OrdenEntrada> implements OnInit {
-  protected override readonly gridId        = 'inventory-warehouse-entries';
-  protected override readonly labelSingular = 'Entrada';
-  protected override readonly labelPlural   = 'Entradas Almacén';
-  protected override readonly icon          = 'lucidePackagePlus';
+  protected override readonly gridId           = 'inventory-warehouse-entries';
+  protected override readonly labelSingular    = 'Entrada';
+  protected override readonly labelPlural      = 'Entradas Almacén';
+  protected override readonly icon             = 'lucidePackagePlus';
+  protected override readonly colMetaTableName = 't600_ordenes_entrada';
 
   private readonly router         = inject(Router);
   private readonly selectAllCbRef = viewChild<ElementRef<HTMLInputElement>>('selectAllCb');

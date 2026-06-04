@@ -35,6 +35,12 @@ public class AppTableService {
     }
 
     @Transactional
+    public AppTableResponse findById(UUID id) {
+        return repository.findById(id)
+                .map(this::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("AppTable", id.toString()));
+    }
+
     public AppTableResponse create(AppTableRequest req) {
         AppTable t = new AppTable();
         t.setId(UUID.randomUUID());

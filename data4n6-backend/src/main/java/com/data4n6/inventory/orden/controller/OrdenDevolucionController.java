@@ -30,6 +30,12 @@ public class OrdenDevolucionController {
         return service.findAll();
     }
 
+    @GetMapping("/ordenes-devolucion/{id}/lineas")
+    @Operation(summary = "List lines for a return order")
+    public List<LineaOrdenPrestamoResponse> findLineas(@PathVariable UUID id) {
+        return service.findLineas(id);
+    }
+
     @GetMapping("/ordenes-prestamo/{id}/lineas-pendientes")
     @Operation(summary = "List pending (unreturned) lines for a loan order")
     public List<LineaOrdenPrestamoResponse> findPendientes(@PathVariable UUID id) {

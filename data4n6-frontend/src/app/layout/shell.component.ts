@@ -122,6 +122,7 @@ const DATA4N6_NAV_GROUPS: NavGroup[] = [
   {
     label: 'Sistema',
     items: [
+      { title: 'Datos Generales', icon: 'lucideDatabase',    url: '/common' },
       {
         title: 'Administración', icon: 'lucideShieldCheck', children: [
           { title: 'Tablas del sistema', icon: 'lucideDatabase', url: '/data4n6/admin/app-tables' },
@@ -156,12 +157,49 @@ function toNavItem(t: AppTable, baseUrl: string): NavItem {
   };
 }
 
-function buildCommonNavGroups(tables: AppTable[]): NavGroup[] {
-  const byOrder = (a: AppTable, b: AppTable) => (a.ordenMenu ?? 99) - (b.ordenMenu ?? 99);
-  const items = tables.sort(byOrder).map(t => toNavItem(t, '/common/admin'));
+function buildSecurityNavGroups(): NavGroup[] {
   return [
     HOME_GROUP,
-    { label: 'Datos Comunes', items },
+    {
+      label: 'Administración',
+      items: [
+        {
+          title: 'Seguridad', icon: 'lucideShield', children: [
+            { title: 'Perfiles', icon: 'lucideShieldCheck', url: '/security/profiles' },
+            { title: 'Roles',    icon: 'lucideShield',      url: '/security/roles'    },
+            { title: 'Usuarios', icon: 'lucideUsers',       url: '/security/users'    },
+          ],
+        },
+        {
+          title: 'Aplicaciones', icon: 'lucideZap', children: [
+            { title: 'Aplicaciones', icon: 'lucideZap',      url: '/security/apps'         },
+            { title: 'Tablas',       icon: 'lucideDatabase',  url: '/security/app-tables'   },
+            { title: 'Campos',       icon: 'lucideLayers',    url: '/security/table-fields' },
+          ],
+        },
+      ],
+    },
+  ];
+}
+
+function buildCommonNavGroups(_tables: AppTable[]): NavGroup[] {
+  return [
+    HOME_GROUP,
+    {
+      label: 'Datos Generales',
+      items: [
+        {
+          title: 'Comunes', icon: 'lucideDatabase', children: [
+            { title: 'Tipos Docs Id', icon: 'lucideIdCard',   url: '/common/doc-types'      },
+            { title: 'Docs IDs',      icon: 'lucideFileText', url: '/common/document-types' },
+            { title: 'Unidades',      icon: 'lucideBuilding2', url: '/common/units'         },
+            { title: 'Agentes',       icon: 'lucideUserCheck', url: '/common/agents'        },
+          ],
+        },
+        { title: 'Data4n6',    icon: 'lucideFolder',    children: [] },
+        { title: 'Inventario', icon: 'lucideWarehouse', children: [] },
+      ],
+    },
   ];
 }
 
@@ -171,11 +209,6 @@ function buildInventoryNavGroups(adminTables: AppTable[], catalogTables: AppTabl
     {
       label: 'Inventario',
       items: [
-        {
-          title: 'Administración',
-          icon: 'lucideShieldCheck',
-          children: [...STATIC_ADMIN_ITEMS, ...adminTables.map(t => toNavItem(t, '/inventory/admin'))],
-        },
         { title: 'Artículos', icon: 'lucidePackage',   url: '/inventory/items' },
         { title: 'Almacenes', icon: 'lucideWarehouse', url: '/inventory/warehouses' },
         {
@@ -350,17 +383,20 @@ export class ShellComponent {
   protected readonly navGroups = signal<NavGroup[]>(
     this.module === 'inventory' ? buildInventoryNavGroups([], []) :
     this.module === 'common'    ? buildCommonNavGroups([]) :
+    this.module === 'security'  ? buildSecurityNavGroups() :
     DATA4N6_NAV_GROUPS,
   );
 
   protected readonly moduleLabel =
     this.module === 'inventory' ? 'Inventario' :
-    this.module === 'common'    ? 'Datos Comunes' :
+    this.module === 'common'    ? 'Datos Generales' :
+    this.module === 'security'  ? 'Administración' :
     'data4n6';
 
   protected readonly moduleSubtitle =
     this.module === 'inventory' ? 'Control de equipamiento' :
-    this.module === 'common'    ? 'Catálogos compartidos' :
+    this.module === 'common'    ? 'Catálogos y configuración' :
+    this.module === 'security'  ? 'Perfiles, roles y usuarios' :
     'Laboratorio forense';
 
   constructor() {

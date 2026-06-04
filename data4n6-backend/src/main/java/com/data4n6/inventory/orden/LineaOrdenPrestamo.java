@@ -19,4 +19,10 @@ public class LineaOrdenPrestamo {
     @MapsId
     @JoinColumn(name = "t650_ordenes_id")
     private LineaOrden lineaOrden;
+
+    @Column(name = "estado_previo", length = 50)
+    private String estadoPrevio;
+
+    @Column(name = "almacen_previo_id")
+    private UUID almacenPrevioId;
 }

@@ -23,7 +23,22 @@ import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HttpClient } from '@angular/common/http';
 import { GridBase } from '../../../../shared/grid/grid-base';
 
-const API = 'http://localhost:8080/api/v1/inventory/ordenes-devolucion';
+const API           = 'http://localhost:8080/api/v1/inventory/ordenes-devolucion';
+const API_ARTICULOS = 'http://localhost:8080/api/v1/inventory/articulos';
+
+interface LineaDevolucion {
+  id: string;
+  articuloId:         string | null;
+  articuloSerialNumber: string | null;
+  tipoMaterialId:     string | null;
+  tipoMaterialNombre: string | null;
+  marcaId:            string | null;
+  marcaNombre:        string | null;
+  modeloId:           string | null;
+  modeloDescripcion:  string | null;
+  almacenId:          string | null;
+  almacenNombre:      string | null;
+}
 
 interface OrdenDevolucion {
   id: string;
@@ -62,7 +77,7 @@ interface OrdenDevolucion {
 
         @if (selectionCount() === 0) {
           <h1 class="text-sm font-semibold flex items-center gap-1.5">
-            <ng-icon hlmIcon size="sm" name="lucideHand" />Devoluciones
+            <ng-icon hlmIcon size="sm" name="lucideHand" />{{ gridTitle() }}
           </h1>
           <div class="flex items-center gap-0.5">
             <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Recargar" (click)="reload()">
@@ -84,8 +99,13 @@ interface OrdenDevolucion {
               <ng-icon hlmIcon size="sm" name="lucideSlidersHorizontal" />
             </button>
             <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-            <button hlmBtn variant="action" size="sm" class="h-7" (click)="goNew()">
-              <ng-icon hlmIcon size="sm" name="lucidePlus" class="mr-1" />Nueva orden
+            <button hlmBtn variant="action" size="sm" class="h-7" [disabled]="checkingNew()" (click)="goNew()">
+              @if (checkingNew()) {
+                <hlm-spinner class="mr-1" />
+              } @else {
+                <ng-icon hlmIcon size="sm" name="lucidePlus" class="mr-1" />
+              }
+              Nueva orden
             </button>
           </div>
 
@@ -129,6 +149,16 @@ interface OrdenDevolucion {
         </div>
       </div>
 
+      <!-- ── Error nueva orden ─────────────────────────────────────────────────── -->
+      @if (newOrderError()) {
+        <div class="mx-3 mt-2 shrink-0 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive flex items-center justify-between">
+          <span>{{ newOrderError() }}</span>
+          <button class="ml-3 hover:text-destructive/70" (click)="newOrderError.set(null)">
+            <ng-icon hlmIcon size="sm" name="lucideX" />
+          </button>
+        </div>
+      }
+
       <!-- ── Filtros avanzados ──────────────────────────────────────────────────── -->
       @if (showAdvancedFilters()) {
         <div class="px-3 py-2 shrink-0 border-b border-border bg-muted/30">
@@ -166,6 +196,7 @@ interface OrdenDevolucion {
                   <input #selectAllCb type="checkbox" class="accent-primary cursor-pointer"
                     [checked]="allSelected()" (change)="toggleSelectAll()" />
                 </th>
+                <th hlmTh class="w-8 px-0"></th>
                 <th hlmTh class="w-28 cursor-pointer select-none" (click)="toggleSort('aprobadoEn', $event)">
                   <div class="flex items-center gap-1">Fecha
                     @if (sortDir('aprobadoEn') === 'asc')  { <ng-icon hlmIcon size="sm" name="lucideChevronUp" /> }
@@ -217,6 +248,13 @@ interface OrdenDevolucion {
                       [checked]="selectedIds().has(o.id)"
                       (click)="toggleSelectRange(o.id, $index, $event)" />
                   </td>
+                  <td hlmTd class="px-0">
+                    <button hlmBtn variant="ghost" size="icon" class="size-6"
+                      (click)="toggleExpand(o.id, $event)">
+                      <ng-icon hlmIcon size="sm"
+                        [name]="expandedIds().has(o.id) ? 'lucideChevronDown' : 'lucideChevronRight'" />
+                    </button>
+                  </td>
                   <td hlmTd class="text-xs text-primary">{{ formatDate(o.aprobadoEn) }}</td>
                   <td hlmTd class="font-mono text-xs text-primary">{{ o.numeroReferencia }}</td>
                   <td hlmTd class="font-mono text-xs text-primary">{{ o.ordenPrestamoReferencia }}</td>
@@ -224,6 +262,42 @@ interface OrdenDevolucion {
                   <td hlmTd class="text-xs text-primary">{{ o.unidadNombre ?? '—' }}</td>
                   <td hlmTd class="text-right tabular-nums text-primary">{{ o.numLineasDevueltas }}</td>
                 </tr>
+                @if (expandedIds().has(o.id)) {
+                  <tr hlmTr>
+                    <td hlmTd [attr.colspan]="100" class="p-0 border-t-0">
+                      <div class="px-10 py-3 bg-muted/30 border-b border-border">
+                        @if (loadingLines().has(o.id)) {
+                          <div class="flex items-center justify-center py-4"><hlm-spinner /></div>
+                        } @else if ((linesCache().get(o.id) ?? []).length === 0) {
+                          <p class="text-xs text-muted-foreground italic py-2">Sin líneas registradas</p>
+                        } @else {
+                          <table class="w-full text-xs">
+                            <thead>
+                              <tr class="border-b border-border text-muted-foreground">
+                                <th class="text-left font-normal py-1 pr-3 w-36">Tipo material</th>
+                                <th class="text-left font-normal py-1 pr-3 w-32">Marca</th>
+                                <th class="text-left font-normal py-1 pr-3">Modelo</th>
+                                <th class="text-left font-normal py-1 pr-3 w-36 font-mono">N.º serie</th>
+                                <th class="text-left font-normal py-1">Almacén</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              @for (l of linesCache().get(o.id)!; track l.id) {
+                                <tr class="border-b border-border/50 last:border-0">
+                                  <td class="py-1 pr-3 text-muted-foreground">{{ l.tipoMaterialNombre ?? '—' }}</td>
+                                  <td class="py-1 pr-3 text-muted-foreground">{{ l.marcaNombre ?? '—' }}</td>
+                                  <td class="py-1 pr-3 text-muted-foreground">{{ l.modeloDescripcion ?? '—' }}</td>
+                                  <td class="py-1 pr-3 font-mono text-muted-foreground">{{ l.articuloSerialNumber ?? '—' }}</td>
+                                  <td class="py-1 text-muted-foreground">{{ l.almacenNombre ?? '—' }}</td>
+                                </tr>
+                              }
+                            </tbody>
+                          </table>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
               }
             </tbody>
           </table>
@@ -265,13 +339,21 @@ interface OrdenDevolucion {
   `,
 })
 export class ReturnsComponent extends GridBase<OrdenDevolucion> implements OnInit {
-  protected override readonly gridId        = 'inventory-returns';
-  protected override readonly labelSingular = 'Devolución';
-  protected override readonly labelPlural   = 'Devoluciones';
-  protected override readonly icon          = 'lucideHand';
+  protected override readonly gridId           = 'inventory-returns';
+  protected override readonly labelSingular    = 'Devolución';
+  protected override readonly labelPlural      = 'Devoluciones';
+  protected override readonly icon             = 'lucideHand';
+  protected override readonly colMetaTableName = 't600_ordenes_devolucion';
 
   private readonly router         = inject(Router);
   private readonly selectAllCbRef = viewChild<ElementRef<HTMLInputElement>>('selectAllCb');
+
+  readonly checkingNew   = signal(false);
+  readonly newOrderError = signal<string | null>(null);
+
+  readonly expandedIds  = signal(new Set<string>());
+  readonly linesCache   = signal(new Map<string, LineaDevolucion[]>());
+  readonly loadingLines = signal(new Set<string>());
 
   constructor() {
     super();
@@ -296,7 +378,66 @@ export class ReturnsComponent extends GridBase<OrdenDevolucion> implements OnIni
     });
   }
 
-  goNew(): void { this.router.navigate(['/inventory/orders/returns/new']); }
+  toggleExpand(id: string, event: MouseEvent): void {
+    event.stopPropagation();
+    const next = new Set(this.expandedIds());
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+      if (!this.linesCache().has(id)) this.fetchLines(id);
+    }
+    this.expandedIds.set(next);
+  }
+
+  private fetchLines(id: string): void {
+    const loading = new Set(this.loadingLines());
+    loading.add(id);
+    this.loadingLines.set(loading);
+    this.http.get<LineaDevolucion[]>(`${API}/${id}/lineas`).subscribe({
+      next: lines => {
+        const cmp = (a: string | null, b: string | null) =>
+          (a ?? '').localeCompare(b ?? '', undefined, { sensitivity: 'base' });
+        lines.sort((a, b) =>
+          cmp(a.tipoMaterialNombre, b.tipoMaterialNombre) ||
+          cmp(a.marcaNombre,        b.marcaNombre)        ||
+          cmp(a.modeloDescripcion,  b.modeloDescripcion)  ||
+          cmp(a.articuloSerialNumber, b.articuloSerialNumber)
+        );
+        const cache = new Map(this.linesCache());
+        cache.set(id, lines);
+        this.linesCache.set(cache);
+        const l = new Set(this.loadingLines());
+        l.delete(id);
+        this.loadingLines.set(l);
+      },
+      error: () => {
+        const l = new Set(this.loadingLines());
+        l.delete(id);
+        this.loadingLines.set(l);
+      },
+    });
+  }
+
+  goNew(): void {
+    this.newOrderError.set(null);
+    this.checkingNew.set(true);
+    this.http.get<{ estadoActual: string | null }[]>(API_ARTICULOS).subscribe({
+      next: data => {
+        this.checkingNew.set(false);
+        const hayPrestados = data.some(a => a.estadoActual === 'Prestado');
+        if (!hayPrestados) {
+          this.newOrderError.set('No hay artículos prestados. No es posible crear una devolución.');
+        } else {
+          this.router.navigate(['/inventory/orders/returns/new']);
+        }
+      },
+      error: () => {
+        this.checkingNew.set(false);
+        this.newOrderError.set('Error al comprobar artículos prestados.');
+      },
+    });
+  }
 
   goLoan(o: OrdenDevolucion): void {
     this.router.navigate(['/inventory/orders/loans'], { queryParams: { ref: o.ordenPrestamoReferencia } });

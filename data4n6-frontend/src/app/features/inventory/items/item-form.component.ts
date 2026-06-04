@@ -8,12 +8,15 @@ import { provideIcons } from '@ng-icons/core';
 import { lucideTrash2, lucidePackage } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmLabelImports } from '@spartan-ng/helm/label';
+import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { FormBase } from '../../../shared/form/form-base';
 import { SpaFormHeaderComponent } from '../../../shared/form/spa-form-header.component';
 import { DeleteConfirmDialogComponent } from '../../../shared/form/delete-confirm-dialog.component';
-import { FkComboboxComponent } from '../../../shared/components/fk-combobox/fk-combobox.component';
+import { PicturePanelComponent, PictureItem } from '../../../shared/components/picture-panel/picture-panel.component';
+import { AppTableService } from '../../../core/services/app-table.service';
+import { ApiService } from '../../../core/services/api.service';
 
 interface Articulo {
   id: string;
@@ -26,6 +29,18 @@ interface Articulo {
   modeloId:           string | null;
   modeloDescripcion:  string | null;
   serialNumber:       string | null;
+  estadoActual:       string | null;
+}
+
+interface FotoResponse {
+  id:              string;
+  pictureTypeId:   string | null;
+  pictureTypeName: string | null;
+  esPrincipal:     boolean;
+  filename:        string;
+  filePath:        string;
+  caption:         string | null;
+  createdAt:       string;
 }
 
 const API = 'http://localhost:8080/api/v1/inventory/articulos';
@@ -35,11 +50,11 @@ const API = 'http://localhost:8080/api/v1/inventory/articulos';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    HlmButtonImports, HlmLabelImports,
+    HlmButtonImports, HlmLabelImports, HlmInputImports,
     HlmSpinnerImports, HlmIconImports,
     SpaFormHeaderComponent,
     DeleteConfirmDialogComponent,
-    FkComboboxComponent,
+    PicturePanelComponent,
   ],
   providers: [provideIcons({ lucideTrash2, lucidePackage })],
   template: `
@@ -76,54 +91,49 @@ const API = 'http://localhost:8080/api/v1/inventory/articulos';
         }
 
         @if (!loading() && !loadError()) {
-          <div class="max-w-lg space-y-6">
+          <div class="flex gap-6 items-stretch">
 
-            <!-- Campos — solo lectura en modo vista -->
-            <div [class.pointer-events-none]="isView()" [class.opacity-70]="isView()">
+            <!-- Columna izquierda: fotos -->
+            <div class="w-64 shrink-0 flex flex-col">
+              <app-picture-panel class="flex-1"
+                title="Fotos"
+                icon="lucidePackage"
+                [appTableId]="articuoAppTableId ?? ''"
+                [recordId]="articuloId() ?? ''"
+                pictureTypeId=""
+                [pictures]="fotos()"
+                [loading]="loadingFotos()"
+                (delete)="onDeleteFoto($event)"
+                (setPrincipal)="onSetPrincipal($event)"
+                (pictureAdded)="onPictureAdded($event)" />
+            </div>
 
-              <div class="space-y-1.5 mb-6">
+            <!-- Columna derecha: campos -->
+            <div class="max-w-sm w-full space-y-4">
+
+              <div class="space-y-1.5">
+                <label hlmLabel>Tipo de material</label>
+                <input hlmInput readonly class="w-full" style="background-color:#f0f0f0" [value]="tipoMaterialNombre() || '—'" />
+              </div>
+
+              <div class="space-y-1.5">
+                <label hlmLabel>Marca</label>
+                <input hlmInput readonly class="w-full" style="background-color:#f0f0f0" [value]="brandName() || '—'" />
+              </div>
+
+              <div class="space-y-1.5">
+                <label hlmLabel>Modelo</label>
+                <input hlmInput readonly class="w-full" style="background-color:#f0f0f0" [value]="modeloDescripcion() || '—'" />
+              </div>
+
+              <div class="space-y-1.5">
                 <label hlmLabel>N.º de serie</label>
-                <div class="flex h-9 w-full items-center rounded-md border border-input bg-background px-3 py-1 text-sm">
-                  {{ serialNumber() || '—' }}
-                </div>
+                <input hlmInput readonly class="w-full" style="background-color:#f0f0f0" [value]="serialNumber() || '—'" />
               </div>
 
-              <div class="grid grid-cols-2 gap-4 mb-6">
-                <div class="space-y-1.5">
-                  <label hlmLabel>Tipo de material</label>
-                  <app-fk-combobox
-                    endpoint="/api/v1/inventory/tipos-material"
-                    [value]="tipoMaterialId()"
-                    [displayHint]="tipoMaterialNombre()"
-                    (valueChange)="tipoMaterialId.set($event)" />
-                </div>
-                <div class="space-y-1.5">
-                  <label hlmLabel>Marca</label>
-                  <app-fk-combobox
-                    endpoint="/api/v1/inventory/marcas"
-                    [value]="brandId()"
-                    [displayHint]="brandName()"
-                    (valueChange)="onBrandChange($event)" />
-                </div>
-              </div>
-
-              <div class="grid grid-cols-2 gap-4">
-                <div class="space-y-1.5">
-                  <label hlmLabel>Modelo</label>
-                  <app-fk-combobox
-                    [endpoint]="modeloEndpoint()"
-                    [value]="modeloId()"
-                    [displayHint]="modeloDescripcion()"
-                    (valueChange)="modeloId.set($event)" />
-                </div>
-                <div class="space-y-1.5">
-                  <label hlmLabel>Almacén</label>
-                  <app-fk-combobox
-                    endpoint="/api/v1/inventory/almacenes"
-                    [value]="almacenId()"
-                    [displayHint]="almacenNombre()"
-                    (valueChange)="almacenId.set($event)" />
-                </div>
+              <div class="space-y-1.5">
+                <label hlmLabel>Estado actual</label>
+                <input hlmInput readonly class="w-full" style="background-color:#f0f0f0" [value]="estadoActual() || '—'" />
               </div>
 
             </div>
@@ -150,12 +160,15 @@ export class ItemFormComponent extends FormBase implements OnInit {
   protected override readonly labelSingular = 'Artículo';
   override entityDescription(): string { return this.serialNumber(); }
 
-  private readonly route  = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  private readonly http   = inject(HttpClient);
+  private readonly route       = inject(ActivatedRoute);
+  private readonly router      = inject(Router);
+  private readonly http        = inject(HttpClient);
+  private readonly api         = inject(ApiService);
+  private readonly appTableSvc = inject(AppTableService);
 
   readonly isView = computed(() => !!this.route.snapshot.paramMap.get('id'));
 
+  readonly articuloId         = signal<string | null>(null);
   readonly serialNumber       = signal('');
   readonly tipoMaterialId     = signal('');
   readonly tipoMaterialNombre = signal('');
@@ -165,12 +178,11 @@ export class ItemFormComponent extends FormBase implements OnInit {
   readonly modeloDescripcion  = signal('');
   readonly almacenId          = signal('');
   readonly almacenNombre      = signal('');
+  readonly estadoActual       = signal('');
 
-  readonly modeloEndpoint = computed(() =>
-    this.brandId()
-      ? `/api/v1/inventory/modelos?marcaId=${this.brandId()}`
-      : '/api/v1/inventory/modelos'
-  );
+  readonly fotos        = signal<PictureItem[]>([]);
+  readonly loadingFotos = signal(false);
+  articuoAppTableId: string | null = null;
 
   ngOnInit(): void {
     if (!this.isView()) {
@@ -179,6 +191,8 @@ export class ItemFormComponent extends FormBase implements OnInit {
     }
     this.loading.set(true);
     const id = this.route.snapshot.paramMap.get('id')!;
+    this.articuloId.set(id);
+
     this.http.get<Articulo>(`${API}/${id}`).subscribe({
       next: data => {
         this.serialNumber.set(data.serialNumber ?? '');
@@ -190,6 +204,7 @@ export class ItemFormComponent extends FormBase implements OnInit {
         this.modeloDescripcion.set(data.modeloDescripcion ?? '');
         this.almacenId.set(data.almacenId ?? '');
         this.almacenNombre.set(data.almacenNombre ?? '');
+        this.estadoActual.set(data.estadoActual ?? '');
         this.loading.set(false);
       },
       error: () => {
@@ -197,13 +212,45 @@ export class ItemFormComponent extends FormBase implements OnInit {
         this.loading.set(false);
       },
     });
+
+    this.loadingFotos.set(true);
+    this.appTableSvc.getByTableName('t100_articulos').subscribe({
+      next: table => {
+        this.articuoAppTableId = table.id;
+        this.api.get<FotoResponse[]>(
+          `/inventory/pictures?tableId=${table.id}&recordId=${id}`
+        ).subscribe({
+          next: fotos => {
+            this.fotos.set(fotos.map(f => ({
+              id: f.id, filePath: f.filePath, pictureTypeName: f.pictureTypeName,
+              esPrincipal: f.esPrincipal, caption: f.caption,
+              filename: f.filename, createdAt: f.createdAt,
+            })));
+            this.loadingFotos.set(false);
+          },
+          error: () => this.loadingFotos.set(false),
+        });
+      },
+      error: () => this.loadingFotos.set(false),
+    });
   }
 
-  onBrandChange(id: string): void {
-    this.brandId.set(id);
-    this.brandName.set('');
-    this.modeloId.set('');
-    this.modeloDescripcion.set('');
+  onPictureAdded(pic: PictureItem): void {
+    this.fotos.update(list => [pic, ...list]);
+  }
+
+  onDeleteFoto(id: string): void {
+    this.api.delete(`/inventory/pictures/${id}`).subscribe({
+      next: () => this.fotos.update(list => list.filter(f => f.id !== id)),
+    });
+  }
+
+  onSetPrincipal(id: string): void {
+    this.fotos.update(list => list.map(f => ({
+      ...f,
+      esPrincipal: f.id === id ? true
+        : (f.pictureTypeName === list.find(x => x.id === id)?.pictureTypeName ? false : f.esPrincipal),
+    })));
   }
 
   confirmDelete(): void {

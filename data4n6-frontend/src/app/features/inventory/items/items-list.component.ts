@@ -83,7 +83,7 @@ const ARTICULOS_API = 'http://localhost:8080/api/v1/inventory/articulos';
 
         @if (selectionCount() === 0) {
           <h1 class="text-sm font-semibold flex items-center gap-1.5">
-            <ng-icon hlmIcon size="sm" name="lucidePackage" />Artículos
+            <ng-icon hlmIcon size="sm" name="lucidePackage" />{{ gridTitle() }}
           </h1>
           <div class="flex items-center gap-0.5">
             <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Recargar" (click)="reload()">
@@ -137,6 +137,10 @@ const ARTICULOS_API = 'http://localhost:8080/api/v1/inventory/articulos';
         } @else {
           <span class="text-sm">{{ selectionCount() }} seleccionado{{ selectionCount() !== 1 ? 's' : '' }}</span>
           <div class="flex items-center gap-0.5">
+            <button hlmBtn variant="ghost" size="sm" class="h-7 text-destructive hover:text-destructive hover:bg-primary-foreground/15"
+              (click)="openDelete(singleSelected())">
+              <ng-icon hlmIcon size="sm" name="lucideTrash2" class="mr-1" />Eliminar
+            </button>
             @if (selectionCount() === 1) {
               <button hlmBtn variant="ghost" size="sm" class="h-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
                 (click)="goDetail(singleSelected()!)">

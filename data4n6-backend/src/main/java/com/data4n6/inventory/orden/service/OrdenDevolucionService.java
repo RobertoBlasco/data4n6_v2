@@ -5,7 +5,16 @@ import com.data4n6.catalog.AgentRepository;
 import com.data4n6.catalog.Unit;
 import com.data4n6.catalog.UnitRepository;
 import com.data4n6.common.exception.ResourceNotFoundException;
+import com.data4n6.inventory.almacen.Almacen;
+import com.data4n6.inventory.almacen.repository.AlmacenRepository;
+import com.data4n6.inventory.articulo.Articulo;
 import com.data4n6.inventory.estadoorden.repository.EstadoOrdenRepository;
+import com.data4n6.inventory.orden.LineaOrdenEntrada;
+import com.data4n6.inventory.orden.OrdenEntrada;
+import com.data4n6.inventory.orden.repository.LineaOrdenEntradaRepository;
+import com.data4n6.inventory.orden.repository.OrdenEntradaRepository;
+import com.data4n6.inventory.tipoentrada.TipoEntrada;
+import com.data4n6.inventory.tipoentrada.repository.TipoEntradaRepository;
 import com.data4n6.inventory.evento.repository.EventoRepository;
 import com.data4n6.inventory.eventohistorial.EventoHistorial;
 import com.data4n6.inventory.eventohistorial.repository.EventoHistorialRepository;
@@ -24,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,6 +44,10 @@ public class OrdenDevolucionService {
 
     private static final UUID EVENTO_DEVOLUCION_PRESTAMO_ID =
             UUID.fromString("10000000-0000-0000-0000-000000000007");
+    private static final UUID EVENTO_ENTRADA_ALMACEN_ID =
+            UUID.fromString("10000000-0000-0000-0000-000000000001");
+    private static final UUID TIPO_ENTRADA_DEVOLUCION_ID =
+            UUID.fromString("20000000-0000-0000-0000-000000000001");
 
     private final OrdenPrestamoRepository        prestamoRepository;
     private final OrdenDevolucionRepository      devolucionRepository;
@@ -49,6 +63,10 @@ public class OrdenDevolucionService {
     private final AgentRepository                agentRepository;
     @Qualifier("commonUnitRepository")
     private final UnitRepository                 unitRepository;
+    private final AlmacenRepository              almacenRepository;
+    private final OrdenEntradaRepository         ordenEntradaRepository;
+    private final LineaOrdenEntradaRepository    lineaOrdenEntradaRepository;
+    private final TipoEntradaRepository          tipoEntradaRepository;
 
     public List<OrdenDevolucionListResponse> findAll() {
         var devoluciones = devolucionRepository.findAllWithDetails();
@@ -101,6 +119,29 @@ public class OrdenDevolucionService {
     public List<LineaOrdenPrestamoResponse> findPendientes(UUID ordenPrestamoId) {
         return lineaPrestamoRepository.findPendientesByOrdenId(ordenPrestamoId)
                 .stream().map(this::toLineaResponse).toList();
+    }
+
+    public List<LineaOrdenPrestamoResponse> findLineas(UUID devolucionId) {
+        return lineaDevolucionRepository.findByDevolucionId(devolucionId)
+                .stream().map(ld -> {
+                    var art = ld.getLineaOrden().getArticulo();
+                    var tm  = art != null ? art.getTipoMaterial() : null;
+                    var br  = art != null ? art.getBrand()        : null;
+                    var mo  = art != null ? art.getModelo()       : null;
+                    var alm = art != null ? art.getAlmacen()      : null;
+                    return new LineaOrdenPrestamoResponse(
+                            ld.getId(),
+                            art != null ? art.getId()           : null,
+                            art != null ? art.getSerialNumber() : null,
+                            tm  != null ? tm.getId()            : null,
+                            tm  != null ? tm.getName()          : null,
+                            br  != null ? br.getId()            : null,
+                            br  != null ? br.getName()          : null,
+                            mo  != null ? mo.getId()            : null,
+                            mo  != null ? mo.getDescription()   : null,
+                            alm != null ? alm.getId()           : null,
+                            alm != null ? alm.getName()         : null);
+                }).toList();
     }
 
     @Transactional
@@ -210,12 +251,44 @@ public class OrdenDevolucionService {
             var od = new OrdenDevolucion();
             od.setOrden(orden);
             od.setOrdenPrestamo(prestamoOrden);
+            od.setAgenteOrigenId(request.agenteOrigenId());
+            od.setUnidadOrigenId(request.unidadOrigenId());
+            od.setAgenteDestinoId(request.agenteDestinoId());
+            od.setUnidadDestinoId(request.unidadDestinoId());
+            od.setFechaDevolucion(request.fechaDevolucion());
+            od.setAlmacenDestinoId(request.almacenDestinoId());
             devolucionRepository.save(od);
+
+            Map<UUID, Almacen>       almacenCache    = new HashMap<>();
+            Map<UUID, List<Articulo>> artsByAlmacen  = new HashMap<>();
 
             String descBase = "Devolución préstamo " + prestamoOrden.getNumeroReferencia();
 
+            // Fetch LineaOrdenPrestamo to get estadoPrevio for each line
+            Set<UUID> lineaIds = lineas.stream().map(lp -> lp.getLineaOrden().getId()).collect(Collectors.toSet());
+            Map<UUID, LineaOrdenPrestamo> lpMap = lineaPrestamoRepository.findAllById(lineaIds)
+                    .stream().collect(Collectors.toMap(LineaOrdenPrestamo::getId, lp -> lp));
+
             for (var lp : lineas) {
-                var art = lp.getLineaOrden().getArticulo();
+                var art    = lp.getLineaOrden().getArticulo();
+                var lpData = lpMap.get(lp.getLineaOrden().getId());
+                String estadoResultante = (lpData != null && lpData.getEstadoPrevio() != null)
+                        ? lpData.getEstadoPrevio() : "Almacén";
+
+                // If returning to almacén, update the article's almacen reference and track for entrada order
+                if ("Almacén".equals(estadoResultante)) {
+                    UUID almId = (request.almacenPorArticulo() != null && request.almacenPorArticulo().containsKey(art.getId()))
+                            ? request.almacenPorArticulo().get(art.getId())
+                            : request.almacenDestinoId();
+                    if (almId != null) {
+                        Almacen alm = almacenCache.computeIfAbsent(almId,
+                                id -> almacenRepository.findById(id).orElse(null));
+                        if (alm != null) {
+                            art.setAlmacen(alm);
+                            artsByAlmacen.computeIfAbsent(almId, k -> new ArrayList<>()).add(art);
+                        }
+                    }
+                }
 
                 var lo = new LineaOrden();
                 lo.setOrden(orden);
@@ -231,7 +304,7 @@ public class OrdenDevolucionService {
                 ev.setTipoEvento(evento);
                 ev.setArticulo(art);
                 ev.setLineaOrden(lo);
-                ev.setEstadoResultante("Almacén");
+                ev.setEstadoResultante(estadoResultante);
                 ev.setDescripcionEstado(descBase);
                 eventoHistorialRepository.save(ev);
             }
@@ -243,6 +316,52 @@ public class OrdenDevolucionService {
             if (completado) {
                 prestamoOrden.setEstadoOrden(estadoCompletada);
                 ordenRepository.save(prestamoOrden);
+            }
+
+            // Create entrada almacén orders for articles returning to stock
+            if (!artsByAlmacen.isEmpty()) {
+                var eventoEntrada = eventoRepository.findById(EVENTO_ENTRADA_ALMACEN_ID)
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.INTERNAL_SERVER_ERROR, "Evento Entrada Almacén not found"));
+                var tipoEntradaDev = tipoEntradaRepository.findById(TIPO_ENTRADA_DEVOLUCION_ID)
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.INTERNAL_SERVER_ERROR, "TipoEntrada Devolución not found"));
+                Instant fechaEntrada = request.fechaDevolucion() != null
+                        ? request.fechaDevolucion().atStartOfDay(ZoneOffset.UTC).toInstant()
+                        : Instant.now();
+
+                for (var almEntry : artsByAlmacen.entrySet()) {
+                    Almacen almacenEntrada = almacenCache.get(almEntry.getKey());
+                    if (almacenEntrada == null) continue;
+
+                    var ordenEnt = new Orden();
+                    ordenEnt.setTipoEvento(eventoEntrada);
+                    ordenEnt.setEstadoOrden(estadoCompletada);
+                    ordenEnt.setNumeroReferencia(ordenContadorService.generateReference(eventoEntrada));
+                    ordenEnt.setFechaInicio(fechaEntrada);
+                    ordenRepository.save(ordenEnt);
+
+                    var oe = new OrdenEntrada();
+                    oe.setOrden(ordenEnt);
+                    oe.setTipoEntrada(tipoEntradaDev);
+                    ordenEntradaRepository.save(oe);
+
+                    for (var artEnt : almEntry.getValue()) {
+                        var loEnt = new LineaOrden();
+                        loEnt.setOrden(ordenEnt);
+                        loEnt.setArticulo(artEnt);
+                        lineaOrdenRepository.save(loEnt);
+
+                        var le = new LineaOrdenEntrada();
+                        le.setLineaOrden(loEnt);
+                        le.setMarca(artEnt.getBrand());
+                        le.setModelo(artEnt.getModelo());
+                        le.setNumeroSerie(artEnt.getSerialNumber());
+                        le.setTipoMaterial(artEnt.getTipoMaterial());
+                        le.setAlmacen(almacenEntrada);
+                        lineaOrdenEntradaRepository.save(le);
+                    }
+                }
             }
 
             results.add(new OrdenDevolucionResponse(

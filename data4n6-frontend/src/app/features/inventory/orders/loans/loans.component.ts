@@ -94,7 +94,7 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
 
         @if (selectionCount() === 0) {
           <h1 class="text-sm font-semibold flex items-center gap-1.5">
-            <ng-icon hlmIcon size="sm" name="lucideHandshake" />Préstamos
+            <ng-icon hlmIcon size="sm" name="lucideHandshake" />{{ gridTitle() }}
           </h1>
           <div class="flex items-center gap-0.5">
             <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Recargar" (click)="reload()">
@@ -328,20 +328,20 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
                           <table class="w-full text-xs">
                             <thead>
                               <tr class="border-b border-border text-muted-foreground">
-                                <th class="text-left font-normal py-1 pr-3 w-36 font-mono">N.º serie</th>
                                 <th class="text-left font-normal py-1 pr-3 w-36">Tipo material</th>
                                 <th class="text-left font-normal py-1 pr-3 w-32">Marca</th>
                                 <th class="text-left font-normal py-1 pr-3">Modelo</th>
+                                <th class="text-left font-normal py-1 pr-3 w-36 font-mono">N.º serie</th>
                                 <th class="text-left font-normal py-1">Almacén</th>
                               </tr>
                             </thead>
                             <tbody>
                               @for (l of linesCache().get(o.id)!; track l.id) {
                                 <tr class="border-b border-border/50 last:border-0">
-                                  <td class="py-1 pr-3 font-mono text-muted-foreground">{{ l.articuloSerialNumber ?? '—' }}</td>
                                   <td class="py-1 pr-3 text-muted-foreground">{{ l.tipoMaterialNombre ?? '—' }}</td>
                                   <td class="py-1 pr-3 text-muted-foreground">{{ l.marcaNombre ?? '—' }}</td>
                                   <td class="py-1 pr-3 text-muted-foreground">{{ l.modeloDescripcion ?? '—' }}</td>
+                                  <td class="py-1 pr-3 font-mono text-muted-foreground">{{ l.articuloSerialNumber ?? '—' }}</td>
                                   <td class="py-1 text-muted-foreground">{{ l.almacenNombre ?? '—' }}</td>
                                 </tr>
                               }
@@ -417,10 +417,11 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
   `,
 })
 export class LoansComponent extends GridBase<OrdenPrestamo> implements OnInit {
-  protected override readonly gridId        = 'inventory-loans';
-  protected override readonly labelSingular = 'Préstamo';
-  protected override readonly labelPlural   = 'Préstamos';
-  protected override readonly icon          = 'lucideHandshake';
+  protected override readonly gridId          = 'inventory-loans';
+  protected override readonly labelSingular   = 'Préstamo';
+  protected override readonly labelPlural     = 'Préstamos';
+  protected override readonly icon            = 'lucideHandshake';
+  protected override readonly colMetaTableName = 't600_ordenes_prestamo';
 
   private readonly router         = inject(Router);
   private readonly selectAllCbRef = viewChild<ElementRef<HTMLInputElement>>('selectAllCb');
@@ -473,6 +474,14 @@ export class LoansComponent extends GridBase<OrdenPrestamo> implements OnInit {
     this.loadingLines.set(loading);
     this.http.get<LineaPrestamo[]>(`${API}/${id}/lineas`).subscribe({
       next: lines => {
+        const cmp = (a: string | null, b: string | null) =>
+          (a ?? '').localeCompare(b ?? '', undefined, { sensitivity: 'base' });
+        lines.sort((a, b) =>
+          cmp(a.tipoMaterialNombre, b.tipoMaterialNombre) ||
+          cmp(a.marcaNombre,        b.marcaNombre)        ||
+          cmp(a.modeloDescripcion,  b.modeloDescripcion)  ||
+          cmp(a.articuloSerialNumber, b.articuloSerialNumber)
+        );
         const cache = new Map(this.linesCache());
         cache.set(id, lines);
         this.linesCache.set(cache);

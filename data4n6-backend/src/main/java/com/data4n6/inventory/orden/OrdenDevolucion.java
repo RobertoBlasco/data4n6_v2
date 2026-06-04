@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Getter
@@ -23,4 +24,22 @@ public class OrdenDevolucion {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "t600_ordenes_prestamo_id", nullable = false)
     private Orden ordenPrestamo;
+
+    @Column(name = "t100_agentes_origen_id")
+    private UUID agenteOrigenId;
+
+    @Column(name = "t100_unidades_origen_id")
+    private UUID unidadOrigenId;
+
+    @Column(name = "t100_agentes_destino_id")
+    private UUID agenteDestinoId;
+
+    @Column(name = "t100_unidades_destino_id")
+    private UUID unidadDestinoId;
+
+    @Column(name = "fecha_devolucion")
+    private LocalDate fechaDevolucion;
+
+    @Column(name = "t100_almacenes_destino_id")
+    private UUID almacenDestinoId;
 }

@@ -25,6 +25,12 @@ public class AppTableController {
         return seccion != null ? service.findBySeccion(seccion) : service.findAll();
     }
 
+    @GetMapping("/id/{id}")
+    @Operation(summary = "Get UI metadata for a specific table by its UUID")
+    public AppTableResponse findById(@PathVariable UUID id) {
+        return service.findById(id);
+    }
+
     @GetMapping("/{tableName}")
     @Operation(summary = "Get UI metadata for a specific table by its table_name")
     public AppTableResponse findByTableName(@PathVariable String tableName) {

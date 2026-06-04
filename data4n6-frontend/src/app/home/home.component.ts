@@ -6,6 +6,7 @@ import {
   lucideFlaskConical,
   lucideWarehouse,
   lucideDatabase,
+  lucideShield,
   lucideZap,
   lucideArrowRight,
 } from '@ng-icons/lucide';
@@ -24,7 +25,7 @@ interface Module {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgClass, HlmIconImports],
-  providers: [provideIcons({ lucideFlaskConical, lucideWarehouse, lucideDatabase, lucideZap, lucideArrowRight })],
+  providers: [provideIcons({ lucideFlaskConical, lucideWarehouse, lucideDatabase, lucideShield, lucideZap, lucideArrowRight })],
   template: `
     <div class="min-h-screen bg-background flex flex-col">
 
@@ -98,10 +99,17 @@ export class HomeComponent {
       available: true,
     },
     {
-      title: 'Datos Comunes',
+      title: 'Datos Generales',
       description: 'Catálogos y datos compartidos entre módulos: unidades, tipos de documento y clasificaciones.',
       icon: 'lucideDatabase',
       route: '/common/admin/t100_units',
+      available: true,
+    },
+    {
+      title: 'Administración',
+      description: 'Gestión de perfiles, roles y usuarios del sistema.',
+      icon: 'lucideShield',
+      route: '/security/profiles',
       available: true,
     },
     {

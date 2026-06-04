@@ -10,7 +10,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-@Table(name = "t000_app_tables", schema = "common")
+@Table(name = "t900_app_tables", schema = "seguridad")
 public class AppTable {
 
     @Id

@@ -5,26 +5,35 @@ import {
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { provideIcons } from '@ng-icons/core';
-import { lucideHand, lucideListChecks, lucideBoxes } from '@ng-icons/lucide';
+import { lucideHand, lucideListChecks, lucideBoxes, lucideUserCheck, lucideArrowLeftRight } from '@ng-icons/lucide';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
+import { FormsModule } from '@angular/forms';
+import { HlmLabelImports } from '@spartan-ng/helm/label';
+import { HlmInputImports } from '@spartan-ng/helm/input';
 import { SpaFormHeaderComponent } from '../../../../shared/form/spa-form-header.component';
 import { ArticuloPickerComponent, ArticuloMin } from '../../shared/articulo-picker/articulo-picker.component';
+import { FkComboboxComponent } from '../../../../shared/components/fk-combobox/fk-combobox.component';
 
-const BASE = 'http://localhost:8080/api/v1';
-const API  = `${BASE}/inventory/ordenes-devolucion/por-articulos`;
+const BASE          = 'http://localhost:8080/api/v1';
+const API           = `${BASE}/inventory/ordenes-devolucion/por-articulos`;
 const API_ARTICULOS = `${BASE}/inventory/articulos`;
+const API_ALMACENES = `${BASE}/inventory/almacenes`;
+
+interface AlmacenMin { id: string; name: string; }
 
 @Component({
   selector: 'app-return-form',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    FormsModule,
     HlmButtonImports, HlmSpinnerImports, HlmIconImports,
-    SpaFormHeaderComponent, ArticuloPickerComponent,
+    HlmLabelImports, HlmInputImports,
+    SpaFormHeaderComponent, ArticuloPickerComponent, FkComboboxComponent,
   ],
-  providers: [provideIcons({ lucideHand, lucideListChecks, lucideBoxes })],
+  providers: [provideIcons({ lucideHand, lucideListChecks, lucideBoxes, lucideUserCheck, lucideArrowLeftRight })],
   template: `
     <div class="h-full flex flex-col min-h-0">
 
@@ -36,7 +45,7 @@ const API_ARTICULOS = `${BASE}/inventory/articulos`;
       <div class="flex-1 flex min-h-0">
 
         <!-- ── Columna izquierda: campos ─────────────────────────────────── -->
-        <div class="w-[27rem] shrink-0 flex flex-col overflow-y-auto border-r border-border p-4 space-y-5">
+        <div class="w-[27rem] shrink-0 flex flex-col overflow-y-auto border-r border-border p-4 space-y-12">
 
           @if (saveError()) {
             <div class="rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-xs text-destructive">
@@ -44,9 +53,64 @@ const API_ARTICULOS = `${BASE}/inventory/articulos`;
             </div>
           }
 
-          <div class="flex flex-col items-center justify-center flex-1 gap-2 text-muted-foreground pt-8">
-            <ng-icon hlmIcon name="lucideHand" size="lg" class="opacity-20" />
-            <p class="text-xs text-center italic">Campos adicionales próximamente</p>
+          <!-- Origen -->
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <ng-icon hlmIcon name="lucideUserCheck" size="sm" class="text-[#005a3b] shrink-0" />
+              <span class="text-xs font-medium text-[#005a3b] uppercase tracking-wide">Origen</span>
+              <div class="flex-1 h-px bg-border"></div>
+            </div>
+            <div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-3 items-start">
+              <label hlmLabel class="pt-2 whitespace-nowrap">Unidad</label>
+              <app-fk-combobox endpoint="/catalog/units" [baseUrl]="BASE"
+                [value]="unidadOrigenId()" (valueChange)="unidadOrigenId.set($event)" />
+              <label hlmLabel class="pt-2 pl-4 whitespace-nowrap flex items-center gap-1">
+                <span class="text-muted-foreground select-none text-xs">└</span> Agente
+              </label>
+              <app-fk-combobox [endpoint]="agenteOrigenEndpoint()" [baseUrl]="BASE"
+                [value]="agenteOrigenId()" [disabled]="!unidadOrigenId()"
+                (valueChange)="agenteOrigenId.set($event)" />
+            </div>
+          </div>
+
+          <!-- Destino -->
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <ng-icon hlmIcon name="lucideArrowLeftRight" size="sm" class="text-[#005a3b] shrink-0" />
+              <span class="text-xs font-medium text-[#005a3b] uppercase tracking-wide">Destino</span>
+              <div class="flex-1 h-px bg-border"></div>
+            </div>
+            <div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-3 items-start">
+              <label hlmLabel class="pt-2 whitespace-nowrap">Unidad</label>
+              <app-fk-combobox endpoint="/catalog/units" [baseUrl]="BASE"
+                [value]="unidadDestinoId()" (valueChange)="unidadDestinoId.set($event)" />
+              <label hlmLabel class="pt-2 pl-4 whitespace-nowrap flex items-center gap-1">
+                <span class="text-muted-foreground select-none text-xs">└</span> Agente
+              </label>
+              <app-fk-combobox [endpoint]="agenteDestinoEndpoint()" [baseUrl]="BASE"
+                [value]="agenteDestinoId()" [disabled]="!unidadDestinoId()"
+                (valueChange)="agenteDestinoId.set($event)" />
+            </div>
+          </div>
+
+          <!-- Datos adicionales -->
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <ng-icon hlmIcon name="lucideHand" size="sm" class="text-[#005a3b] shrink-0" />
+              <span class="text-xs font-medium text-[#005a3b] uppercase tracking-wide">Datos adicionales</span>
+              <div class="flex-1 h-px bg-border"></div>
+            </div>
+            <div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-3 items-start">
+              <label hlmLabel class="pt-2 whitespace-nowrap">Fecha devolución</label>
+              <input hlmInput type="date" class="w-full"
+                [value]="fechaDevolucion()" (change)="fechaDevolucion.set($any($event.target).value)" />
+              <label hlmLabel class="pt-2 whitespace-nowrap">Almacén destino</label>
+              <div>
+                <app-fk-combobox endpoint="/api/v1/inventory/almacenes" [baseUrl]="'http://localhost:8080'"
+                  [value]="almacenDestinoId()" (valueChange)="almacenDestinoId.set($event)" />
+                <p class="text-xs text-muted-foreground mt-1 italic">Solo se aplicará a los artículos que estuvieran en stock (no adjudicados) en el momento del préstamo.</p>
+              </div>
+            </div>
           </div>
 
         </div>
@@ -98,6 +162,7 @@ const API_ARTICULOS = `${BASE}/inventory/articulos`;
                       <th class="text-left font-normal px-3 py-1.5">Marca</th>
                       <th class="text-left font-normal px-3 py-1.5">Modelo</th>
                       <th class="text-left font-normal px-3 py-1.5 whitespace-nowrap">N.º Serie</th>
+                      <th class="text-left font-normal px-3 py-1.5">Almacén</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -107,6 +172,16 @@ const API_ARTICULOS = `${BASE}/inventory/articulos`;
                         <td class="px-3 py-1.5 text-[#005a3b] truncate">{{ a.brandName ?? '—' }}</td>
                         <td class="px-3 py-1.5 text-[#005a3b] truncate">{{ a.modeloDescripcion ?? '—' }}</td>
                         <td class="px-3 py-1.5 font-mono text-[#005a3b] truncate">{{ a.serialNumber ?? '—' }}</td>
+                        <td class="px-2 py-1">
+                          <select class="w-full h-6 rounded border border-primary bg-action/5 text-xs text-[#005a3b] px-1 focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
+                            [ngModel]="almacenParaArticulo(a.id)"
+                            (ngModelChange)="setAlmacenLinea(a.id, $event)">
+                            <option value="">— Sin almacén —</option>
+                            @for (alm of almacenes(); track alm.id) {
+                              <option [value]="alm.id">{{ alm.name }}</option>
+                            }
+                          </select>
+                        </td>
                       </tr>
                     }
                   </tbody>
@@ -138,12 +213,30 @@ export class ReturnFormComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly http   = inject(HttpClient);
 
+  readonly BASE = BASE;
+
   readonly articulosDisponibles   = signal<ArticuloMin[]>([]);
   readonly articulosSeleccionados = signal<ArticuloMin[]>([]);
   readonly loadingArticulos       = signal(false);
   readonly saving                 = signal(false);
   readonly saveError              = signal<string | null>(null);
   readonly articulosError         = signal(false);
+
+  readonly unidadOrigenId   = signal('');
+  readonly agenteOrigenId   = signal('');
+  readonly unidadDestinoId  = signal('');
+  readonly agenteDestinoId  = signal('');
+  readonly fechaDevolucion  = signal('');
+  readonly almacenDestinoId  = signal('');
+  readonly almacenes         = signal<AlmacenMin[]>([]);
+  readonly almacenesLinea    = signal(new Map<string, string>());
+
+  readonly agenteOrigenEndpoint  = computed(() =>
+    this.unidadOrigenId()  ? `/catalog/agents?unitId=${this.unidadOrigenId()}`  : '/catalog/agents'
+  );
+  readonly agenteDestinoEndpoint = computed(() =>
+    this.unidadDestinoId() ? `/catalog/agents?unitId=${this.unidadDestinoId()}` : '/catalog/agents'
+  );
 
   private static cmpStr(x: string | null, y: string | null): number {
     return (x ?? '').localeCompare(y ?? '', undefined, { sensitivity: 'base' });
@@ -164,6 +257,23 @@ export class ReturnFormComponent implements OnInit {
       next:  data => { this.articulosDisponibles.set(data); this.loadingArticulos.set(false); },
       error: ()   => this.loadingArticulos.set(false),
     });
+    this.http.get<AlmacenMin[]>(API_ALMACENES).subscribe({
+      next: data => this.almacenes.set(data),
+    });
+  }
+
+  almacenParaArticulo(articuloId: string): string {
+    return this.almacenesLinea().get(articuloId) ?? this.almacenDestinoId();
+  }
+
+  setAlmacenLinea(articuloId: string, almacenId: string): void {
+    const m = new Map(this.almacenesLinea());
+    if (almacenId) {
+      m.set(articuloId, almacenId);
+    } else {
+      m.delete(articuloId); // empty = sin override, vuelve a seguir el global
+    }
+    this.almacenesLinea.set(m);
   }
 
   save(): void {
@@ -174,7 +284,20 @@ export class ReturnFormComponent implements OnInit {
     this.saving.set(true);
     this.saveError.set(null);
 
-    const body = { articuloIds: this.articulosSeleccionados().map(a => a.id) };
+    const body = {
+      articuloIds:     this.articulosSeleccionados().map(a => a.id),
+      agenteOrigenId:  this.agenteOrigenId()  || null,
+      unidadOrigenId:  this.unidadOrigenId()  || null,
+      agenteDestinoId: this.agenteDestinoId() || null,
+      unidadDestinoId: this.unidadDestinoId() || null,
+      fechaDevolucion:  this.fechaDevolucion()  || null,
+      almacenDestinoId: this.almacenDestinoId() || null,
+      almacenPorArticulo: Object.fromEntries(
+        this.articulosSeleccionados()
+          .map(a => [a.id, this.almacenParaArticulo(a.id)])
+          .filter(([, v]) => !!v)
+      ),
+    };
 
     this.http.post(API, body).subscribe({
       next:  () => this.router.navigate(['/inventory/orders/returns']),

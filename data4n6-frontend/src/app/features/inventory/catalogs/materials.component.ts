@@ -83,7 +83,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
         <div class="flex items-center justify-between pl-4 pr-2 h-11 shrink-0 border-b border-border" [ngClass]="toolbarColor">
           @if (selectionCount() === 0) {
             <h1 class="text-sm font-semibold flex items-center gap-1.5">
-              <ng-icon hlmIcon size="sm" name="lucideFlaskConical" />{{ labelPlural }}
+              <ng-icon hlmIcon size="sm" name="lucideFlaskConical" />{{ gridTitle() }}
             </h1>
             <div class="flex items-center gap-0.5">
               <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Recargar" (click)="reload()">
@@ -136,9 +136,16 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
           } @else {
             <span class="text-sm">{{ selectionCount() }} seleccionado{{ selectionCount() !== 1 ? 's' : '' }}</span>
             <div class="flex items-center gap-0.5">
-              <button hlmBtn variant="ghost" size="sm" class="h-7 text-destructive hover:text-destructive hover:bg-primary-foreground/15">
+              <button hlmBtn variant="ghost" size="sm" class="h-7 text-destructive hover:text-destructive hover:bg-primary-foreground/15"
+                (click)="singleSelected() && openDeleteMaterial(singleSelected()!)">
                 <ng-icon hlmIcon size="sm" name="lucideTrash2" class="mr-1" />Eliminar
               </button>
+              @if (selectionCount() === 1) {
+                <button hlmBtn variant="ghost" size="sm" class="h-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
+                  (click)="goToForm(singleSelected()!)">
+                  <ng-icon hlmIcon size="sm" name="lucideExternalLink" class="mr-1" />Ir formulario
+                </button>
+              }
               <button hlmBtn variant="ghost" size="sm" class="h-7 hover:bg-primary-foreground/15 hover:text-primary-foreground">
                 <ng-icon hlmIcon size="sm" name="lucideDownload" class="mr-1" />Exportar
               </button>
@@ -867,6 +874,7 @@ export class MaterialsComponent extends GridBase<Material> implements OnInit {
   protected override readonly labelSingular = 'Tipo de material';
   protected override readonly labelPlural   = 'Tipos de material';
   protected override readonly icon          = 'lucideFlaskConical';
+  protected override readonly colMetaTableName = 't200_materiales';
   protected override readonly gridViews: GridViewDef[] = [GRID_VIEW.GRID, GRID_VIEW.GRID_DETAIL, GRID_VIEW.CARD];
 
   private readonly router = inject(Router);

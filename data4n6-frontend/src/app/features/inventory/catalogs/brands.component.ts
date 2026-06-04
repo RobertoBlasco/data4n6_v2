@@ -73,7 +73,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
 
           @if (selectionCount() === 0) {
             <h1 class="text-sm font-semibold flex items-center gap-1.5">
-              <ng-icon hlmIcon size="sm" name="lucideTag" />Marcas
+              <ng-icon hlmIcon size="sm" name="lucideTag" />{{ gridTitle() }}
             </h1>
             <div class="flex items-center gap-0.5">
               <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Recargar" (click)="reload()">
@@ -135,7 +135,8 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
           } @else {
             <span class="text-sm">{{ selectionCount() }} seleccionada{{ selectionCount() !== 1 ? 's' : '' }}</span>
             <div class="flex items-center gap-0.5">
-              <button hlmBtn variant="ghost" size="sm" class="h-7 text-destructive hover:text-destructive hover:bg-primary-foreground/15">
+              <button hlmBtn variant="ghost" size="sm" class="h-7 text-destructive hover:text-destructive hover:bg-primary-foreground/15"
+                (click)="singleSelected() && openDeleteBrand(singleSelected()!)">
                 <ng-icon hlmIcon size="sm" name="lucideTrash2" class="mr-1" />Eliminar
               </button>
               <button hlmBtn variant="ghost" size="sm" class="h-7 hover:bg-primary-foreground/15 hover:text-primary-foreground">
@@ -414,6 +415,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
             </div>
           }
 
+
         </div>
 
         <!-- Buscador modelos -->
@@ -674,6 +676,7 @@ export class BrandsComponent extends GridBase<Brand> implements OnInit {
   protected override readonly labelSingular = 'Marca';
   protected override readonly labelPlural   = 'Marcas';
   protected override readonly icon          = 'lucideTag';
+  protected override readonly colMetaTableName = 't200_marcas';
   protected override readonly gridViews: GridViewDef[] = [GRID_VIEW.GRID, GRID_VIEW.GRID_DETAIL, GRID_VIEW.CARD];
 
   private readonly splitContainerRef    = viewChild<ElementRef<HTMLElement>>('splitContainer');

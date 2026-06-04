@@ -74,5 +74,17 @@ export const routes: Routes = [
       },
     ],
   },
+  {
+    path: 'security',
+    component: ShellComponent,
+    data: { module: 'security' },
+    children: [
+      {
+        path: '',
+        loadChildren: () =>
+          import('./features/security/security.routes').then(m => m.securityRoutes),
+      },
+    ],
+  },
   { path: '**', redirectTo: '' },
 ];

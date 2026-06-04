@@ -80,7 +80,7 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-baja';
 
         @if (selectionCount() === 0) {
           <h1 class="text-sm font-semibold flex items-center gap-1.5">
-            <ng-icon hlmIcon size="sm" name="lucideArchive" />Bajas
+            <ng-icon hlmIcon size="sm" name="lucideArchive" />{{ gridTitle() }}
           </h1>
           <div class="flex items-center gap-0.5">
             <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Recargar" (click)="reload()">
@@ -369,10 +369,11 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-baja';
   `,
 })
 export class DecommissionsComponent extends GridBase<OrdenBaja> implements OnInit {
-  protected override readonly gridId        = 'inventory-decommissions';
-  protected override readonly labelSingular = 'Baja';
-  protected override readonly labelPlural   = 'Bajas';
-  protected override readonly icon          = 'lucideArchive';
+  protected override readonly gridId           = 'inventory-decommissions';
+  protected override readonly labelSingular    = 'Baja';
+  protected override readonly labelPlural      = 'Bajas';
+  protected override readonly icon             = 'lucideArchive';
+  protected override readonly colMetaTableName = 't600_ordenes_baja';
 
   private readonly selectAllCbRef = viewChild<ElementRef<HTMLInputElement>>('selectAllCb');
 

@@ -179,8 +179,13 @@ public class OrdenPrestamoService {
             lo.setArticulo(art);
             lineaOrdenRepository.save(lo);
 
+            String estadoPrevio = eventoHistorialRepository.findByArticulo(art.getId())
+                    .stream().findFirst().map(EventoHistorial::getEstadoResultante).orElse(null);
+
             var lp = new LineaOrdenPrestamo();
             lp.setLineaOrden(lo);
+            lp.setEstadoPrevio(estadoPrevio);
+            lp.setAlmacenPrevioId(art.getAlmacen() != null ? art.getAlmacen().getId() : null);
             lineaPrestamoRepository.save(lp);
 
             var ev = new EventoHistorial();

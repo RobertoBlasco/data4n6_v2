@@ -9,7 +9,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-@Table(name = "t900_table_fields", schema = "common")
+@Table(name = "t900_table_fields", schema = "seguridad")
 public class TableField {
 
     @Id

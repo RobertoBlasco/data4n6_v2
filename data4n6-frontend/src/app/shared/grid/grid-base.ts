@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Subject, merge } from 'rxjs';
 import { debounceTime, map } from 'rxjs/operators';
 import { AppTableService } from '../../core/services/app-table.service';
+import { AppTable } from '../../core/models/app-table.model';
 import { TableField } from '../../core/models/table-field.model';
 
 export interface GridViewDef {
@@ -45,6 +46,10 @@ export abstract class GridBase<T extends { id: string }> {
   protected readonly http = inject(HttpClient);
   private readonly _colMetaSvc = inject(AppTableService);
 
+  readonly tableMeta     = signal<AppTable | null>(null);
+  readonly gridTitle     = computed(() =>
+    this.tableMeta()?.nombrePlural ?? this.tableMeta()?.displayName ?? this.labelPlural
+  );
   readonly colMetaFields = signal<TableField[]>([]);
 
   readonly allItems = signal<T[]>([]);
@@ -163,14 +168,7 @@ export abstract class GridBase<T extends { id: string }> {
 
   protected abstract load(): void;
 
-  ngOnInit(): void {
-    if (this.colMetaTableName) {
-      this._colMetaSvc.getFieldsByTableName(this.colMetaTableName)
-        .subscribe(fields =>
-          this.colMetaFields.set([...fields].sort((a, b) => (a.orden ?? 99) - (b.orden ?? 99)))
-        );
-    }
-  }
+  ngOnInit(): void {}
 
   isColumnVisible(fieldName: string): boolean {
     const fields = this.colMetaFields();
@@ -271,6 +269,16 @@ export abstract class GridBase<T extends { id: string }> {
       if ([15, 25, 50, 100].includes(n)) this.pageSize.set(n);
     }
     this.activeView.set(this.defaultView);
+    if (this.colMetaTableName) {
+      this._colMetaSvc.getByTableName(this.colMetaTableName).subscribe({
+        next: meta => this.tableMeta.set(meta),
+        error: () => {},
+      });
+      this._colMetaSvc.getFieldsByTableName(this.colMetaTableName)
+        .subscribe(fields =>
+          this.colMetaFields.set([...fields].sort((a, b) => (a.orden ?? 99) - (b.orden ?? 99)))
+        );
+    }
   }
 
   resetGridPrefs(): void {

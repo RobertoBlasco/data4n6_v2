@@ -68,7 +68,7 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes';
 
         @if (selectionCount() === 0) {
           <h1 class="text-sm font-semibold flex items-center gap-1.5">
-            <ng-icon hlmIcon size="sm" name="lucideClipboardList" />Órdenes
+            <ng-icon hlmIcon size="sm" name="lucideClipboardList" />{{ gridTitle() }}
           </h1>
           <div class="flex items-center gap-0.5">
             <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Recargar" (click)="reload()">
@@ -328,10 +328,11 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes';
   `,
 })
 export class OrdersListComponent extends GridBase<Orden> implements OnInit {
-  protected override readonly gridId        = 'inventory-orders';
-  protected override readonly labelSingular = 'Orden';
-  protected override readonly labelPlural   = 'Órdenes';
-  protected override readonly icon          = 'lucideClipboardList';
+  protected override readonly gridId           = 'inventory-orders';
+  protected override readonly labelSingular    = 'Orden';
+  protected override readonly labelPlural      = 'Órdenes';
+  protected override readonly icon             = 'lucideClipboardList';
+  protected override readonly colMetaTableName = 't600_ordenes';
 
   private readonly router         = inject(Router);
   private readonly selectAllCbRef = viewChild<ElementRef<HTMLInputElement>>('selectAllCb');

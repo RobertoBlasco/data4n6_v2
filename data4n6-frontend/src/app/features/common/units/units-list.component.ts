@@ -1,50 +1,65 @@
 import {
-  ChangeDetectionStrategy, Component, OnInit, inject,
+  ChangeDetectionStrategy, Component, ElementRef,
+  OnInit, effect, inject, signal, viewChild,
 } from '@angular/core';
 import { NgClass } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { provideIcons } from '@ng-icons/core';
+import { Router } from '@angular/router';
 import {
-  lucideDatabase,
+  lucideBuilding2, lucidePlus,
   lucideRefreshCw, lucideDownload, lucideTrash2,
+  lucideLayoutList, lucideSlidersHorizontal,
   lucideSearch, lucideX,
   lucideChevronLeft, lucideChevronRight,
   lucideChevronsLeft, lucideChevronsRight,
   lucideChevronUp, lucideChevronDown,
+  lucideExternalLink,
 } from '@ng-icons/lucide';
+import { provideIcons } from '@ng-icons/core';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
-import { AppTable } from '../../core/models/app-table.model';
-import { AppTableService } from '../../core/services/app-table.service';
-import { GridBase } from '../../shared/grid/grid-base';
+import { GridBase } from '../../../shared/grid/grid-base';
+
+const API = 'http://localhost:8080/api/v1/catalog/units';
+
+interface Unit {
+  id:           string;
+  code:         string | null;
+  name:         string | null;
+  description:  string | null;
+  active:       boolean;
+  forInventory: boolean;
+  forData4n6:   boolean;
+}
 
 @Component({
-  selector: 'app-app-tables',
+  selector: 'app-units-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    FormsModule, NgClass,
+    NgClass,
     HlmButtonImports, HlmTableImports,
     HlmSpinnerImports, HlmIconImports,
   ],
   providers: [provideIcons({
-    lucideDatabase,
+    lucideBuilding2, lucidePlus,
     lucideRefreshCw, lucideDownload, lucideTrash2,
+    lucideLayoutList, lucideSlidersHorizontal,
     lucideSearch, lucideX,
     lucideChevronLeft, lucideChevronRight,
     lucideChevronsLeft, lucideChevronsRight,
     lucideChevronUp, lucideChevronDown,
+    lucideExternalLink,
   })],
   template: `
-    <div class="h-full flex flex-col min-h-0 overflow-hidden rounded-lg border-2 border-primary bg-background">
+    <div class="h-full flex flex-col min-h-0 overflow-hidden border-2 border-primary rounded-lg bg-background">
 
-      <!-- Toolbar -->
+      <!-- Cabecera -->
       <div class="flex items-center justify-between pl-4 pr-2 h-11 shrink-0 border-b border-border" [ngClass]="toolbarColor">
         @if (selectionCount() === 0) {
           <h1 class="text-sm font-semibold flex items-center gap-1.5">
-            <ng-icon hlmIcon size="sm" name="lucideDatabase" />{{ gridTitle() }}
+            <ng-icon hlmIcon size="sm" name="lucideBuilding2" />{{ gridTitle() }}
           </h1>
           <div class="flex items-center gap-0.5">
             <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Recargar" (click)="reload()">
@@ -52,6 +67,10 @@ import { GridBase } from '../../shared/grid/grid-base';
             </button>
             <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Exportar">
               <ng-icon hlmIcon size="sm" name="lucideDownload" />
+            </button>
+            <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
+            <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Columnas">
+              <ng-icon hlmIcon size="sm" name="lucideLayoutList" />
             </button>
           </div>
         } @else {
@@ -71,14 +90,17 @@ import { GridBase } from '../../shared/grid/grid-base';
         }
       </div>
 
-      <!-- Search bar -->
+      <!-- Buscador -->
       <div class="px-3 py-2 shrink-0 border-b border-border">
         <div class="relative">
-          <ng-icon hlmIcon size="sm" name="lucideSearch" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          <ng-icon hlmIcon size="sm" name="lucideSearch"
+            class="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           <input
             class="w-full h-8 pl-8 pr-8 rounded-md border border-primary bg-action/5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            placeholder="Buscar tabla..."
-            [value]="searchInput()" (input)="onSearchInput($any($event.target).value)" />
+            placeholder="Buscar por código o nombre..."
+            [value]="searchInput()"
+            (input)="onSearchInput($any($event.target).value)"
+          />
           @if (searchInput()) {
             <button class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" (click)="clearSearch()">
               <ng-icon hlmIcon size="sm" name="lucideX" />
@@ -87,13 +109,19 @@ import { GridBase } from '../../shared/grid/grid-base';
         </div>
       </div>
 
-      <!-- Content -->
+      <!-- Contenido -->
       <div class="flex-1 overflow-auto min-h-0">
         @if (loading()) {
           <div class="flex items-center justify-center py-12"><hlm-spinner /></div>
         }
         @if (error() && !loading()) {
           <div class="m-4 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">{{ error() }}</div>
+        }
+        @if (!loading() && !error() && totalRecords() === 0 && !searchQuery()) {
+          <div class="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
+            <ng-icon hlmIcon size="lg" name="lucideBuilding2" class="opacity-25" />
+            <p class="text-sm">No hay unidades registradas</p>
+          </div>
         }
         @if (!loading() && !error() && totalRecords() === 0 && searchQuery()) {
           <div class="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
@@ -106,51 +134,50 @@ import { GridBase } from '../../shared/grid/grid-base';
           <table hlmTable class="w-full">
             <thead hlmTHead [ngClass]="headerColor">
               <tr hlmTr>
-                <th hlmTh class="cursor-pointer select-none" (click)="toggleSort('tableName', $event)">
-                  <div class="flex items-center gap-1">Nombre técnico
-                    @if (sortDir('tableName') === 'asc') { <ng-icon hlmIcon size="sm" name="lucideChevronUp" /> }
-                    @else if (sortDir('tableName') === 'desc') { <ng-icon hlmIcon size="sm" name="lucideChevronDown" /> }
+                <th hlmTh class="w-8 pr-0">
+                  <input #selectAllCb type="checkbox" class="accent-primary cursor-pointer"
+                    [checked]="allSelected()" (change)="toggleSelectAll()" />
+                </th>
+                <th hlmTh class="w-24 cursor-pointer select-none" (click)="toggleSort('code', $event)">
+                  <div class="flex items-center gap-1">Código
+                    @if (sortDir('code') === 'asc')  { <ng-icon hlmIcon size="sm" name="lucideChevronUp" /> }
+                    @else if (sortDir('code') === 'desc') { <ng-icon hlmIcon size="sm" name="lucideChevronDown" /> }
                   </div>
                 </th>
-                <th hlmTh class="cursor-pointer select-none" (click)="toggleSort('displayName', $event)">
-                  <div class="flex items-center gap-1">Nombre visible
-                    @if (sortDir('displayName') === 'asc') { <ng-icon hlmIcon size="sm" name="lucideChevronUp" /> }
-                    @else if (sortDir('displayName') === 'desc') { <ng-icon hlmIcon size="sm" name="lucideChevronDown" /> }
+                <th hlmTh class="cursor-pointer select-none" (click)="toggleSort('name', $event)">
+                  <div class="flex items-center gap-1">Nombre
+                    @if (sortDir('name') === 'asc')  { <ng-icon hlmIcon size="sm" name="lucideChevronUp" /> }
+                    @else if (sortDir('name') === 'desc') { <ng-icon hlmIcon size="sm" name="lucideChevronDown" /> }
                   </div>
                 </th>
-                <th hlmTh>Descripción</th>
-                <th hlmTh class="cursor-pointer select-none" (click)="toggleSort('seccionMenu', $event)">
-                  <div class="flex items-center gap-1">Sección
-                    @if (sortDir('seccionMenu') === 'asc') { <ng-icon hlmIcon size="sm" name="lucideChevronUp" /> }
-                    @else if (sortDir('seccionMenu') === 'desc') { <ng-icon hlmIcon size="sm" name="lucideChevronDown" /> }
+                <th hlmTh class="cursor-pointer select-none" (click)="toggleSort('description', $event)">
+                  <div class="flex items-center gap-1">Descripción
+                    @if (sortDir('description') === 'asc')  { <ng-icon hlmIcon size="sm" name="lucideChevronUp" /> }
+                    @else if (sortDir('description') === 'desc') { <ng-icon hlmIcon size="sm" name="lucideChevronDown" /> }
                   </div>
                 </th>
-                <th hlmTh class="cursor-pointer select-none" (click)="toggleSort('dbSchema', $event)">
-                  <div class="flex items-center gap-1">Esquema
-                    @if (sortDir('dbSchema') === 'asc') { <ng-icon hlmIcon size="sm" name="lucideChevronUp" /> }
-                    @else if (sortDir('dbSchema') === 'desc') { <ng-icon hlmIcon size="sm" name="lucideChevronDown" /> }
-                  </div>
-                </th>
+                <th hlmTh class="w-20 text-center">Inventario</th>
+                <th hlmTh class="w-20 text-center">Data4n6</th>
+                <th hlmTh class="w-16 text-center">Activo</th>
               </tr>
             </thead>
             <tbody hlmTBody>
-              @for (table of pageItems(); track table.id; let odd = $odd) {
-                <tr hlmTr [ngClass]="[odd ? rowStripeClass : '', rowHoverClass]">
-                  <td hlmTd>
-                    <code class="text-xs font-mono text-primary">{{ table.tableName }}</code>
+              @for (u of pageItems(); track u.id; let odd = $odd) {
+                <tr hlmTr class="cursor-pointer"
+                  [class.bg-action/25]="selectedIds().has(u.id)"
+                  [ngClass]="[odd && !selectedIds().has(u.id) ? rowStripeClass : '', rowHoverClass]"
+                  (click)="toggleSelectRange(u.id, $index, $event)">
+                  <td hlmTd class="pr-0">
+                    <input type="checkbox" class="accent-primary cursor-pointer"
+                      [checked]="selectedIds().has(u.id)"
+                      (click)="toggleSelectRange(u.id, $index, $event)" />
                   </td>
-                  <td hlmTd>{{ table.displayName }}</td>
-                  <td hlmTd class="text-muted-foreground">{{ table.description ?? '—' }}</td>
-                  <td hlmTd>
-                    @if (table.seccionMenu) {
-                      <span class="text-xs border border-border rounded px-1.5 py-0.5 text-muted-foreground font-mono">{{ table.seccionMenu }}</span>
-                    } @else { <span class="text-muted-foreground">—</span> }
-                  </td>
-                  <td hlmTd>
-                    @if (table.dbSchema) {
-                      <span class="text-xs font-mono text-muted-foreground">{{ table.dbSchema }}</span>
-                    } @else { <span class="text-muted-foreground">—</span> }
-                  </td>
+                  <td hlmTd class="font-mono text-xs text-primary">{{ u.code ?? '—' }}</td>
+                  <td hlmTd class="text-xs text-primary">{{ u.name ?? '—' }}</td>
+                  <td hlmTd class="text-xs text-muted-foreground">{{ u.description ?? '—' }}</td>
+                  <td hlmTd class="text-center text-xs">{{ u.forInventory ? '✓' : '' }}</td>
+                  <td hlmTd class="text-center text-xs">{{ u.forData4n6 ? '✓' : '' }}</td>
+                  <td hlmTd class="text-center text-xs">{{ u.active ? '✓' : '' }}</td>
                 </tr>
               }
             </tbody>
@@ -158,7 +185,7 @@ import { GridBase } from '../../shared/grid/grid-base';
         }
       </div>
 
-      <!-- Footer / paginación -->
+      <!-- Paginación -->
       @if (!loading() && !error() && totalRecords() > 0) {
         <div class="flex items-center justify-between px-4 h-10 shrink-0 border-t border-border text-xs text-muted-foreground" [ngClass]="footerColor">
           <span>{{ displayFrom() }}–{{ displayTo() }} / {{ totalRecords() }}</span>
@@ -190,23 +217,35 @@ import { GridBase } from '../../shared/grid/grid-base';
     </div>
   `,
 })
-export class AppTablesComponent extends GridBase<AppTable> implements OnInit {
-  protected override readonly gridId        = 'admin-app-tables';
-  protected override readonly labelSingular = 'Tabla';
-  protected override readonly labelPlural   = 'Tablas del sistema';
-  protected override readonly icon          = 'lucideDatabase';
-  protected override readonly colMetaTableName = 't900_app_tables';
+export class UnitsListComponent extends GridBase<Unit> implements OnInit {
+  protected override readonly gridId        = 'common-units';
+  protected override readonly labelSingular = 'Unidad';
+  protected override readonly labelPlural   = 'Unidades';
+  protected override readonly icon          = 'lucideBuilding2';
+  protected override readonly colMetaTableName = 't100_units';
 
-  private readonly appTableSvc = inject(AppTableService);
+  private readonly selectAllCbRef = viewChild<ElementRef<HTMLInputElement>>('selectAllCb');
 
-  override ngOnInit(): void { this.loadGridPrefs(); this.load(); }
+  constructor() {
+    super();
+    effect(() => {
+      const el = this.selectAllCbRef()?.nativeElement;
+      if (el) el.indeterminate = this.someSelected();
+    });
+  }
+
+  override ngOnInit(): void {
+    this.loadGridPrefs();
+    this.sortCriteria.set([{ field: 'name', dir: 'asc' }]);
+    this.load();
+  }
 
   protected override load(): void {
     this.loading.set(true);
     this.error.set(null);
-    this.appTableSvc.getAll().subscribe({
+    this.http.get<Unit[]>(API).subscribe({
       next:  data => { this.allItems.set(data); this.loading.set(false); },
-      error: ()   => { this.error.set('Error al cargar las tablas del sistema.'); this.loading.set(false); },
+      error: ()   => { this.error.set('Error al cargar las unidades'); this.loading.set(false); },
     });
   }
 }

@@ -16,7 +16,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { provideIcons } from '@ng-icons/core';
 import {
   lucidePencil, lucideTrash2, lucidePlus, lucideSettings,
-  lucideRefreshCw, lucideDownload, lucideUpload,
+  lucideRefreshCw, lucideDownload, lucideUpload, lucideExternalLink,
   lucideLayoutList, lucideSlidersHorizontal, lucideSearch, lucideX,
   lucideChevronLeft, lucideChevronRight,
   lucideChevronsLeft, lucideChevronsRight,
@@ -107,7 +107,7 @@ function formatValue(val: unknown): string {
   ],
   providers: [provideIcons({
     lucidePencil, lucideTrash2, lucidePlus, lucideSettings,
-    lucideRefreshCw, lucideDownload, lucideUpload,
+    lucideRefreshCw, lucideDownload, lucideUpload, lucideExternalLink,
     lucideLayoutList, lucideSlidersHorizontal, lucideSearch, lucideX,
     lucideChevronLeft, lucideChevronRight,
     lucideChevronsLeft, lucideChevronsRight,
@@ -164,34 +164,16 @@ function formatValue(val: unknown): string {
         } @else {
           <span class="text-sm">{{ selectionCount() }} seleccionado{{ selectionCount() !== 1 ? 's' : '' }}</span>
           <div class="flex items-center gap-0.5">
-            <button
-              hlmBtn variant="ghost" size="icon"
-              class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
-              title="Editar"
-              [disabled]="selectionCount() !== 1"
-              (click)="singleSelected() && openEdit(singleSelected()!)"
-            >
-              <ng-icon hlmIcon size="sm" name="lucidePencil" />
+            <button hlmBtn variant="ghost" size="sm" class="h-7 text-destructive hover:text-destructive hover:bg-primary-foreground/15"
+              (click)="openDelete(singleSelected()!)">
+              <ng-icon hlmIcon size="sm" name="lucideTrash2" class="mr-1" />Eliminar
             </button>
-            <button
-              hlmBtn variant="ghost" size="icon"
-              class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
-              title="Ir al formulario"
-              [disabled]="selectionCount() !== 1"
-              (click)="singleSelected() && openItemForm(singleSelected()!)"
-            >
-              <ng-icon hlmIcon size="sm" name="lucideFileText" />
-            </button>
-            <button
-              hlmBtn variant="ghost" size="icon"
-              class="size-7 text-destructive hover:text-destructive hover:bg-primary-foreground/15"
-              title="Eliminar"
-              [disabled]="selectionCount() !== 1"
-              (click)="singleSelected() && openDelete(singleSelected()!)"
-            >
-              <ng-icon hlmIcon size="sm" name="lucideTrash2" />
-            </button>
-            <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
+            @if (selectionCount() === 1) {
+              <button hlmBtn variant="ghost" size="sm" class="h-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
+                (click)="openItemForm(singleSelected()!)">
+                <ng-icon hlmIcon size="sm" name="lucideExternalLink" class="mr-1" />Ir formulario
+              </button>
+            }
             <button hlmBtn variant="ghost" size="sm" class="h-7 hover:bg-primary-foreground/15 hover:text-primary-foreground">
               <ng-icon hlmIcon size="sm" name="lucideDownload" class="mr-1" />Exportar
             </button>

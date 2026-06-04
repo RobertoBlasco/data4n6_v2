@@ -106,7 +106,7 @@ type DialogState = 'open' | 'closed' | null;
 
           @if (selectionCount() === 0) {
             <h1 class="text-sm font-semibold flex items-center gap-1.5">
-              <ng-icon hlmIcon size="sm" name="lucideCalendar" />{{ labelPlural }}
+              <ng-icon hlmIcon size="sm" name="lucideCalendar" />{{ gridTitle() }}
             </h1>
             <div class="flex items-center gap-0.5">
               <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Recargar" (click)="reload()">
@@ -172,7 +172,8 @@ type DialogState = 'open' | 'closed' | null;
           } @else {
             <span class="text-sm">{{ selectionCount() }} seleccionado{{ selectionCount() !== 1 ? 's' : '' }}</span>
             <div class="flex items-center gap-0.5">
-              <button hlmBtn variant="ghost" size="sm" class="h-7 text-destructive hover:text-destructive hover:bg-primary-foreground/15">
+              <button hlmBtn variant="ghost" size="sm" class="h-7 text-destructive hover:text-destructive hover:bg-primary-foreground/15"
+                (click)="openDelete(singleSelected()!)">
                 <ng-icon hlmIcon size="sm" name="lucideTrash2" class="mr-1" />Eliminar
               </button>
               <button hlmBtn variant="ghost" size="sm" class="h-7 hover:bg-primary-foreground/15 hover:text-primary-foreground">
@@ -551,6 +552,7 @@ export class EventosComponent extends GridBase<Evento> implements OnInit {
   protected override readonly labelSingular = 'Evento';
   protected override readonly labelPlural   = 'Eventos';
   protected override readonly icon          = 'lucideCalendar';
+  protected override readonly colMetaTableName = 't200_eventos';
   protected override readonly gridViews: GridViewDef[] = [GRID_VIEW.GRID, GRID_VIEW.GRID_DETAIL, GRID_VIEW.CARD];
 
   private readonly splitContainerRef = viewChild<ElementRef<HTMLElement>>('splitContainer');

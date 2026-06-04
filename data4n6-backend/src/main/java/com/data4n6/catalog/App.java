@@ -7,7 +7,7 @@ import java.util.UUID;
 
 @Getter
 @Entity
-@Table(name = "t900_apps", schema = "common")
+@Table(name = "t900_apps", schema = "seguridad")
 public class App {
 
     @Id
