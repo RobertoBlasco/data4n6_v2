@@ -5,8 +5,8 @@ import {
 import { NgClass } from '@angular/common';
 import { Router } from '@angular/router';
 import {
-  lucideHandshake,
-  lucidePencil, lucideTrash2, lucidePlus, lucideExternalLink,
+  lucidePackageOpen,
+  lucidePlus, lucideExternalLink,
   lucideRefreshCw, lucideDownload,
   lucideLayoutList, lucideSlidersHorizontal,
   lucideSearch, lucideX,
@@ -18,8 +18,6 @@ import {
 import { provideIcons } from '@ng-icons/core';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmTableImports } from '@spartan-ng/helm/table';
-import { BrnDialogContent } from '@spartan-ng/brain/dialog';
-import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HttpClient } from '@angular/common/http';
@@ -61,8 +59,6 @@ interface OrdenPrestamo {
   numLineasDevueltas: number;
 }
 
-type DialogState = 'open' | 'closed' | null;
-
 const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
 
 @Component({
@@ -72,12 +68,11 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
   imports: [
     NgClass,
     HlmButtonImports, HlmTableImports,
-    BrnDialogContent, HlmDialogImports,
     HlmSpinnerImports, HlmIconImports,
   ],
   providers: [provideIcons({
-    lucideHandshake,
-    lucidePencil, lucideTrash2, lucidePlus, lucideExternalLink,
+    lucidePackageOpen,
+    lucidePlus, lucideExternalLink,
     lucideRefreshCw, lucideDownload,
     lucideLayoutList, lucideSlidersHorizontal,
     lucideSearch, lucideX,
@@ -94,7 +89,7 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
 
         @if (selectionCount() === 0) {
           <h1 class="text-sm font-semibold flex items-center gap-1.5">
-            <ng-icon hlmIcon size="sm" name="lucideHandshake" />{{ gridTitle() }}
+            <ng-icon hlmIcon size="sm" name="lucidePackageOpen" />{{ gridTitle() }}
           </h1>
           <div class="flex items-center gap-0.5">
             <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Recargar" (click)="reload()">
@@ -152,10 +147,6 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
         } @else {
           <span class="text-sm">{{ selectionCount() }} seleccionado{{ selectionCount() !== 1 ? 's' : '' }}</span>
           <div class="flex items-center gap-0.5">
-            <button hlmBtn variant="ghost" size="sm" class="h-7 text-destructive hover:text-destructive hover:bg-primary-foreground/15"
-              (click)="openDelete(singleSelected())">
-              <ng-icon hlmIcon size="sm" name="lucideTrash2" class="mr-1" />Eliminar
-            </button>
             @if (selectionCount() === 1) {
               <button hlmBtn variant="ghost" size="sm" class="h-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
                 (click)="goDetail(singleSelected()!)">
@@ -210,7 +201,7 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
         }
         @if (!loading() && !error() && totalRecords() === 0 && !searchQuery()) {
           <div class="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
-            <ng-icon hlmIcon size="lg" name="lucideHandshake" class="opacity-25" />
+            <ng-icon hlmIcon size="lg" name="lucidePackageOpen" class="opacity-25" />
             <p class="text-sm">No hay órdenes de préstamo registradas</p>
           </div>
         }
@@ -327,7 +318,7 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
                         } @else {
                           <table class="w-full text-xs">
                             <thead>
-                              <tr class="border-b border-border text-muted-foreground">
+                              <tr class="border-b border-border">
                                 <th class="text-left font-normal py-1 pr-3 w-36">Tipo material</th>
                                 <th class="text-left font-normal py-1 pr-3 w-32">Marca</th>
                                 <th class="text-left font-normal py-1 pr-3">Modelo</th>
@@ -338,11 +329,11 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
                             <tbody>
                               @for (l of linesCache().get(o.id)!; track l.id) {
                                 <tr class="border-b border-border/50 last:border-0">
-                                  <td class="py-1 pr-3 text-muted-foreground">{{ l.tipoMaterialNombre ?? '—' }}</td>
-                                  <td class="py-1 pr-3 text-muted-foreground">{{ l.marcaNombre ?? '—' }}</td>
-                                  <td class="py-1 pr-3 text-muted-foreground">{{ l.modeloDescripcion ?? '—' }}</td>
-                                  <td class="py-1 pr-3 font-mono text-muted-foreground">{{ l.articuloSerialNumber ?? '—' }}</td>
-                                  <td class="py-1 text-muted-foreground">{{ l.almacenNombre ?? '—' }}</td>
+                                  <td class="py-1 pr-3">{{ l.tipoMaterialNombre ?? '—' }}</td>
+                                  <td class="py-1 pr-3">{{ l.marcaNombre ?? '—' }}</td>
+                                  <td class="py-1 pr-3">{{ l.modeloDescripcion ?? '—' }}</td>
+                                  <td class="py-1 pr-3 font-mono">{{ l.articuloSerialNumber ?? '—' }}</td>
+                                  <td class="py-1">{{ l.almacenNombre ?? '—' }}</td>
                                 </tr>
                               }
                             </tbody>
@@ -391,43 +382,17 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
 
     </div>
 
-    <!-- ── Confirmar borrar ──────────────────────────────────────────────────── -->
-    <hlm-dialog [state]="deleteState()" (stateChanged)="onDeleteStateChanged($event)">
-      <ng-template brnDialogContent>
-        <hlm-dialog-content class="sm:max-w-md" [showCloseButton]="false">
-          <div class="bg-destructive text-destructive-foreground flex items-center gap-2 px-4 h-11 -mx-6 -mt-6 mb-2 rounded-t-lg">
-            <ng-icon hlmIcon size="sm" name="lucideHandshake" />
-            <h2 class="text-sm font-semibold">¿Eliminar orden de préstamo?</h2>
-          </div>
-          <p class="text-sm text-muted-foreground py-2">
-            @if (itemToDelete()) {
-              Se eliminará el préstamo <strong>{{ itemToDelete()!.numeroReferencia }}</strong>.
-            } @else {
-              Se eliminarán <strong>{{ selectionCount() }}</strong> préstamos seleccionados.
-            }
-            Esta acción no se puede deshacer.
-          </p>
-          <div hlmDialogFooter class="gap-2">
-            <button hlmBtn variant="outline" class="border-destructive bg-destructive/80 text-white hover:bg-destructive/90 hover:text-white" hlmDialogClose>Cancelar</button>
-            <button hlmBtn variant="destructive" (click)="confirmDelete()">Eliminar</button>
-          </div>
-        </hlm-dialog-content>
-      </ng-template>
-    </hlm-dialog>
   `,
 })
 export class LoansComponent extends GridBase<OrdenPrestamo> implements OnInit {
   protected override readonly gridId          = 'inventory-loans';
   protected override readonly labelSingular   = 'Préstamo';
   protected override readonly labelPlural     = 'Préstamos';
-  protected override readonly icon            = 'lucideHandshake';
+  protected override readonly icon            = 'lucidePackageOpen';
   protected override readonly colMetaTableName = 't600_ordenes_prestamo';
 
   private readonly router         = inject(Router);
   private readonly selectAllCbRef = viewChild<ElementRef<HTMLInputElement>>('selectAllCb');
-
-  readonly itemToDelete = signal<OrdenPrestamo | null>(null);
-  readonly deleteState  = signal<DialogState>(null);
 
   readonly expandedIds  = signal(new Set<string>());
   readonly linesCache   = signal(new Map<string, LineaPrestamo[]>());
@@ -508,25 +473,6 @@ export class LoansComponent extends GridBase<OrdenPrestamo> implements OnInit {
         window.open(url, '_blank');
         setTimeout(() => URL.revokeObjectURL(url), 30_000);
       });
-  }
-
-  openDelete(o: OrdenPrestamo | null): void {
-    this.itemToDelete.set(o);
-    this.deleteState.set('open');
-  }
-
-  onDeleteStateChanged(s: string): void { if (s === 'closed') this.deleteState.set(null); }
-
-  confirmDelete(): void {
-    const o = this.itemToDelete();
-    const req = o
-      ? this.http.delete(`${API}/${o.id}`)
-      : null;
-    if (!req) return;
-    req.subscribe({
-      next:  () => { this.deleteState.set('closed'); this.clearSelection(); this.load(); },
-      error: () => { this.deleteState.set('closed'); this.error.set('Error al eliminar el préstamo.'); },
-    });
   }
 
   estadoColorClass(estado: string | null): string {

@@ -35,13 +35,14 @@ import {
   lucideShield,
   lucideClipboardList,
   lucidePackagePlus,
-  lucideTruck,
-  lucideHandshake,
+  lucideArrowDownToLine,
+  lucidePackageOpen,
   lucideHand,
   lucideZap,
   lucideDatabase,
   lucideUserCheck,
   lucideIdCard,
+  lucidePackageCheck,
 } from '@ng-icons/lucide';
 import { AppTableService } from '../core/services/app-table.service';
 import { AppTable } from '../core/models/app-table.model';
@@ -141,11 +142,11 @@ const STATIC_ADMIN_ITEMS: NavItem[] = [
 
 const INVENTORY_OPS_ITEMS: NavItem[] = [
   { title: 'Todas las órdenes',     icon: 'lucideLayoutList',  url: '/inventory/orders', exactMatch: true },
-  { title: 'Entrada Almacén',       icon: 'lucidePackagePlus', url: '/inventory/orders/warehouse-entries' },
-  { title: 'Traspaso Almacén',      icon: 'lucideTruck',       url: '/inventory/orders/warehouse-transfers' },
-  { title: 'Adjudicación',          icon: 'lucideAward',       url: '/inventory/orders/adjudication-orders' },
-  { title: 'Préstamo',              icon: 'lucideHandshake',   url: '/inventory/orders/loans' },
-  { title: 'Devolución',            icon: 'lucideHand',        url: '/inventory/orders/returns' },
+  { title: 'Entrada Almacén',       icon: 'lucideArrowDownToLine', url: '/inventory/orders/warehouse-entries' },
+  { title: 'Traspaso Almacén',      icon: 'lucideArrowRightLeft', url: '/inventory/orders/warehouse-transfers' },
+  { title: 'Adjudicación',          icon: 'lucidePackagePlus',     url: '/inventory/orders/adjudication-orders' },
+  { title: 'Préstamo',              icon: 'lucidePackageOpen', url: '/inventory/orders/loans' },
+  { title: 'Devolución',            icon: 'lucidePackageCheck',        url: '/inventory/orders/returns' },
   { title: 'Baja',                  icon: 'lucideArchive',     url: '/inventory/orders/decommissions' },
 ];
 
@@ -190,10 +191,10 @@ function buildCommonNavGroups(_tables: AppTable[]): NavGroup[] {
       items: [
         {
           title: 'Comunes', icon: 'lucideDatabase', children: [
-            { title: 'Tipos Docs Id', icon: 'lucideIdCard',   url: '/common/doc-types'      },
-            { title: 'Docs IDs',      icon: 'lucideFileText', url: '/common/document-types' },
-            { title: 'Unidades',      icon: 'lucideBuilding2', url: '/common/units'         },
-            { title: 'Agentes',       icon: 'lucideUserCheck', url: '/common/agents'        },
+            { title: 'Tipos Docs Id',      icon: 'lucideIdCard',  url: '/common/doc-types'      },
+            { title: 'Tipos de documentos',icon: 'lucideFile',    url: '/common/document-types' },
+            { title: 'Unidades',           icon: 'lucideBuilding2', url: '/common/units'         },
+            { title: 'Agentes',            icon: 'lucideUserCheck', url: '/common/agents'        },
           ],
         },
         { title: 'Data4n6',    icon: 'lucideFolder',    children: [] },
@@ -244,7 +245,7 @@ function buildInventoryNavGroups(adminTables: AppTable[], catalogTables: AppTabl
       lucideUser, lucideFileText, lucideImage, lucideChevronRight,
       lucideWarehouse, lucideSwatchBook, lucideCircleDot, lucideArrowRightLeft, lucideFlaskConical,
       lucideShield, lucideClipboardList, lucideUserCheck, lucideIdCard,
-      lucidePackagePlus, lucideTruck, lucideHandshake, lucideHand, lucideArchive,
+      lucidePackagePlus, lucideArrowDownToLine, lucidePackageOpen, lucideHand, lucideArchive, lucidePackageCheck,
       lucideBox, lucideLayers, lucideLink, lucideLogIn, lucideZap, lucideDatabase,
     }),
   ],

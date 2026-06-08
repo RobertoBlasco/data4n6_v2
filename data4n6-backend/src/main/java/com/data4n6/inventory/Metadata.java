@@ -29,7 +29,7 @@ public class Metadata {
     private UUID recordUuid;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "t000_app_tables_id", nullable = false, updatable = false)
+    @JoinColumn(name = "t900_app_tables_id", nullable = false, updatable = false)
     private AppTable appTable;
 
     @CreatedDate

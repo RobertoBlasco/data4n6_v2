@@ -14,6 +14,8 @@ import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { BrnDialogContent } from '@spartan-ng/brain/dialog';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
+import { FormReadonlyDirective } from '../../../shared/form/form-readonly.directive';
+import { FormBase } from '../../../shared/form/form-base';
 import { SpaFormHeaderComponent } from '../../../shared/form/spa-form-header.component';
 import { SpaFormFooterComponent } from '../../../shared/form/spa-form-footer.component';
 import { FkComboboxComponent } from '../../../shared/components/fk-combobox/fk-combobox.component';
@@ -48,17 +50,18 @@ interface AppTableResponse {
     HlmButtonImports, HlmInputImports, HlmLabelImports,
     HlmSpinnerImports, HlmIconImports,
     BrnDialogContent, HlmDialogImports,
-    SpaFormHeaderComponent, SpaFormFooterComponent, FkComboboxComponent,
+    SpaFormHeaderComponent, SpaFormFooterComponent, FkComboboxComponent, FormReadonlyDirective,
   ],
   providers: [provideIcons({ lucideDatabase, lucideTrash2 })],
   template: `
-    <div class="h-full flex flex-col min-h-0">
+    <div class="h-full flex flex-col min-h-0" [appFormReadonly]="formReadonly()">
 
       <app-spa-form-header
-        icon="lucideDatabase"
+        [icon]="formIcon()"
         [label]="fTableName() || 'Tabla'"
+        [readonly]="fTableName() ? false : null"
         [description]="fDisplayName() || ''"
-        backRoute="/security/app-tables">
+        [backRoute]="resolvedBackRoute()">
       </app-spa-form-header>
 
       <div class="flex-1 overflow-auto p-6 space-y-6">
@@ -179,15 +182,21 @@ interface AppTableResponse {
     </hlm-dialog>
   `,
 })
-export class AppTableFormComponent implements OnInit {
+export class AppTableFormComponent extends FormBase implements OnInit {
+  protected override readonly colMetaTableName  = 't900_app_tables';
+  protected override readonly icon              = 'lucideDatabase';
+  protected override readonly labelSingular     = 'Tabla del sistema';
+  protected override readonly defaultBackRoute  = '/security/app-tables';
+  override entityDescription(): string { return this.fTableName(); }
+
   private readonly route  = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly http   = inject(HttpClient);
 
-  readonly loading     = signal(true);
-  readonly loadError   = signal<string | null>(null);
-  readonly saving      = signal(false);
-  readonly deleteState = signal<DialogState>(null);
+  override readonly loading     = signal(true);
+  override readonly loadError   = signal<string | null>(null);
+  override readonly saving      = signal(false);
+  override readonly deleteState = signal<'open' | 'closed' | null>(null);
 
   readonly fTableName      = signal('');
   readonly fDisplayName    = signal('');
@@ -205,6 +214,7 @@ export class AppTableFormComponent implements OnInit {
   readonly fApplicationId  = signal('');
 
   ngOnInit(): void {
+    this.loadFormMeta();
     const id = this.route.snapshot.paramMap.get('id')!;
     this.http.get<AppTableResponse>(`${BASE}/app-tables/id/${id}`).subscribe({
       next: d => {
@@ -252,7 +262,7 @@ export class AppTableFormComponent implements OnInit {
     });
   }
 
-  openDelete(): void { this.deleteState.set('open'); }
+  override openDelete(): void { this.deleteState.set('open'); }
   onDeleteState(s: string): void { if (s === 'closed') this.deleteState.set(null); }
 
   confirmDelete(): void {

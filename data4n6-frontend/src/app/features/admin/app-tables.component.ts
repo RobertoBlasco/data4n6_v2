@@ -74,13 +74,13 @@ import { GridBase } from '../../shared/grid/grid-base';
       <!-- Search bar -->
       <div class="px-3 py-2 shrink-0 border-b border-border">
         <div class="relative">
-          <ng-icon hlmIcon size="sm" name="lucideSearch" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          <ng-icon hlmIcon size="sm" name="lucideSearch" class="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             class="w-full h-8 pl-8 pr-8 rounded-md border border-primary bg-action/5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             placeholder="Buscar tabla..."
             [value]="searchInput()" (input)="onSearchInput($any($event.target).value)" />
           @if (searchInput()) {
-            <button class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" (click)="clearSearch()">
+            <button class="absolute right-2 top-1/2 -translate-y-1/2 hover:text-foreground" (click)="clearSearch()">
               <ng-icon hlmIcon size="sm" name="lucideX" />
             </button>
           }
@@ -96,7 +96,7 @@ import { GridBase } from '../../shared/grid/grid-base';
           <div class="m-4 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">{{ error() }}</div>
         }
         @if (!loading() && !error() && totalRecords() === 0 && searchQuery()) {
-          <div class="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
+          <div class="flex flex-col items-center justify-center py-12 gap-3">
             <ng-icon hlmIcon size="lg" name="lucideSearch" class="opacity-25" />
             <p class="text-sm">Sin resultados para "{{ searchQuery() }}"</p>
             <button hlmBtn variant="outline" size="sm" (click)="clearSearch()">Limpiar búsqueda</button>
@@ -140,15 +140,15 @@ import { GridBase } from '../../shared/grid/grid-base';
                     <code class="text-xs font-mono text-primary">{{ table.tableName }}</code>
                   </td>
                   <td hlmTd>{{ table.displayName }}</td>
-                  <td hlmTd class="text-muted-foreground">{{ table.description ?? '—' }}</td>
+                  <td hlmTd>{{ table.description ?? '—' }}</td>
                   <td hlmTd>
                     @if (table.seccionMenu) {
-                      <span class="text-xs border border-border rounded px-1.5 py-0.5 text-muted-foreground font-mono">{{ table.seccionMenu }}</span>
+                      <span class="text-xs border border-border rounded px-1.5 py-0.5 font-mono">{{ table.seccionMenu }}</span>
                     } @else { <span class="text-muted-foreground">—</span> }
                   </td>
                   <td hlmTd>
                     @if (table.dbSchema) {
-                      <span class="text-xs font-mono text-muted-foreground">{{ table.dbSchema }}</span>
+                      <span class="text-xs font-mono">{{ table.dbSchema }}</span>
                     } @else { <span class="text-muted-foreground">—</span> }
                   </td>
                 </tr>
@@ -160,7 +160,7 @@ import { GridBase } from '../../shared/grid/grid-base';
 
       <!-- Footer / paginación -->
       @if (!loading() && !error() && totalRecords() > 0) {
-        <div class="flex items-center justify-between px-4 h-10 shrink-0 border-t border-border text-xs text-muted-foreground" [ngClass]="footerColor">
+        <div class="flex items-center justify-between px-4 h-10 shrink-0 border-t border-border text-xs" [ngClass]="footerColor">
           <span>{{ displayFrom() }}–{{ displayTo() }} / {{ totalRecords() }}</span>
           <div class="flex items-center gap-0.5">
             <select class="h-6 rounded border border-input bg-background px-1 text-xs focus:outline-none cursor-pointer"

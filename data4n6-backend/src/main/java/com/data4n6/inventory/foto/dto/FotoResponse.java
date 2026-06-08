@@ -11,9 +11,14 @@ public record FotoResponse(
         UUID    pictureTypeId,
         String  pictureTypeName,
         boolean esPrincipal,
-        String  filename,
+        String  originalFilename,
         String  mimeType,
         String  filePath,
         String  caption,
+        Long    fileSizeBytes,
+        String  thumbnailPath,
+        Integer width,
+        Integer height,
+        Instant takenAt,
         Instant createdAt
 ) {}

@@ -19,6 +19,7 @@ import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmLabelImports } from '@spartan-ng/helm/label';
 import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
+import { FormReadonlyDirective } from '../../../shared/form/form-readonly.directive';
 import { FormBase } from '../../../shared/form/form-base';
 import { SpaFormHeaderComponent } from '../../../shared/form/spa-form-header.component';
 import { DeleteConfirmDialogComponent } from '../../../shared/form/delete-confirm-dialog.component';
@@ -44,16 +45,17 @@ const API = 'http://localhost:8080/api/v1/inventory/tipos-material';
     FormsModule,
     HlmButtonImports, HlmInputImports, HlmLabelImports,
     HlmSpinnerImports, HlmIconImports,
-    SpaFormHeaderComponent,
+    SpaFormHeaderComponent, FormReadonlyDirective,
     DeleteConfirmDialogComponent,
   ],
   providers: [provideIcons({ lucideTrash2, lucideSave, lucideFlaskConical })],
   template: `
-    <div class="h-full flex flex-col min-h-0">
+    <div class="h-full flex flex-col min-h-0" [appFormReadonly]="formReadonly()">
 
       <app-spa-form-header
-        [icon]="icon" [label]="labelSingular" [description]="entityDescription()"
-        backRoute="/inventory/materials">
+        [icon]="formIcon()" [label]="formTitle() || labelSingular" [description]="entityDescription()"
+        [readonly]="item() ? false : null"
+        [backRoute]="resolvedBackRoute()">
         <button hlmBtn variant="destructive" size="sm" class="h-7"
           [disabled]="loading() || saving()"
           (click)="openDelete()">
@@ -138,8 +140,10 @@ const API = 'http://localhost:8080/api/v1/inventory/tipos-material';
   `,
 })
 export class MaterialFormComponent extends FormBase implements OnInit {
-  protected override readonly icon          = 'lucideFlaskConical';
-  protected override readonly labelSingular = 'Tipo de material';
+  protected override readonly colMetaTableName  = 't200_materiales';
+  protected override readonly icon              = 'lucideFlaskConical';
+  protected override readonly labelSingular     = 'Tipo de material';
+  protected override readonly defaultBackRoute  = '/inventory/materials';
   override entityDescription(): string { return this.item()?.name ?? ''; }
 
   private readonly route  = inject(ActivatedRoute);
@@ -151,6 +155,7 @@ export class MaterialFormComponent extends FormBase implements OnInit {
   description = signal('');
 
   ngOnInit(): void {
+    this.loadFormMeta();
     const id = this.route.snapshot.paramMap.get('id')!;
     this.http.get<TipoMaterial>(`${API}/${id}`).subscribe({
       next: data => {

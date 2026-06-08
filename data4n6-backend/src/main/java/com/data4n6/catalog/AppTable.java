@@ -14,7 +14,7 @@ import java.util.UUID;
 public class AppTable {
 
     @Id
-    @Column(name = "t000_app_tables_id")
+    @Column(name = "t900_app_tables_id")
     private UUID id;
 
     @Column(name = "table_name", nullable = false, unique = true, length = 100)

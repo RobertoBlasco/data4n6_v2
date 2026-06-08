@@ -12,6 +12,8 @@ import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 import { FormsModule } from '@angular/forms';
 import { HlmLabelImports } from '@spartan-ng/helm/label';
 import { HlmInputImports } from '@spartan-ng/helm/input';
+import { FormReadonlyDirective } from '../../../../shared/form/form-readonly.directive';
+import { FormBase } from '../../../../shared/form/form-base';
 import { SpaFormHeaderComponent } from '../../../../shared/form/spa-form-header.component';
 import { ArticuloPickerComponent, ArticuloMin } from '../../shared/articulo-picker/articulo-picker.component';
 import { FkComboboxComponent } from '../../../../shared/components/fk-combobox/fk-combobox.component';
@@ -31,15 +33,15 @@ interface AlmacenMin { id: string; name: string; }
     FormsModule,
     HlmButtonImports, HlmSpinnerImports, HlmIconImports,
     HlmLabelImports, HlmInputImports,
-    SpaFormHeaderComponent, ArticuloPickerComponent, FkComboboxComponent,
+    SpaFormHeaderComponent, ArticuloPickerComponent, FkComboboxComponent, FormReadonlyDirective,
   ],
   providers: [provideIcons({ lucideHand, lucideListChecks, lucideBoxes, lucideUserCheck, lucideArrowLeftRight })],
   template: `
-    <div class="h-full flex flex-col min-h-0">
+    <div class="h-full flex flex-col min-h-0" [appFormReadonly]="formReadonly()">
 
       <app-spa-form-header
-        icon="lucideHand"
-        label="Nueva orden de devolución"
+        [icon]="formIcon()"
+        [label]="formTitle() || labelSingular"
         backRoute="/inventory/orders/returns" />
 
       <div class="flex-1 flex min-h-0">
@@ -209,7 +211,12 @@ interface AlmacenMin { id: string; name: string; }
     </div>
   `,
 })
-export class ReturnFormComponent implements OnInit {
+export class ReturnFormComponent extends FormBase implements OnInit {
+  protected override readonly colMetaTableName = 't600_ordenes_devolucion';
+  protected override readonly icon             = 'lucidePackageCheck';
+  protected override readonly labelSingular    = 'Nueva orden de devolución';
+  override entityDescription(): string { return ''; }
+
   private readonly router = inject(Router);
   private readonly http   = inject(HttpClient);
 
@@ -218,8 +225,8 @@ export class ReturnFormComponent implements OnInit {
   readonly articulosDisponibles   = signal<ArticuloMin[]>([]);
   readonly articulosSeleccionados = signal<ArticuloMin[]>([]);
   readonly loadingArticulos       = signal(false);
-  readonly saving                 = signal(false);
-  readonly saveError              = signal<string | null>(null);
+  override readonly saving        = signal(false);
+  override readonly saveError     = signal<string | null>(null);
   readonly articulosError         = signal(false);
 
   readonly unidadOrigenId   = signal('');
@@ -252,6 +259,7 @@ export class ReturnFormComponent implements OnInit {
   );
 
   ngOnInit(): void {
+    this.loadFormMeta();
     this.loadingArticulos.set(true);
     this.http.get<ArticuloMin[]>(API_ARTICULOS).subscribe({
       next:  data => { this.articulosDisponibles.set(data); this.loadingArticulos.set(false); },

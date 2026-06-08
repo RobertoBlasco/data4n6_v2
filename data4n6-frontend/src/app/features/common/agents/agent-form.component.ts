@@ -29,6 +29,7 @@ import { SectionHeaderComponent } from '../../../shared/components/historical-gr
 import { SpaFormFooterComponent } from '../../../shared/form/spa-form-footer.component';
 import { PicturePanelComponent, PictureItem } from '../../../shared/components/picture-panel/picture-panel.component';
 import { FormFieldComponent } from '../../../shared/components/form-field/form-field.component';
+import { FormReadonlyDirective } from '../../../shared/form/form-readonly.directive';
 
 interface FotoResponse {
   id:              string;
@@ -94,16 +95,17 @@ interface AgentRequest {
     FkComboboxComponent,
     SpaFormHeaderComponent,
     DeleteConfirmDialogComponent,
-    HistoricalGridComponent, SectionHeaderComponent, PicturePanelComponent, FormFieldComponent,
+    HistoricalGridComponent, SectionHeaderComponent, PicturePanelComponent, FormFieldComponent, FormReadonlyDirective,
     SpaFormFooterComponent,
   ],
   providers: [provideIcons({ lucideTrash2, lucideSave, lucideUserCheck, lucideIdCard, lucideImage, lucidePenLine, lucideFileText, lucideStickyNote, lucideImages })],
   template: `
-    <div class="h-full flex flex-col min-h-0 overflow-hidden">
+    <div class="h-full flex flex-col min-h-0 overflow-hidden" [appFormReadonly]="formReadonly()">
 
       <app-spa-form-header
-        [icon]="icon" [label]="labelSingular" [description]="entityDescription()"
-        backRoute="/common/admin/t100_agents"
+        [icon]="formIcon()" [label]="formTitle() || labelSingular" [description]="entityDescription()"
+        [readonly]="isEdit() ? false : null"
+        [backRoute]="resolvedBackRoute()"
         [showMenu]="isEdit()">
         <button menu class="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors"
           (click)="exportarFicha()">
@@ -404,8 +406,10 @@ interface AgentRequest {
 export class AgentFormComponent extends FormBase implements OnInit {
   readonly PORTRAIT_TYPE_ID  = 'b1000000-0000-0000-0000-000000000002';
   readonly SIGNATURE_TYPE_ID = 'b1000000-0000-0000-0000-000000000001';
-  protected override readonly icon          = 'lucideUserCheck';
-  protected override readonly labelSingular = 'Agente';
+  protected override readonly colMetaTableName  = 't100_agents';
+  protected override readonly icon              = 'lucideUserCheck';
+  protected override readonly labelSingular     = 'Agente';
+  protected override readonly defaultBackRoute  = '/common/admin/t100_agents';
   override entityDescription(): string {
     const first = this.firstName().trim();
     const last  = this.lastName().trim();
@@ -453,6 +457,7 @@ export class AgentFormComponent extends FormBase implements OnInit {
   ]);
 
   ngOnInit(): void {
+    this.loadFormMeta();
     const id = this.route.snapshot.paramMap.get('id');
     if (id && id !== 'new') {
       this.isEdit.set(true);

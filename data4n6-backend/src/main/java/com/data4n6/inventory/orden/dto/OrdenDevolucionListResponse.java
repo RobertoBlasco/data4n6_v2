@@ -7,6 +7,7 @@ public record OrdenDevolucionListResponse(
         UUID    id,
         String  numeroReferencia,
         Instant aprobadoEn,
+        UUID    ordenPrestamoId,
         String  ordenPrestamoReferencia,
         String  agenteNombre,
         String  unidadNombre,

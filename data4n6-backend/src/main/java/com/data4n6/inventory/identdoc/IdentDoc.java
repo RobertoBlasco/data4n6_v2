@@ -19,7 +19,7 @@ import java.util.UUID;
 public class IdentDoc extends InventoryBaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "t000_app_tables_id", nullable = false)
+    @JoinColumn(name = "t900_app_tables_id", nullable = false)
     private AppTable appTable;
 
     @Column(name = "record_id", nullable = false)

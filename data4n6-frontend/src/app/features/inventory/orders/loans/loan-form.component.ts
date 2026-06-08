@@ -6,13 +6,16 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { SlicePipe } from '@angular/common';
 import { provideIcons } from '@ng-icons/core';
-import { lucideHandshake, lucideX, lucideBoxes, lucideListChecks, lucideChartBar, lucideBuilding2, lucideUserCheck, lucideClipboard, lucideUserPlus, lucideUndo2, lucideArrowLeftRight } from '@ng-icons/lucide';
+import { lucidePackageOpen, lucideX, lucideBoxes, lucideListChecks, lucideChartBar, lucideBuilding2, lucideUserCheck, lucideClipboard, lucideUserPlus, lucideUndo2, lucideArrowLeftRight } from '@ng-icons/lucide';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmLabelImports } from '@spartan-ng/helm/label';
 import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 import { HlmInputImports } from '@spartan-ng/helm/input';
+import { FormReadonlyDirective } from '../../../../shared/form/form-readonly.directive';
+import { FormBase } from '../../../../shared/form/form-base';
 import { SpaFormHeaderComponent } from '../../../../shared/form/spa-form-header.component';
+import { SectionHeaderComponent } from '../../../../shared/components/historical-grid/section-header.component';
 import { FkComboboxComponent } from '../../../../shared/components/fk-combobox/fk-combobox.component';
 import { ArticuloPickerComponent, ArticuloMin } from '../../shared/articulo-picker/articulo-picker.component';
 
@@ -55,17 +58,18 @@ interface OrdenPrestamoDetail {
   imports: [
     HlmButtonImports, HlmLabelImports,
     HlmSpinnerImports, HlmInputImports, HlmIconImports,
-    SpaFormHeaderComponent, FkComboboxComponent,
-    ArticuloPickerComponent, SlicePipe,
+    SpaFormHeaderComponent, SectionHeaderComponent, FkComboboxComponent,
+    ArticuloPickerComponent, SlicePipe, FormReadonlyDirective,
   ],
-  providers: [provideIcons({ lucideHandshake, lucideX, lucideBoxes, lucideListChecks, lucideChartBar, lucideBuilding2, lucideUserCheck, lucideClipboard, lucideUserPlus, lucideUndo2, lucideArrowLeftRight })],
+  providers: [provideIcons({ lucidePackageOpen, lucideX, lucideBoxes, lucideListChecks, lucideChartBar, lucideBuilding2, lucideUserCheck, lucideClipboard, lucideUserPlus, lucideUndo2, lucideArrowLeftRight })],
   template: `
-    <div class="h-full flex flex-col min-h-0">
+    <div class="h-full flex flex-col min-h-0" [appFormReadonly]="formReadonly()">
 
       <app-spa-form-header
-        icon="lucideHandshake"
+        [icon]="formIcon()"
+        [readonly]="isView() ? true : (numeroReferencia() ? false : null)"
         [label]="headerLabel()"
-        backRoute="/inventory/orders/loans" />
+        [backRoute]="resolvedBackRoute()" />
 
       <div class="flex-1 flex min-h-0">
 
@@ -193,12 +197,9 @@ interface OrdenPrestamoDetail {
 
             <!-- Artículos en préstamo (todas las líneas) -->
             <div class="flex-1 min-h-0 flex flex-col p-4 pb-2 overflow-hidden">
-              <div class="shrink-0 flex items-center gap-2 mb-2">
-                <ng-icon hlmIcon name="lucideListChecks" size="sm" class="text-[#005a3b] shrink-0" />
-                <span class="text-xs font-medium text-[#005a3b] uppercase tracking-wide">Artículos en préstamo</span>
-                <div class="flex-1 h-px bg-border"></div>
-                <span class="text-xs tabular-nums text-[#005a3b] font-medium">{{ todasLineas().length }}</span>
-              </div>
+              <app-section-header title="Artículos en préstamo" icon="lucideListChecks" class="mb-2">
+                <span class="text-xs tabular-nums text-[#005a3b] font-medium shrink-0">{{ todasLineas().length }}</span>
+              </app-section-header>
               <div class="flex-1 min-h-0 overflow-auto border-2 border-border rounded-md">
                 @if (todasLineas().length === 0) {
                   <p class="px-4 py-6 text-xs text-muted-foreground text-center italic">Sin artículos registrados</p>
@@ -245,14 +246,11 @@ interface OrdenPrestamoDetail {
 
             <!-- Artículos a devolver (selección) -->
             <div class="flex-1 min-h-0 flex flex-col p-4 pt-2 overflow-hidden">
-              <div class="shrink-0 flex items-center gap-2 mb-2">
-                <ng-icon hlmIcon name="lucideUndo2" size="sm" class="text-[#005a3b] shrink-0" />
-                <span class="text-xs font-medium text-[#005a3b] uppercase tracking-wide">Artículos a devolver</span>
-                <div class="flex-1 h-px bg-border"></div>
+              <app-section-header title="Artículos a devolver" icon="lucideUndo2" class="mb-2">
                 @if (articulosADevolver().length > 0) {
-                  <span class="text-xs tabular-nums text-[#005a3b] font-medium">{{ articulosADevolver().length }}</span>
+                  <span class="text-xs tabular-nums text-[#005a3b] font-medium shrink-0">{{ articulosADevolver().length }}</span>
                 }
-              </div>
+              </app-section-header>
               @if (devolucionError()) {
                 <div class="shrink-0 rounded border border-destructive/20 bg-destructive/10 p-2 text-xs text-destructive mb-2">
                   {{ devolucionError() }}
@@ -513,7 +511,13 @@ interface OrdenPrestamoDetail {
     </div>
   `,
 })
-export class LoanFormComponent implements OnInit {
+export class LoanFormComponent extends FormBase implements OnInit {
+  protected override readonly colMetaTableName  = 't600_ordenes_prestamo';
+  protected override readonly icon              = 'lucidePackageOpen';
+  protected override readonly labelSingular     = 'Orden de préstamo';
+  protected override readonly defaultBackRoute  = '/inventory/orders/loans';
+  override entityDescription(): string { return this.numeroReferencia(); }
+
   private readonly router = inject(Router);
   private readonly route  = inject(ActivatedRoute);
   private readonly http   = inject(HttpClient);
@@ -612,8 +616,8 @@ export class LoanFormComponent implements OnInit {
   });
   readonly loadingArticulos       = signal(false);
 
-  readonly saving           = signal(false);
-  readonly saveError        = signal<string | null>(null);
+  override readonly saving     = signal(false);
+  override readonly saveError  = signal<string | null>(null);
   readonly origenError      = signal(false);
   readonly destinoError     = signal(false);
   readonly articulosError   = signal(false);
@@ -634,11 +638,13 @@ export class LoanFormComponent implements OnInit {
   }
 
   constructor() {
+    super();
     effect(() => { this.unidadOrigenId();  untracked(() => { if (!this.isView()) this.agenteOrigenId.set(''); }); });
     effect(() => { this.unidadDestinoId(); untracked(() => { if (!this.isView()) this.agenteDestinoId.set(''); }); });
   }
 
   ngOnInit(): void {
+    this.loadFormMeta();
     const id = this.route.snapshot.paramMap.get('id');
     if (id && id !== 'new') {
       this.isView.set(true);

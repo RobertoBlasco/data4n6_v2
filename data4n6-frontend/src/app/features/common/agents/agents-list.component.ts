@@ -181,9 +181,9 @@ interface Agent {
                       [checked]="selectedIds().has(a.id)"
                       (click)="toggleSelectRange(a.id, $index, $event)" />
                   </td>
-                  <td hlmTd class="font-mono text-xs text-primary">{{ a.callSign ?? '—' }}</td>
-                  <td hlmTd class="text-xs text-primary">{{ fullName(a) }}</td>
-                  <td hlmTd class="text-xs text-primary">{{ a.unitName ?? '—' }}</td>
+                  <td hlmTd class="font-mono text-xs">{{ a.callSign ?? '—' }}</td>
+                  <td hlmTd class="text-xs">{{ fullName(a) }}</td>
+                  <td hlmTd class="text-xs">{{ a.unitName ?? '—' }}</td>
                   <td hlmTd class="text-center text-xs">{{ a.active ? '✓' : '' }}</td>
                 </tr>
               }

@@ -26,12 +26,28 @@ import { HlmIconImports } from '@spartan-ng/helm/icon';
         <div class="h-4 w-px bg-primary-foreground/20 shrink-0"></div>
         <ng-icon hlmIcon size="sm" [name]="icon()" class="shrink-0" />
         <span class="text-sm font-semibold shrink-0">{{ label() }}</span>
-        <span class="text-primary-foreground/40 shrink-0">·</span>
-        <span class="text-sm truncate opacity-80">{{ description() }}</span>
+        @if (description()) {
+          <span class="text-primary-foreground/40 shrink-0">·</span>
+          <span class="text-sm truncate opacity-80">{{ description() }}</span>
+        }
       </div>
 
-      <!-- Derecha: botones de acción + menú hamburguesa -->
-      <div class="flex items-center gap-1.5 shrink-0">
+      <!-- Derecha: badge de modo + botones de acción + menú hamburguesa -->
+      <div class="flex items-center gap-2 shrink-0">
+
+        <!-- Indicador de modo -->
+        @if (readonly() === true) {
+          <span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded
+                       bg-white/15 text-white/90 border border-white/20">
+            Solo lectura
+          </span>
+        } @else if (readonly() === false) {
+          <span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded
+                       bg-action/80 text-action-foreground border border-action/40">
+            Edición
+          </span>
+        }
+
         <ng-content />
 
         @if (showMenu()) {
@@ -62,6 +78,8 @@ export class SpaFormHeaderComponent {
   readonly description = input<string>('');
   readonly backRoute   = input.required<string | string[]>();
   readonly showMenu    = input<boolean>(false);
+  /** null = sin indicador (alta nueva) | true = Solo lectura | false = Edición */
+  readonly readonly    = input<boolean | null>(null);
 
   readonly menuOpen = signal(false);
 

@@ -72,11 +72,11 @@ interface TableField {
 
       <div class="px-3 py-2 shrink-0 border-b border-border">
         <div class="relative">
-          <ng-icon hlmIcon size="sm" name="lucideSearch" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          <ng-icon hlmIcon size="sm" name="lucideSearch" class="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input class="w-full h-8 pl-8 pr-8 rounded-md border border-primary bg-action/5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             placeholder="Buscar campo..." [value]="searchInput()" (input)="onSearchInput($any($event.target).value)" />
           @if (searchInput()) {
-            <button class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" (click)="clearSearch()"><ng-icon hlmIcon size="sm" name="lucideX" /></button>
+            <button class="absolute right-2 top-1/2 -translate-y-1/2 hover:text-foreground" (click)="clearSearch()"><ng-icon hlmIcon size="sm" name="lucideX" /></button>
           }
         </div>
       </div>
@@ -85,7 +85,7 @@ interface TableField {
         @if (loading()) { <div class="flex items-center justify-center py-12"><hlm-spinner /></div> }
         @if (error() && !loading()) { <div class="m-4 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">{{ error() }}</div> }
         @if (!loading() && !error() && totalRecords() === 0) {
-          <div class="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
+          <div class="flex flex-col items-center justify-center py-12 gap-3">
             <ng-icon hlmIcon size="lg" name="lucideLayers" class="opacity-25" />
             <p class="text-sm">{{ searchQuery() ? 'Sin resultados' : 'No hay campos registrados' }}</p>
           </div>
@@ -129,13 +129,13 @@ interface TableField {
                 <tr hlmTr [class.bg-action/25]="selectedIds().has(f.id)"
                   [ngClass]="[odd && !selectedIds().has(f.id) ? rowStripeClass : '', rowHoverClass]">
                   <td hlmTd class="pr-0"><input type="checkbox" class="accent-primary cursor-pointer" [checked]="selectedIds().has(f.id)" (click)="toggleSelectRange(f.id, $index, $event)" /></td>
-                  <td hlmTd class="font-mono text-xs text-primary">{{ f.fieldName ?? '—' }}</td>
-                  <td hlmTd class="text-xs text-primary">{{ f.displayName ?? '—' }}</td>
-                  <td hlmTd class="text-xs text-muted-foreground">{{ f.fieldType ?? '—' }}</td>
+                  <td hlmTd class="font-mono text-xs">{{ f.fieldName ?? '—' }}</td>
+                  <td hlmTd class="text-xs">{{ f.displayName ?? '—' }}</td>
+                  <td hlmTd class="text-xs">{{ f.fieldType ?? '—' }}</td>
                   <td hlmTd class="text-center text-xs">{{ f.required ? '✓' : '' }}</td>
                   <td hlmTd class="text-center text-xs">{{ f.visibleInGrid ? '✓' : '' }}</td>
                   <td hlmTd class="text-center text-xs">{{ f.visibleInForm ? '✓' : '' }}</td>
-                  <td hlmTd class="text-right tabular-nums text-xs text-muted-foreground">{{ f.orden ?? '—' }}</td>
+                  <td hlmTd class="text-right tabular-nums text-xs">{{ f.orden ?? '—' }}</td>
                 </tr>
               }
             </tbody>
@@ -144,7 +144,7 @@ interface TableField {
       </div>
 
       @if (!loading() && !error() && totalRecords() > 0) {
-        <div class="flex items-center justify-between px-4 h-10 shrink-0 border-t border-border text-xs text-muted-foreground" [ngClass]="footerColor">
+        <div class="flex items-center justify-between px-4 h-10 shrink-0 border-t border-border text-xs" [ngClass]="footerColor">
           <span>{{ displayFrom() }}–{{ displayTo() }} / {{ totalRecords() }}</span>
           <div class="flex items-center gap-0.5">
             <select class="h-6 rounded border border-input bg-background px-1 text-xs focus:outline-none cursor-pointer" [value]="pageSize()" (change)="setPageSize(+$any($event.target).value)">

@@ -1,5 +1,6 @@
 package com.data4n6.inventory.articulo.controller;
 
+import com.data4n6.inventory.articulo.dto.ArticuloMovimientoResponse;
 import com.data4n6.inventory.articulo.dto.ArticuloRequest;
 import com.data4n6.inventory.articulo.dto.ArticuloResponse;
 import com.data4n6.inventory.articulo.service.ArticuloService;
@@ -38,6 +39,12 @@ public class ArticuloController {
     @Operation(summary = "Create an artículo")
     public ArticuloResponse create(@Valid @RequestBody ArticuloRequest request) {
         return service.create(request);
+    }
+
+    @GetMapping("/{id}/historial")
+    @Operation(summary = "Get movement history for an artículo")
+    public List<ArticuloMovimientoResponse> findHistorial(@PathVariable UUID id) {
+        return service.findHistorial(id);
     }
 
     @DeleteMapping("/{id}")

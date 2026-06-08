@@ -18,13 +18,13 @@ import { SectionHeaderComponent } from '../historical-grid/section-header.compon
 import { environment } from '../../../../environments/environment';
 
 export interface PictureItem {
-  id:              string;
-  filePath:        string;
-  pictureTypeName: string | null;
-  esPrincipal:     boolean;
-  caption:         string | null;
-  filename:        string;
-  createdAt:       string;
+  id:               string;
+  filePath:         string;
+  pictureTypeName:  string | null;
+  esPrincipal:      boolean;
+  caption:          string | null;
+  filename:         string;
+  createdAt:        string;
 }
 
 @Component({

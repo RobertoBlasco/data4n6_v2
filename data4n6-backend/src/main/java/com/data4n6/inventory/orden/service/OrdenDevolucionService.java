@@ -109,6 +109,7 @@ public class OrdenDevolucionService {
                     od.getId(),
                     od.getOrden().getNumeroReferencia(),
                     od.getOrden().getAprobadoEn(),
+                    od.getOrdenPrestamo().getId(),
                     od.getOrdenPrestamo().getNumeroReferencia(),
                     agenteNombre,
                     unidadNombre,

@@ -1,12 +1,13 @@
 package com.data4n6.inventory.documento;
 
-import com.data4n6.inventory.documento.dto.DocumentoRequest;
 import com.data4n6.inventory.documento.dto.DocumentoResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,11 +28,16 @@ public class DocumentoController {
         return service.findByEntity(tableId, recordId);
     }
 
-    @PostMapping
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Attach a document to an entity record")
-    public DocumentoResponse create(@RequestBody DocumentoRequest req) {
-        return service.create(req);
+    @Operation(summary = "Upload a document file to object storage")
+    public DocumentoResponse upload(
+            @RequestParam UUID appTableId,
+            @RequestParam UUID recordId,
+            @RequestParam(required = false) UUID documentTypeId,
+            @RequestParam(required = false) String description,
+            @RequestParam("file") MultipartFile file) {
+        return service.upload(appTableId, recordId, documentTypeId, description, file);
     }
 
     @DeleteMapping("/{id}")

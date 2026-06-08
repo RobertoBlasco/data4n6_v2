@@ -17,7 +17,7 @@ public class TableField {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "t000_app_tables_id", nullable = false)
+    @JoinColumn(name = "t900_app_tables_id", nullable = false)
     private AppTable appTable;
 
     @Column(name = "field_name", length = 100, nullable = false)

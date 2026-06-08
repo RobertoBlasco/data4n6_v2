@@ -16,6 +16,7 @@ import { HlmIconImports } from '@spartan-ng/helm/icon';
       <ng-icon hlmIcon [name]="icon()" size="sm" class="text-[#005a3b] shrink-0" />
       <span class="text-xs font-medium text-[#005a3b] uppercase tracking-wide whitespace-nowrap">{{ title() }}</span>
       <div class="flex-1 h-px bg-border"></div>
+      <ng-content />
       @if (showAdd()) {
         <button hlmBtn variant="outline" size="icon" class="size-6 shrink-0" (click)="add.emit()">
           <ng-icon hlmIcon name="lucidePlus" size="sm" />

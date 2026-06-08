@@ -6,8 +6,11 @@ public record DocumentoRequest(
         UUID   appTableId,
         UUID   recordId,
         UUID   documentTypeId,
-        String filename,
+        String title,
+        String originalFilename,
         String mimeType,
         String filePath,
+        String storedFilename,
+        Long   fileSizeBytes,
         String description
 ) {}

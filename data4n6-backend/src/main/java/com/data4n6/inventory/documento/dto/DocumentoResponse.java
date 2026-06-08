@@ -10,9 +10,11 @@ public record DocumentoResponse(
         UUID    recordId,
         UUID    documentTypeId,
         String  documentTypeName,
-        String  filename,
+        String  title,
+        String  originalFilename,
         String  mimeType,
         String  filePath,
         String  description,
+        Long    fileSizeBytes,
         Instant createdAt
 ) {}

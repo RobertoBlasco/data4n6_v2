@@ -39,6 +39,14 @@ public interface LineaOrdenDevolucionRepository extends JpaRepository<LineaOrden
     List<Object[]> countByDevolucionOrdenIds(@Param("ordenIds") List<UUID> ordenIds);
 
     @Query("""
+            SELECT ld.lineaOrden.id, ld.lineaOrdenPrestamo.orden.id
+            FROM LineaOrdenDevolucion ld
+            WHERE ld.lineaOrden.id IN :lineaOrdenIds
+            """)
+    List<Object[]> findPrestamoOrdenIdsByLineaOrdenIds(
+            @Param("lineaOrdenIds") List<UUID> lineaOrdenIds);
+
+    @Query("""
             SELECT ld FROM LineaOrdenDevolucion ld
             JOIN FETCH ld.lineaOrden lo
             LEFT JOIN FETCH lo.articulo a

@@ -13,7 +13,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "t100_person_links", schema = "data4n6",
         uniqueConstraints = @UniqueConstraint(
-                columnNames = {"t100_persons_id", "t000_app_tables_id", "record_id", "t200_person_roles_id"}
+                columnNames = {"t100_persons_id", "t900_app_tables_id", "record_id", "t200_person_roles_id"}
         ))
 public class PersonLink {
 
@@ -27,7 +27,7 @@ public class PersonLink {
     private Person person;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "t000_app_tables_id", nullable = false)
+    @JoinColumn(name = "t900_app_tables_id", nullable = false)
     private AppTable appTable;
 
     @Column(name = "record_id", nullable = false)

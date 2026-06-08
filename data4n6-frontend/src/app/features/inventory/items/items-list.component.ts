@@ -5,11 +5,10 @@ import {
 import { DatePipe, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
 import { provideIcons } from '@ng-icons/core';
 import {
   lucidePackage,
-  lucideTrash2, lucideExternalLink,
+  lucideExternalLink,
   lucideRefreshCw, lucideDownload,
   lucideLayoutList, lucideLayoutGrid,
   lucideSlidersHorizontal, lucideSearch, lucideX,
@@ -67,7 +66,7 @@ const ARTICULOS_API = 'http://localhost:8080/api/v1/inventory/articulos';
   ],
   providers: [provideIcons({
     lucidePackage,
-    lucideTrash2, lucideExternalLink,
+    lucideExternalLink,
     lucideRefreshCw, lucideDownload,
     lucideLayoutList, lucideLayoutGrid,
     lucideSlidersHorizontal, lucideSearch, lucideX,
@@ -137,10 +136,6 @@ const ARTICULOS_API = 'http://localhost:8080/api/v1/inventory/articulos';
         } @else {
           <span class="text-sm">{{ selectionCount() }} seleccionado{{ selectionCount() !== 1 ? 's' : '' }}</span>
           <div class="flex items-center gap-0.5">
-            <button hlmBtn variant="ghost" size="sm" class="h-7 text-destructive hover:text-destructive hover:bg-primary-foreground/15"
-              (click)="openDelete(singleSelected())">
-              <ng-icon hlmIcon size="sm" name="lucideTrash2" class="mr-1" />Eliminar
-            </button>
             @if (selectionCount() === 1) {
               <button hlmBtn variant="ghost" size="sm" class="h-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
                 (click)="goDetail(singleSelected()!)">
@@ -376,28 +371,28 @@ const ARTICULOS_API = 'http://localhost:8080/api/v1/inventory/articulos';
                         (click)="toggleSelectRange(item.id, $index, $event)" />
                     </td>
                     @if (isColumnVisible('tipoMaterialNombre')) {
-                    <td hlmTd class="text-muted-foreground">{{ item.tipoMaterialNombre ?? '—' }}</td>
+                    <td hlmTd>{{ item.tipoMaterialNombre ?? '—' }}</td>
                     }
                     @if (isColumnVisible('brandName')) {
-                    <td hlmTd class="text-muted-foreground">{{ item.brandName ?? '—' }}</td>
+                    <td hlmTd>{{ item.brandName ?? '—' }}</td>
                     }
                     @if (isColumnVisible('modeloDescripcion')) {
-                    <td hlmTd class="text-muted-foreground">{{ item.modeloDescripcion ?? '—' }}</td>
+                    <td hlmTd>{{ item.modeloDescripcion ?? '—' }}</td>
                     }
                     @if (isColumnVisible('serialNumber')) {
                     <td hlmTd class="font-mono text-xs">{{ item.serialNumber ?? '—' }}</td>
                     }
                     @if (isColumnVisible('almacenNombre')) {
-                    <td hlmTd class="text-muted-foreground">{{ item.almacenNombre ?? '—' }}</td>
+                    <td hlmTd>{{ item.almacenNombre ?? '—' }}</td>
                     }
                     @if (isColumnVisible('estadoActual')) {
                     <td hlmTd [ngClass]="estadoColorClass(item.estadoActual)">{{ item.estadoActual ?? '—' }}</td>
                     }
-                    <td hlmTd class="text-xs text-muted-foreground">{{ item.descripcionEstado ?? '—' }}</td>
-                    <td hlmTd class="text-xs text-center tabular-nums text-muted-foreground">{{ item.numPrestamos || '—' }}</td>
-                    <td hlmTd class="text-xs text-center text-muted-foreground">{{ item.numMovimientos || '—' }}</td>
-                    <td hlmTd class="text-xs text-center text-muted-foreground">{{ item.ultimoMovimiento ? (item.ultimoMovimiento | date:'dd/MM/yy') : '—' }}</td>
-                    <td hlmTd class="font-mono text-xs text-muted-foreground">{{ item.ultimaOrdenReferencia ?? '—' }}</td>
+                    <td hlmTd class="text-xs">{{ item.descripcionEstado ?? '—' }}</td>
+                    <td hlmTd class="text-xs text-center tabular-nums">{{ item.numPrestamos || '—' }}</td>
+                    <td hlmTd class="text-xs text-center">{{ item.numMovimientos || '—' }}</td>
+                    <td hlmTd class="text-xs text-center">{{ item.ultimoMovimiento ? (item.ultimoMovimiento | date:'dd/MM/yy') : '—' }}</td>
+                    <td hlmTd class="font-mono text-xs">{{ item.ultimaOrdenReferencia ?? '—' }}</td>
                   </tr>
                 }
               </tbody>
@@ -530,34 +525,6 @@ const ARTICULOS_API = 'http://localhost:8080/api/v1/inventory/articulos';
       </ng-template>
     </hlm-dialog>
 
-    <!-- ── Confirmar borrar ──────────────────────────────────────────────────── -->
-    <hlm-dialog [state]="deleteState()" (stateChanged)="onDeleteStateChanged($event)">
-      <ng-template brnDialogContent>
-        <hlm-dialog-content class="sm:max-w-md" [showCloseButton]="false">
-          <div class="bg-destructive text-destructive-foreground flex items-center gap-2 px-4 h-11 -mx-6 -mt-6 mb-2 rounded-t-lg">
-            <ng-icon hlmIcon size="sm" name="lucidePackage" />
-            <h2 class="text-sm font-semibold">¿Eliminar artículo?</h2>
-          </div>
-          <p class="text-sm text-muted-foreground py-2">
-            @if (itemToDelete()) {
-              Se eliminará el artículo
-              @if (itemToDelete()?.serialNumber) {
-                con N.º de serie <strong>{{ itemToDelete()!.serialNumber }}</strong>
-              } @else {
-                seleccionado
-              }.
-            } @else {
-              Se eliminarán <strong>{{ selectionCount() }}</strong> artículos seleccionados.
-            }
-            Esta acción no se puede deshacer.
-          </p>
-          <div hlmDialogFooter class="gap-2">
-            <button hlmBtn variant="outline" class="border-destructive bg-destructive/80 text-white hover:bg-destructive/90 hover:text-white" hlmDialogClose>Cancelar</button>
-            <button hlmBtn variant="destructive" (click)="confirmDelete()">Eliminar</button>
-          </div>
-        </hlm-dialog-content>
-      </ng-template>
-    </hlm-dialog>
   `,
 })
 export class ItemsListComponent extends GridBase<Articulo> implements OnInit {
@@ -623,10 +590,6 @@ export class ItemsListComponent extends GridBase<Articulo> implements OnInit {
   }
 
   private readonly selectAllCbRef = viewChild<ElementRef<HTMLInputElement>>('selectAllCb');
-
-  // Delete dialog
-  readonly itemToDelete = signal<Articulo | null>(null);
-  readonly deleteState  = signal<DialogState>(null);
 
   // Create dialog state
   readonly formState  = signal<DialogState>(null);
@@ -738,27 +701,4 @@ export class ItemsListComponent extends GridBase<Articulo> implements OnInit {
     });
   }
 
-  // ── Delete dialog ────────────────────────────────────────────────────────────
-
-  openDelete(item: Articulo | null): void {
-    this.itemToDelete.set(item);
-    this.deleteState.set('open');
-  }
-
-  onDeleteStateChanged(s: string): void { if (s === 'closed') this.deleteState.set(null); }
-
-  confirmDelete(): void {
-    const item = this.itemToDelete();
-    if (item) {
-      this.http.delete(`${ARTICULOS_API}/${item.id}`).subscribe({
-        next:  () => { this.deleteState.set('closed'); this.clearSelection(); this.load(); },
-        error: () => { this.deleteState.set('closed'); this.error.set('Error al eliminar el artículo.'); },
-      });
-    } else {
-      forkJoin([...this.selectedIds()].map(id => this.http.delete(`${ARTICULOS_API}/${id}`))).subscribe({
-        next:  () => { this.deleteState.set('closed'); this.clearSelection(); this.load(); },
-        error: () => { this.deleteState.set('closed'); this.error.set('Error al eliminar los artículos.'); this.load(); },
-      });
-    }
-  }
 }

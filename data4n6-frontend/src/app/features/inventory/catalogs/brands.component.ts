@@ -109,7 +109,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
                         <span class="flex flex-col">
                           <span>{{ view.label }}</span>
                           @if (view.description) {
-                            <span class="text-[10px] text-muted-foreground font-normal">{{ view.description }}</span>
+                            <span class="text-[10px] font-normal">{{ view.description }}</span>
                           }
                         </span>
                       </button>
@@ -155,7 +155,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
         <div class="px-3 py-2 shrink-0 border-b border-border">
           <div class="relative">
             <ng-icon hlmIcon size="sm" name="lucideSearch"
-              class="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              class="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               class="w-full h-8 pl-8 pr-8 rounded-md border border-primary bg-action/5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               placeholder="Buscar en marcas..."
@@ -163,7 +163,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
               (input)="onSearchInput($any($event.target).value)"
             />
             @if (searchInput()) {
-              <button class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" (click)="clearSearch()">
+              <button class="absolute right-2 top-1/2 -translate-y-1/2 hover:text-foreground" (click)="clearSearch()">
                 <ng-icon hlmIcon size="sm" name="lucideX" />
               </button>
             }
@@ -173,7 +173,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
         <!-- Filtros avanzados -->
         @if (showAdvancedFilters()) {
           <div class="px-3 py-2 shrink-0 border-b border-border bg-muted/30">
-            <p class="text-xs text-muted-foreground italic">Sin filtros avanzados para esta rejilla</p>
+            <p class="text-xs italic">Sin filtros avanzados para esta rejilla</p>
           </div>
         }
 
@@ -186,7 +186,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
             <div class="m-4 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">{{ error() }}</div>
           }
           @if (!loading() && !error() && totalRecords() === 0 && !searchQuery()) {
-            <div class="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
+            <div class="flex flex-col items-center justify-center py-12 gap-3">
               <ng-icon hlmIcon size="lg" name="lucideTag" class="opacity-25" />
               <p class="text-sm">No hay marcas registradas</p>
               <button hlmBtn variant="outline" size="sm" (click)="openCreateBrand()">
@@ -195,7 +195,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
             </div>
           }
           @if (!loading() && !error() && totalRecords() === 0 && searchQuery()) {
-            <div class="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
+            <div class="flex flex-col items-center justify-center py-12 gap-3">
               <ng-icon hlmIcon size="lg" name="lucideSearch" class="opacity-25" />
               <p class="text-sm">Sin resultados para "{{ searchQuery() }}"</p>
               <button hlmBtn variant="outline" size="sm" (click)="clearSearch()">Limpiar búsqueda</button>
@@ -219,9 +219,9 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
                       <span class="text-sm leading-tight truncate">{{ brand.name }}</span>
                     </div>
                     @if (brand.description) {
-                      <p class="text-xs text-muted-foreground line-clamp-2 flex-1">{{ brand.description }}</p>
+                      <p class="text-xs line-clamp-2 flex-1">{{ brand.description }}</p>
                     } @else {
-                      <p class="text-xs text-muted-foreground italic flex-1">Sin descripción</p>
+                      <p class="text-xs italic flex-1">Sin descripción</p>
                     }
                     <div class="flex items-center justify-end gap-1 mt-3 opacity-0 group-hover:opacity-100 transition-opacity"
                       (click)="$event.stopPropagation()">
@@ -273,7 +273,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
                           (change)="toggleSelect(brand.id)" />
                       </td>
                       <td hlmTd>{{ brand.name }}</td>
-                      <td hlmTd class="text-muted-foreground">{{ brand.description ?? '—' }}</td>
+                      <td hlmTd>{{ brand.description ?? '—' }}</td>
                       <td hlmTd class="text-right">
                         <div class="flex items-center justify-end gap-0.5" (click)="$event.stopPropagation()">
                           <button hlmBtn variant="ghost" size="icon" class="size-6" title="Editar" (click)="openEditBrand(brand)">
@@ -295,7 +295,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
 
         <!-- Paginación -->
         @if (!loading() && !error() && totalRecords() > 0) {
-          <div class="flex items-center justify-between px-4 h-10 shrink-0 border-t border-border text-xs text-muted-foreground" [ngClass]="footerColor">
+          <div class="flex items-center justify-between px-4 h-10 shrink-0 border-t border-border text-xs" [ngClass]="footerColor">
             <span>{{ displayFrom() }}–{{ displayTo() }} / {{ totalRecords() }}</span>
             <div class="flex items-center gap-0.5">
               <select class="h-6 rounded border border-input bg-background px-1 text-xs focus:outline-none cursor-pointer"
@@ -375,7 +375,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
                         <span class="flex flex-col">
                           <span>{{ v.label }}</span>
                           @if (v.description) {
-                            <span class="text-[10px] text-muted-foreground font-normal">{{ v.description }}</span>
+                            <span class="text-[10px] font-normal">{{ v.description }}</span>
                           }
                         </span>
                       </button>
@@ -423,7 +423,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
           <div class="px-3 py-2 shrink-0 border-b border-border">
             <div class="relative">
               <ng-icon hlmIcon size="sm" name="lucideSearch"
-                class="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                class="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 class="w-full h-8 pl-8 pr-8 rounded-md border border-primary bg-action/5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 placeholder="Buscar en modelos..."
@@ -431,7 +431,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
                 (input)="modelSearchInput.set($any($event.target).value)"
               />
               @if (modelSearchInput()) {
-                <button class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" (click)="modelSearchInput.set('')">
+                <button class="absolute right-2 top-1/2 -translate-y-1/2 hover:text-foreground" (click)="modelSearchInput.set('')">
                   <ng-icon hlmIcon size="sm" name="lucideX" />
                 </button>
               }
@@ -442,7 +442,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
           @if (showModelFilters()) {
             <div class="px-3 py-2 shrink-0 border-b border-border bg-muted/30 flex flex-wrap gap-3">
               <div class="flex items-center gap-2">
-                <label class="text-xs text-muted-foreground shrink-0">Tipo de material</label>
+                <label class="text-xs shrink-0">Tipo de material</label>
                 <select
                   class="h-7 rounded border border-primary bg-action/5 px-2 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
                   [ngModel]="filterModelTipoMaterialId()" (ngModelChange)="filterModelTipoMaterialId.set($event)"
@@ -460,7 +460,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
         <!-- Contenido modelos -->
         <div class="flex-1 overflow-auto min-h-0">
           @if (!selectedBrand()) {
-            <div class="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground">
+            <div class="flex flex-col items-center justify-center h-full gap-2">
               <ng-icon hlmIcon size="lg" name="lucideCpu" class="opacity-20" />
               <p class="text-sm">Selecciona una marca para ver sus modelos</p>
             </div>
@@ -469,7 +469,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
           } @else if (modelosError()) {
             <div class="m-4 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">{{ modelosError() }}</div>
           } @else if (filteredModelos().length === 0 && !modelSearchInput() && !filterModelTipoMaterialId()) {
-            <div class="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
+            <div class="flex flex-col items-center justify-center py-12 gap-3">
               <ng-icon hlmIcon size="lg" name="lucideCpu" class="opacity-25" />
               <p class="text-sm">No hay modelos para esta marca</p>
               <button hlmBtn variant="outline" size="sm" (click)="openCreateModelo()">
@@ -477,7 +477,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
               </button>
             </div>
           } @else if (filteredModelos().length === 0) {
-            <div class="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
+            <div class="flex flex-col items-center justify-center py-12 gap-3">
               <ng-icon hlmIcon size="lg" name="lucideSearch" class="opacity-25" />
               <p class="text-sm">Sin resultados</p>
               <button hlmBtn variant="outline" size="sm" (click)="modelSearchInput.set(''); filterModelTipoMaterialId.set('')">Limpiar filtros</button>
@@ -493,7 +493,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
                     <ng-icon hlmIcon name="lucideCpu" size="sm" class="text-primary shrink-0 mt-0.5" />
                     <span class="text-xs leading-tight truncate">{{ modelo.description ?? '—' }}</span>
                   </div>
-                  <span class="text-[10px] text-muted-foreground">{{ modelo.tipoMaterialNombre }}</span>
+                  <span class="text-[10px]">{{ modelo.tipoMaterialNombre }}</span>
                   <div class="flex items-center justify-end gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button hlmBtn variant="ghost" size="icon" class="size-5" title="Editar" (click)="openEditModelo(modelo)">
                       <ng-icon hlmIcon size="sm" name="lucidePencil" />
@@ -598,7 +598,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
             <ng-icon hlmIcon size="sm" name="lucideTag" />
             <h2 class="text-sm font-semibold">¿Eliminar marca?</h2>
           </div>
-          <p class="text-sm text-muted-foreground py-2">Se eliminará <strong>{{ brandToDelete()?.name }}</strong>. Esta acción no se puede deshacer.</p>
+          <p class="text-sm py-2">Se eliminará <strong>{{ brandToDelete()?.name }}</strong>. Esta acción no se puede deshacer.</p>
           <div hlmDialogFooter class="gap-2">
             <button hlmBtn variant="outline" class="border-destructive bg-destructive/80 text-white hover:bg-destructive/90 hover:text-white" hlmDialogClose>Cancelar</button>
             <button hlmBtn variant="destructive" (click)="confirmDeleteBrand()">Eliminar</button>
@@ -661,7 +661,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
             <ng-icon hlmIcon size="sm" name="lucideCpu" />
             <h2 class="text-sm font-semibold">¿Eliminar modelo?</h2>
           </div>
-          <p class="text-sm text-muted-foreground py-2">Se eliminará <strong>{{ modeloToDelete()?.description ?? 'este modelo' }}</strong>. Esta acción no se puede deshacer.</p>
+          <p class="text-sm py-2">Se eliminará <strong>{{ modeloToDelete()?.description ?? 'este modelo' }}</strong>. Esta acción no se puede deshacer.</p>
           <div hlmDialogFooter class="gap-2">
             <button hlmBtn variant="outline" class="border-destructive bg-destructive/80 text-white hover:bg-destructive/90 hover:text-white" hlmDialogClose>Cancelar</button>
             <button hlmBtn variant="destructive" (click)="confirmDeleteModelo()">Eliminar</button>

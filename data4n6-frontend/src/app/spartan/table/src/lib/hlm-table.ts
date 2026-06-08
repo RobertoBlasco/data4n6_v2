@@ -108,7 +108,7 @@ export class HlmTh {
 })
 export class HlmTd {
   constructor() {
-    classes(() => 'text-sm py-1 px-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pe-0');
+    classes(() => 'text-grid-foreground text-sm py-1 px-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pe-0');
   }
 }
 

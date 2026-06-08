@@ -82,13 +82,13 @@ interface TipoEntrada { id: string; nombre: string; descripcionCorta: string; de
       <div class="px-3 py-2 shrink-0 border-b border-border">
         <div class="relative">
           <ng-icon hlmIcon size="sm" name="lucideSearch"
-            class="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            class="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             class="w-full h-8 pl-8 pr-8 rounded-md border border-primary bg-action/5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             placeholder="Buscar en tipos de entrada..."
             [value]="searchInput()" (input)="onSearchInput($any($event.target).value)" />
           @if (searchInput()) {
-            <button class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" (click)="clearSearch()">
+            <button class="absolute right-2 top-1/2 -translate-y-1/2 hover:text-foreground" (click)="clearSearch()">
               <ng-icon hlmIcon size="sm" name="lucideX" />
             </button>
           }
@@ -104,14 +104,14 @@ interface TipoEntrada { id: string; nombre: string; descripcionCorta: string; de
           <div class="m-4 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">{{ error() }}</div>
         }
         @if (!loading() && !error() && totalRecords() === 0 && searchQuery()) {
-          <div class="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
+          <div class="flex flex-col items-center justify-center py-12 gap-3">
             <ng-icon hlmIcon size="lg" name="lucideSearch" class="opacity-25" />
             <p class="text-sm">Sin resultados para "{{ searchQuery() }}"</p>
             <button hlmBtn variant="outline" size="sm" (click)="clearSearch()">Limpiar búsqueda</button>
           </div>
         }
         @if (!loading() && !error() && totalRecords() === 0 && !searchQuery()) {
-          <div class="flex flex-col items-center justify-center py-16 gap-3 text-muted-foreground">
+          <div class="flex flex-col items-center justify-center py-16 gap-3">
             <ng-icon hlmIcon size="lg" name="lucideLogIn" class="opacity-25" />
             <p class="text-sm">No hay tipos de entrada</p>
             <button hlmBtn variant="outline" size="sm" (click)="openCreate()">
@@ -144,7 +144,7 @@ interface TipoEntrada { id: string; nombre: string; descripcionCorta: string; de
                 <tr hlmTr [ngClass]="[odd ? rowStripeClass : '', rowHoverClass]">
                   <td hlmTd>{{ item.nombre }}</td>
                   <td hlmTd><code class="text-xs font-mono text-primary">{{ item.descripcionCorta }}</code></td>
-                  <td hlmTd class="text-muted-foreground">{{ item.descripcion ?? '—' }}</td>
+                  <td hlmTd>{{ item.descripcion ?? '—' }}</td>
                   <td hlmTd class="text-right">
                     <div class="flex items-center justify-end gap-1">
                       <button hlmBtn variant="ghost" size="icon" class="size-6" (click)="openEdit(item)">
@@ -164,7 +164,7 @@ interface TipoEntrada { id: string; nombre: string; descripcionCorta: string; de
 
       <!-- Footer -->
       @if (!loading() && !error() && totalRecords() > 0) {
-        <div class="flex items-center justify-between px-4 h-10 shrink-0 border-t border-border text-xs text-muted-foreground" [ngClass]="footerColor">
+        <div class="flex items-center justify-between px-4 h-10 shrink-0 border-t border-border text-xs" [ngClass]="footerColor">
           <span>{{ displayFrom() }}–{{ displayTo() }} / {{ totalRecords() }}</span>
           <div class="flex items-center gap-0.5">
             <select class="h-6 rounded border border-input bg-background px-1 text-xs focus:outline-none cursor-pointer"
@@ -246,7 +246,7 @@ interface TipoEntrada { id: string; nombre: string; descripcionCorta: string; de
             <ng-icon hlmIcon size="sm" name="lucideTrash2" />
             <h2 class="text-sm font-semibold">Eliminar tipo de entrada</h2>
           </div>
-          <p class="text-sm text-muted-foreground">
+          <p class="text-sm">
             ¿Eliminar <span class="font-semibold text-foreground">{{ itemToDelete()?.nombre }}</span>? Esta acción no se puede deshacer.
           </p>
           <div hlmDialogFooter class="mt-4">

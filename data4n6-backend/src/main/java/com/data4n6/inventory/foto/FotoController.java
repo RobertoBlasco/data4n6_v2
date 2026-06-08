@@ -1,6 +1,5 @@
 package com.data4n6.inventory.foto;
 
-import com.data4n6.inventory.foto.dto.FotoRequest;
 import com.data4n6.inventory.foto.dto.FotoResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,13 +28,6 @@ public class FotoController {
         return service.findByEntity(tableId, recordId);
     }
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Add a picture to an entity record")
-    public FotoResponse create(@RequestBody FotoRequest req) {
-        return service.create(req);
-    }
-
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Upload and attach a picture file to an entity record")
@@ -47,6 +39,12 @@ public class FotoController {
             @RequestParam(required = false) String caption,
             @RequestParam MultipartFile file) {
         return service.upload(appTableId, recordId, pictureTypeId, esPrincipal, caption, file);
+    }
+
+    @PatchMapping("/{id}/set-principal")
+    @Operation(summary = "Mark a picture as principal for its entity record")
+    public FotoResponse setPrincipal(@PathVariable UUID id) {
+        return service.setPrincipal(id);
     }
 
     @DeleteMapping("/{id}")

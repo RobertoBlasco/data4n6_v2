@@ -5,7 +5,7 @@ import {
 import { NgClass } from '@angular/common';
 import { Router } from '@angular/router';
 import {
-  lucideHand,
+  lucidePackageCheck,
   lucidePlus,
   lucideRefreshCw, lucideDownload,
   lucideLayoutList, lucideSlidersHorizontal,
@@ -44,6 +44,7 @@ interface OrdenDevolucion {
   id: string;
   numeroReferencia:        string;
   aprobadoEn:              string;
+  ordenPrestamoId:         string;
   ordenPrestamoReferencia: string;
   agenteNombre:            string | null;
   unidadNombre:            string | null;
@@ -60,7 +61,7 @@ interface OrdenDevolucion {
     HlmSpinnerImports, HlmIconImports,
   ],
   providers: [provideIcons({
-    lucideHand, lucidePlus,
+    lucidePackageCheck, lucidePlus,
     lucideRefreshCw, lucideDownload,
     lucideLayoutList, lucideSlidersHorizontal,
     lucideSearch, lucideX,
@@ -77,7 +78,7 @@ interface OrdenDevolucion {
 
         @if (selectionCount() === 0) {
           <h1 class="text-sm font-semibold flex items-center gap-1.5">
-            <ng-icon hlmIcon size="sm" name="lucideHand" />{{ gridTitle() }}
+            <ng-icon hlmIcon size="sm" name="lucidePackageCheck" />{{ gridTitle() }}
           </h1>
           <div class="flex items-center gap-0.5">
             <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Recargar" (click)="reload()">
@@ -176,7 +177,7 @@ interface OrdenDevolucion {
         }
         @if (!loading() && !error() && totalRecords() === 0 && !searchQuery()) {
           <div class="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
-            <ng-icon hlmIcon size="lg" name="lucideHand" class="opacity-25" />
+            <ng-icon hlmIcon size="lg" name="lucidePackageCheck" class="opacity-25" />
             <p class="text-sm">No hay devoluciones registradas</p>
           </div>
         }
@@ -242,6 +243,7 @@ interface OrdenDevolucion {
                   [class.bg-action/25]="selectedIds().has(o.id)"
                   [ngClass]="[odd && !selectedIds().has(o.id) ? rowStripeClass : '', rowHoverClass]"
                   (click)="toggleSelectRange(o.id, $index, $event)"
+                  (dblclick)="goToDevolucion(o)"
                 >
                   <td hlmTd class="pr-0">
                     <input type="checkbox" class="accent-primary cursor-pointer"
@@ -255,12 +257,12 @@ interface OrdenDevolucion {
                         [name]="expandedIds().has(o.id) ? 'lucideChevronDown' : 'lucideChevronRight'" />
                     </button>
                   </td>
-                  <td hlmTd class="text-xs text-primary">{{ formatDate(o.aprobadoEn) }}</td>
-                  <td hlmTd class="font-mono text-xs text-primary">{{ o.numeroReferencia }}</td>
-                  <td hlmTd class="font-mono text-xs text-primary">{{ o.ordenPrestamoReferencia }}</td>
-                  <td hlmTd class="text-xs text-primary">{{ o.agenteNombre ?? '—' }}</td>
-                  <td hlmTd class="text-xs text-primary">{{ o.unidadNombre ?? '—' }}</td>
-                  <td hlmTd class="text-right tabular-nums text-primary">{{ o.numLineasDevueltas }}</td>
+                  <td hlmTd class="text-xs">{{ formatDate(o.aprobadoEn) }}</td>
+                  <td hlmTd class="font-mono text-xs">{{ o.numeroReferencia }}</td>
+                  <td hlmTd class="font-mono text-xs">{{ o.ordenPrestamoReferencia }}</td>
+                  <td hlmTd class="text-xs">{{ o.agenteNombre ?? '—' }}</td>
+                  <td hlmTd class="text-xs">{{ o.unidadNombre ?? '—' }}</td>
+                  <td hlmTd class="text-right tabular-nums">{{ o.numLineasDevueltas }}</td>
                 </tr>
                 @if (expandedIds().has(o.id)) {
                   <tr hlmTr>
@@ -273,7 +275,7 @@ interface OrdenDevolucion {
                         } @else {
                           <table class="w-full text-xs">
                             <thead>
-                              <tr class="border-b border-border text-muted-foreground">
+                              <tr class="border-b border-border">
                                 <th class="text-left font-normal py-1 pr-3 w-36">Tipo material</th>
                                 <th class="text-left font-normal py-1 pr-3 w-32">Marca</th>
                                 <th class="text-left font-normal py-1 pr-3">Modelo</th>
@@ -284,11 +286,11 @@ interface OrdenDevolucion {
                             <tbody>
                               @for (l of linesCache().get(o.id)!; track l.id) {
                                 <tr class="border-b border-border/50 last:border-0">
-                                  <td class="py-1 pr-3 text-muted-foreground">{{ l.tipoMaterialNombre ?? '—' }}</td>
-                                  <td class="py-1 pr-3 text-muted-foreground">{{ l.marcaNombre ?? '—' }}</td>
-                                  <td class="py-1 pr-3 text-muted-foreground">{{ l.modeloDescripcion ?? '—' }}</td>
-                                  <td class="py-1 pr-3 font-mono text-muted-foreground">{{ l.articuloSerialNumber ?? '—' }}</td>
-                                  <td class="py-1 text-muted-foreground">{{ l.almacenNombre ?? '—' }}</td>
+                                  <td class="py-1 pr-3">{{ l.tipoMaterialNombre ?? '—' }}</td>
+                                  <td class="py-1 pr-3">{{ l.marcaNombre ?? '—' }}</td>
+                                  <td class="py-1 pr-3">{{ l.modeloDescripcion ?? '—' }}</td>
+                                  <td class="py-1 pr-3 font-mono">{{ l.articuloSerialNumber ?? '—' }}</td>
+                                  <td class="py-1">{{ l.almacenNombre ?? '—' }}</td>
                                 </tr>
                               }
                             </tbody>
@@ -342,7 +344,7 @@ export class ReturnsComponent extends GridBase<OrdenDevolucion> implements OnIni
   protected override readonly gridId           = 'inventory-returns';
   protected override readonly labelSingular    = 'Devolución';
   protected override readonly labelPlural      = 'Devoluciones';
-  protected override readonly icon             = 'lucideHand';
+  protected override readonly icon             = 'lucidePackageCheck';
   protected override readonly colMetaTableName = 't600_ordenes_devolucion';
 
   private readonly router         = inject(Router);
@@ -437,6 +439,13 @@ export class ReturnsComponent extends GridBase<OrdenDevolucion> implements OnIni
         this.newOrderError.set('Error al comprobar artículos prestados.');
       },
     });
+  }
+
+  goToDevolucion(o: OrdenDevolucion): void {
+    this.router.navigate(
+      ['/inventory/orders/loans', o.ordenPrestamoId, 'devolucion'],
+      { queryParams: { devRef: o.numeroReferencia } }
+    );
   }
 
   goLoan(o: OrdenDevolucion): void {
