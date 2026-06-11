@@ -310,6 +310,19 @@ for i in $(seq 1 30); do
   [[ $i -eq 30 ]] && warn "MinIO tardó más de lo esperado — continuando de todas formas"
 done
 
+# Importar dump de base de datos si existe junto al script
+DB_DUMP="$SCRIPT_DIR/data4n6_dump.sql"
+if [[ -f "$DB_DUMP" ]]; then
+  info "Importando base de datos desde $(basename "$DB_DUMP") ($(du -sh "$DB_DUMP" | cut -f1))..."
+  PGPASSWORD=data4n6 psql -h localhost -p 5432 -U data4n6 -d data4n6 -f "$DB_DUMP" > /dev/null 2>&1 && \
+    ok "Base de datos importada" || \
+    warn "Importación con advertencias (puede que algunos objetos ya existieran — normal)"
+else
+  info "No se encontró data4n6_dump.sql junto al script"
+  info "La BD arrancará vacía y Flyway aplicará las migraciones estructurales"
+  info "Para incluir datos: ejecuta ./export-db.sh en el ordenador origen"
+fi
+
 # Crear bucket data4n6
 info "Configurando bucket MinIO 'data4n6'..."
 $DOCKER_CMD compose exec -T minio mc alias set local http://localhost:9000 data4n6 data4n6secret &>/dev/null 2>&1 && \

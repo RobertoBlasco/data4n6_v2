@@ -28,3 +28,4 @@ Thumbs.db
 # ── Secrets / Local overrides ───────────────────────────────────────────────────
 # application-local.properties  ← uncomment if you move secrets here
 conversations/
+data4n6_dump.sql
