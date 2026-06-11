@@ -262,7 +262,13 @@ if [[ -d "$DEST_DIR/.git" ]]; then
     info "Cambios locales detectados — guardando con stash..."
     git -C "$DEST_DIR" stash push -m "setup-dev stash antes de pull"
     git -C "$DEST_DIR" pull --ff-only
-    git -C "$DEST_DIR" stash pop || warn "Revisa posibles conflictos tras el stash pop"
+    if ! git -C "$DEST_DIR" stash pop; then
+      # En caso de conflicto, aceptar la versión del repo para ficheros de config
+      git -C "$DEST_DIR" checkout HEAD -- .gitignore 2>/dev/null || true
+      git -C "$DEST_DIR" checkout HEAD -- "data4n6-backend/.gitignore" 2>/dev/null || true
+      git -C "$DEST_DIR" stash drop 2>/dev/null || true
+      warn "Conflicto en stash resuelto: se usó la versión del repo para .gitignore"
+    fi
   else
     git -C "$DEST_DIR" pull --ff-only || ok "Ya estaba actualizado"
   fi
