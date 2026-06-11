@@ -1,0 +1,31 @@
+# Memory Index
+
+- [User technical profile](user_profile.md) — Java medio/avanzado, Spring principiante, Angular básico; comunicación en español
+- [Project context](project_context.md) — Estado completo: stack, migraciones V49-V120, rutas frontend, cambios de nav (actualizado 2026-05-29)
+- [Catalog system](catalog_system.md) — t000_app_tables, t900_apps, t900_table_fields, CatalogAdminComponent genérico, endpoints (2026-05-22)
+- [Inventory backend](inventory_backend.md) — Tablas, clases Java, endpoints, relaciones, patrones; paquetes orden/estadoorden/eventohistorial (2026-05-26)
+- [Sistema de órdenes](project_orden_design.md) — t600 cabecera, t650 líneas, subtablas tipo, contador referencias, PropuestaService, TODO ENT (2026-05-26)
+- [Sistema de rejillas (GridBase)](project_grid_types.md) — GridBase abstracta, singleSelected, acciones en cabecera, colores, patrones (2026-05-22)
+- [ArticuloPickerComponent](project_articulo_picker.md) — Picker dual reutilizable en inventory/shared/; API, multi-sort Shift+clic, test buttons temporales en loan-form
+- [Config dinámica campos — PENDIENTE](project_dynamic_field_config.md) — Plan V121: t900_configuracion + CSS vars --field-bg/--field-border + ConfigService + admin UI
+- [Usar siempre templates establecidos](feedback_use_established_templates.md) — DIRECTIVA: copiar siempre items-list/GridDialogBase; nunca plantillas ad-hoc
+- [UI libraries](feedback_ui_libraries.md) — Tailwind CSS + Spartan (spartan-ng); Angular Material y PrimeNG descartados
+- [Font standard](feedback_font_standard.md) — Roboto única fuente en toda la app; global via `* { font-family: Roboto !important }` en styles.scss
+- [Form patterns](feedback_form_patterns.md) — Diálogo para altas simples; SPA para complejas. Diálogos llevan: Cancelar / Alta+Siguiente / Alta / Alta+Formulario
+- [No bold in table columns](feedback_no_bold_columns.md) — Prohibido font-medium/semibold/bold en celdas de datos; solo si el usuario lo pide
+- [Grid border style](feedback_grid_border.md) — Rejillas principales: border-2 border-primary en el contenedor raíz
+- [Grid toolbar color](feedback_grid_toolbar_color.md) — Toolbar rejillas: bg-[#005a3b] text-white; nunca bg-primary (oklch no fiable)
+- [Dialog header pattern](feedback_dialog_header.md) — Cabecera verde+icono, sin X; Cancelar=destructive, Alta+Siguiente=outline verde, Alta=default
+- [FK combobox pattern](feedback_fk_combobox.md) — Botón display + input libre autofocus + dropdown; mousedown en items; sin [value] binding
+- [Input background color](feedback_input_background.md) — Campos editables: bg-action/5 + border-primary; HlmInput, FkCombobox, date pickers y campos hardcodeados
+- [t300_notes HTML body](project_t300_notes_html.md) — t300_notes.body es TEXT y puede contener HTML; no escapar en servidor
+- [Catalog backend](project_catalog_backend.md) — Paquete catalog: AppTable, App, TableField, Agent, Unit; endpoints, DTOs, secciones menú (2026-05-26)
+- [ng serve / node PATH](feedback_ng_serve_node.md) — Node en /opt/plesk/node/24/bin/; arrancar con PATH extendido o falla
+- [index.html render-blocking](feedback_index_html.md) — CDN stylesheets bloquean render; fue la causa del spinner infinito
+- [ultrareview: solo bajo petición](feedback_ultrareview.md) — No invocar /ultrareview por iniciativa propia; solo cuando el usuario lo pida
+- [Importaciones históricas tmp→inventario](project_import_migrations.md) — V101/V106/V107/V117/V119, pitfalls (dup ref, created_at null), recuperación Flyway, queries diagnóstico (2026-05-29)
+- [Campos readonly en modo vista](feedback_readonly_fields.md) — Comboboxes/datepickers → input readonly bg #f0f0f0; ocultar asteriscos, errores y diálogos de alta
+- [Toolbar contextual artículos — PENDIENTE](project_toolbar_contextual.md) — Backend /acciones-disponibles completo y verificado; falta frontend en items-list (signal + effect + botones) (2026-06-02)
+- [Sin botones en filas de rejilla](feedback_grid_row_actions.md) — Acciones (editar/eliminar) solo en el header cuando hay selección; nunca en celdas de la tabla
+- [Botones toolbar rejillas](feedback_grid_toolbar_buttons.md) — Alta = ghost icon-only size-7; destructivo = outline text-red-600 border-red-400; nunca border-white/40
+- [Project context](project_context.md) — Estado completo: MinIO t100_pictures/t100_documents, FormBase, FormReadonlyDirective, iconos órdenes, historial movimientos (actualizado 2026-06-08)

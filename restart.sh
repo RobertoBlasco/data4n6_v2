@@ -15,13 +15,28 @@ ok()      { echo -e "${GREEN}[✓]${NC} $*"; }
 warn()    { echo -e "${YELLOW}[!]${NC} $*"; }
 die()     { echo -e "${RED}[✗]${NC} $*"; exit 1; }
 
+# ── Configuración local (generada por setup-dev.sh) ──────────────────────────
+# Node.js: usa .node-bin-dir si existe, si no detecta automáticamente
+if [[ -f "$ROOT/.node-bin-dir" ]]; then
+  NODE_BIN_DIR="$(cat "$ROOT/.node-bin-dir")"
+else
+  NODE_BIN_DIR="$(dirname "$(command -v node 2>/dev/null || echo '/usr/bin/node')")"
+  # Fallback conocido para esta máquina
+  [[ -d "/opt/plesk/node/24/bin" ]] && NODE_BIN_DIR="/opt/plesk/node/24/bin"
+fi
+
+# Spring profile: usa .spring-profile si existe (para Docker local)
+SPRING_OPTS=""
+if [[ -f "$ROOT/.spring-profile" ]]; then
+  SPRING_OPTS="--spring.profiles.active=$(cat "$ROOT/.spring-profile")"
+fi
+
 kill_port() {
   local port=$1
   local pids
   pids=$(lsof -ti:"$port" 2>/dev/null || true)
   [[ -z "$pids" ]] && return
 
-  # Build list of ancestor PIDs to protect (current shell + all parents up to init)
   local protected=()
   local p=$$
   while [[ "$p" -gt 1 ]]; do
@@ -32,14 +47,12 @@ kill_port() {
   local killed=0
   while IFS= read -r pid; do
     [[ -z "$pid" ]] && continue
-    # Skip if ancestor of this shell
     for anc in "${protected[@]}"; do
       if [[ "$pid" == "$anc" ]]; then
         warn "Omitiendo PID $pid en puerto $port (proceso de la sesión actual)"
         continue 2
       fi
     done
-    # Skip SSH or terminal processes
     local comm
     comm=$(ps -p "$pid" -o comm= 2>/dev/null || true)
     if [[ "$comm" == *ssh* || "$comm" == *ttyd* || "$comm" == *wetty* ]]; then
@@ -84,13 +97,14 @@ if [[ ! -f "$JAR" ]]; then
   info "JAR no encontrado — compilando (esto tardará ~15 min la primera vez)..."
   cd "$BACKEND" && mvn package -DskipTests -q
 fi
-nohup java -jar "$JAR" < /dev/null > "$BACKEND_LOG" 2>&1 &
+# shellcheck disable=SC2086
+nohup java -jar "$JAR" $SPRING_OPTS < /dev/null > "$BACKEND_LOG" 2>&1 &
 wait_backend
 
 # ── Frontend ──────────────────────────────────────────────────────────────────
 info "Arrancando frontend → $FRONTEND_LOG"
 cd "$FRONTEND"
-nohup env PATH="/opt/plesk/node/24/bin:$PATH" \
+nohup env PATH="$NODE_BIN_DIR:$PATH" \
   node_modules/.bin/ng serve --host 0.0.0.0 --port 4200 --configuration development \
   < /dev/null > "$FRONTEND_LOG" 2>&1 &
 
