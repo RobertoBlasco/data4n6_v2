@@ -14,6 +14,7 @@ set -euo pipefail
 
 REPO_URL="${REPO_URL:-https://github.com/RobertoBlasco/data4n6_v2.git}"
 DEST_DIR="${1:-$HOME/dev/data4n6}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; BOLD='\033[1m'; NC='\033[0m'
 
@@ -394,7 +395,6 @@ fi
 # ─────────────────────────────────────────────────────────────────────────────
 header "11. Contexto Claude Code"
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # Claude puede transformar el path (p.ej. _ → -), intentamos ambas variantes
 _key1="$(echo "$ROOT" | sed 's|/|-|g')"
 _key2="$(echo "$_key1" | tr '_' '-')"
