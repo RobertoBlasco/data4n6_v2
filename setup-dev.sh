@@ -256,8 +256,16 @@ ok "Node.js v$NODE_VER  ($NODE_BIN_DIR)"
 header "6. Repositorio"
 
 if [[ -d "$DEST_DIR/.git" ]]; then
-  ok "Repo ya existe en $DEST_DIR — actualizando (git pull)..."
-  git -C "$DEST_DIR" pull --ff-only
+  info "Repo ya existe en $DEST_DIR — actualizando..."
+  # Si hay cambios locales, guardarlos antes del pull
+  if ! git -C "$DEST_DIR" diff --quiet || ! git -C "$DEST_DIR" diff --cached --quiet; then
+    info "Cambios locales detectados — guardando con stash..."
+    git -C "$DEST_DIR" stash push -m "setup-dev stash antes de pull"
+    git -C "$DEST_DIR" pull --ff-only
+    git -C "$DEST_DIR" stash pop || warn "Revisa posibles conflictos tras el stash pop"
+  else
+    git -C "$DEST_DIR" pull --ff-only || ok "Ya estaba actualizado"
+  fi
 else
   info "Clonando $REPO_URL → $DEST_DIR ..."
   mkdir -p "$(dirname "$DEST_DIR")"
