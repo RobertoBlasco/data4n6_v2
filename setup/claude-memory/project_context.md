@@ -1,68 +1,83 @@
 ---
 name: project-context
-description: Estado completo del proyecto data4n6_v2 — stack, migraciones, componentes, patrones clave (actualizado 2026-06-08)
-metadata:
+description: "Estado completo del proyecto data4n6_v2 — stack, infraestructura, scripts, componentes clave (actualizado 2026-06-11)"
+metadata: 
+  node_type: memory
   type: project
+  originSessionId: 804770d8-1fa0-4802-a2f0-e6aae75d93a1
 ---
 
 ## Stack
-- Backend: Spring Boot 3.5, Hibernate, Flyway, MinIO (Docker), PostgreSQL schemas: common, inventario, seguridad
+- Backend: Spring Boot 3.5, Hibernate, Flyway, MinIO (Docker), PostgreSQL schemas: common, tenant_default
 - Frontend: Angular 21, Tailwind CSS v4 + Spartan (spartan-ng), signals, standalone components
 
-## Migraciones — V148-V150 aplicadas; V151-V155 pendientes de reinicio backend
-- V148: t100_photos → t100_pictures (renombra tabla y PK)
-- V149: añade t200_pictures_id, es_principal, caption a t100_pictures; t200_documents_id a t100_documents
-- V150: elimina t300_pictures y t300_documents
-- V151-V155: iconos en t900_app_tables para todas las tablas de órdenes
+## Arranque (IMPORTANTE)
+- **Nunca usar `mvn clean spring-boot:run`** — tarda 15+ min compilando y el script lo mata
+- **restart.sh** usa `java -jar target/*.jar` (arranca en ~20s)
+- Lee `.spring-profile` (para Docker local) y `.node-bin-dir` (ruta Node) si existen en la raíz
+- Recompilar tras cambios Java: `cd data4n6-backend && mvn package -DskipTests -q`
 
-## Binarios (MinIO)
-- t100_pictures (era t100_photos) y t100_documents son las tablas polimórficas de binarios
-- StorageService: upload, getPublicUrl, delete (MinIO)
-- Endpoints: POST /inventory/pictures/upload, POST /inventory/documents/upload, PATCH /pictures/{id}/set-principal
+## Setup en máquina nueva
+```bash
+curl -fsSL https://raw.githubusercontent.com/RobertoBlasco/data4n6_v2/main/setup-dev.sh -o setup-dev.sh
+chmod +x setup-dev.sh && ./setup-dev.sh
+```
+- Instala Docker, Java 21, Maven, Node.js si faltan
+- Levanta PostgreSQL (5432) + MinIO (9000/9001) con Docker Compose
+- npm install, compila JAR, instala memoria Claude
+- Para historial /resume: ejecutar `./export-conversations.sh` en origen → copiar `conversations/` junto al script
 
-## Familia de iconos de órdenes (t900_app_tables + frontend)
-- Artículo: lucidePackage | Entrada almacén: lucideArrowDownToLine | Traspaso: lucideArrowRightLeft
-- Préstamo: lucidePackageOpen | Devolución: lucidePackageCheck | Adjudicación: lucidePackagePlus | Baja: lucideArchive
+## Infraestructura Docker local
+- PostgreSQL: localhost:5432, data4n6/data4n6
+- MinIO: localhost:9000 API, localhost:9001 consola, data4n6/data4n6secret
+- application-local.properties sobrescribe la URL de producción (192.168.0.16:5433)
+- .spring-profile contiene "local" → restart.sh pasa --spring.profiles.active=local al JAR
 
-## Componentes compartidos (shared/components/)
-- DetailTreeComponent (app-detail-tree) — árbol navegación SPA, hover ámbar bg-action/25
-- HistoricalGridComponent (app-historical-grid) — rejilla histórica; inputs: data, loading, empty, emptyMessage, selectable, defaultSort; expone sortedData(), toggleSort(), isSelected(), selectedId
-- SectionHeaderComponent (app-section-header) — cabecera sección; ng-content para botones derecha
-- PicturePanelComponent, FkComboboxComponent, FormFieldComponent (detecta FORM_READONLY)
+## Migraciones Flyway — V156 última aplicada
+- V156: icono en t900_apps
+
+## Componentes compartidos clave (shared/components/)
+- **StandarTabPanelComponent** — tabs notas/documentos/fotos. Usa `viewChild()` no-required + `?.count() ?? 0`
+- **t300-notes, t300-documents, t300-pictures** — componentes standalone adjuntos polimórficos
+- **DetailTreeComponent** — árbol navegación SPA, hover ámbar bg-action/25
+- **HistoricalGridComponent** — rejilla histórica con sort, selección, data/loading/empty
+- **SectionHeaderComponent** — cabecera sección con ng-content para botones
+- **PicturePanelComponent, FkComboboxComponent, FormFieldComponent**
 
 ## FormBase (shared/form/form-base.ts)
 - Clase abstracta para todos los formularios SPA
-- Protected: colMetaTableName, icon, labelSingular, defaultBackRoute
-- Signals públicos: formReadonly(boolean|null), tableMeta, formIcon(), formTitle(), resolvedBackRoute()
+- Signals: formReadonly(boolean|null), loading, saving, loadError, tableMeta, formIcon, formMode
+- formMode===false → modo edición → FormLockService.lock() → shell menu opacity-50
 - loadFormMeta() → carga tableMeta e icono desde t900_app_tables; llamar en ngOnInit
-- formReadonly.set(true/false/null) → cada form lo setea según su lógica
+- resolvedBackRoute: lee ?back= query param; si no, usa defaultBackRoute
 
-## FormReadonlyDirective (shared/form/form-readonly.directive.ts)
-- [appFormReadonly]="formReadonly()" en el div raíz de cada formulario
-- Provee FORM_READONLY injection token → FormFieldComponent lo inyecta y aplica gris al label
-- Añade clase CSS .form-readonly al host → styles.css: input/textarea/select → color:var(--muted-foreground)
+## FormReadonlyDirective + FormLockService
+- [appFormReadonly] en div raíz → inyecta FORM_READONLY token + clase .form-readonly
+- FormLockService (root) → isLocked → HorizontalShellComponent.navigationDisabled → header opacity-50
 
-## SpaFormHeaderComponent
-- Input [readonly]: null=sin badge, true="Solo lectura", false="Edición"
-- Input [backRoute]="resolvedBackRoute()" — contextual vía ?back= query param
+## HorizontalShellComponent (layout/)
+- Shell del módulo inventario con nav horizontal (NO ShellComponent)
+- Registra todos los iconos Lucide usados en el módulo
+- navigationDisabled = formLockSvc.isLocked (solo afecta al header, no al router-outlet)
 
-## Historial de movimientos (item-form) 
-- ArticuloMovimientoResponse: fecha, tipoEvento, estadoOrden, detalle(N/M), ordenId, ordenCategoria
-- ordenCategoria: "prestamo","devolucion","entrada","baja","traspaso","adjudicacion"
-- Doble clic → goToOrden(): navega a la orden correspondiente con back route contextual
-- "Devolución Préstamo" tiene ordenCategoria="prestamo" (la orden vinculada ES el préstamo)
+## Rutas principales inventario
+- /inventory/items → listado artículos
+- /inventory/items/:id → ItemFormComponent (ficha artículo)
+- /inventory/orders/loans → préstamos
+- /inventory/orders/loans/:id → LoanFormComponent
+- /inventory/orders/loans/:id/devolucion → DevolucionFormComponent
+- /inventory/orders/returns → devoluciones
+- /inventory/orders/warehouse-entries → entradas almacén
+- /inventory/admin/:tableName → catálogos dinámicos (CatalogAdminComponent)
 
-## DevolucionFormComponent
-- Modo vista (isView): lineasPendientes.length===0 OR ?devRef= param presente
-- ?devRef=REF → muestra solo artículos de esa devolución específica
-- Sección "Orden de préstamo" con lucidePackageOpen + botón ir al préstamo
+## Binarios (MinIO)
+- t100_pictures y t100_documents — tablas polimórficas de binarios
+- StorageService: upload, getPublicUrl, delete
+- Endpoints: POST /inventory/pictures/upload, POST /inventory/documents/upload
 
 ## Colores estándar
-- --grid-foreground → oklch(0.145 0 0) → HlmTd + HistoricalGridComponent tbody td
-- text-muted-foreground → oklch(0.556 0 0) → campos readonly y labels en formularios solo lectura
-- .form-readonly input/textarea/select → color: var(--muted-foreground) !important (styles.css)
-- Hover rejillas: bg-action/25 = oklch(0.796 0.18 83 / 0.25) (ámbar)
-
-## Navegación contextual (FormBase.resolvedBackRoute)
-- Lee ?back= query param; si no, usa defaultBackRoute definido en cada subclase
-- Uso: router.navigate([ruta], { queryParams: { back: currentUrl } })
+- Toolbar rejillas: bg-[#005a3b] text-white (nunca bg-primary)
+- Hover rejillas: bg-action/25 (ámbar)
+- Campos editables: bg-action/5 + border-primary
+- Campos readonly: bg-[#f0f0f0]
+- --foreground: oklch(0.25 0 0) ≈ #3f3f3f
