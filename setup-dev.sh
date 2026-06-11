@@ -6,6 +6,9 @@
 #   ./setup-dev.sh                          # clona en ~/dev/data4n6
 #   ./setup-dev.sh /ruta/destino            # clona en la ruta indicada
 #   REPO_URL=https://... ./setup-dev.sh     # usa otro repositorio
+#
+# Para incluir historial de conversaciones, ejecuta primero en el ordenador origen:
+#   ./export-conversations.sh
 
 set -euo pipefail
 
@@ -360,19 +363,44 @@ else
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 11. CONTEXTO CLAUDE CODE
+# 11. CONTEXTO CLAUDE CODE (memoria + historial de conversaciones)
 # ─────────────────────────────────────────────────────────────────────────────
 header "11. Contexto Claude Code"
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# Claude puede transformar el path (p.ej. _ → -), intentamos ambas variantes
+_key1="$(echo "$ROOT" | sed 's|/|-|g')"
+_key2="$(echo "$_key1" | tr '_' '-')"
+if   [[ -d "$HOME/.claude/projects/$_key1" ]]; then CLAUDE_PROJ_DIR="$HOME/.claude/projects/$_key1"
+elif [[ -d "$HOME/.claude/projects/$_key2" ]]; then CLAUDE_PROJ_DIR="$HOME/.claude/projects/$_key2"
+else CLAUDE_PROJ_DIR="$HOME/.claude/projects/$_key1"; fi   # usamos key1 para crearlo nuevo
+
+# 11a. Memoria del proyecto (patrones, preferencias, estado)
 MEMORY_SOURCE="$ROOT/setup/claude-memory"
 if [[ -d "$MEMORY_SOURCE" ]]; then
-  CLAUDE_PROJ_KEY="$(echo "$ROOT" | sed 's|/|-|g')"
-  CLAUDE_MEM_DIR="$HOME/.claude/projects/$CLAUDE_PROJ_KEY/memory"
-  mkdir -p "$CLAUDE_MEM_DIR"
-  cp -r "$MEMORY_SOURCE/." "$CLAUDE_MEM_DIR/"
-  ok "Contexto Claude instalado ($(ls "$CLAUDE_MEM_DIR" | wc -l) archivos)"
+  mkdir -p "$CLAUDE_PROJ_DIR/memory"
+  cp -r "$MEMORY_SOURCE/." "$CLAUDE_PROJ_DIR/memory/"
+  ok "Memoria del proyecto instalada ($(ls "$CLAUDE_PROJ_DIR/memory" | wc -l) archivos)"
 else
-  warn "No se encontraron archivos de memoria en setup/claude-memory — saltando"
+  warn "No se encontraron archivos de memoria en setup/claude-memory"
+fi
+
+# 11b. Historial de conversaciones (ficheros .jsonl exportados con export-conversations.sh)
+# Busca en el directorio del script en la unidad externa
+CONVERSATIONS_SOURCE="$SCRIPT_DIR/conversations"
+if [[ -d "$CONVERSATIONS_SOURCE" ]] && compgen -G "$CONVERSATIONS_SOURCE/*.jsonl" > /dev/null 2>&1; then
+  mkdir -p "$CLAUDE_PROJ_DIR"
+  CONV_COUNT=0
+  for f in "$CONVERSATIONS_SOURCE"/*.jsonl; do
+    cp "$f" "$CLAUDE_PROJ_DIR/"
+    CONV_COUNT=$((CONV_COUNT + 1))
+  done
+  CONV_SIZE=$(du -sh "$CONVERSATIONS_SOURCE" 2>/dev/null | cut -f1)
+  ok "Historial de conversaciones instalado ($CONV_COUNT conversaciones, $CONV_SIZE)"
+  info "Usa /resume en Claude Code para reanudar conversaciones anteriores"
+else
+  warn "No se encontró historial de conversaciones en $CONVERSATIONS_SOURCE"
+  info "Para exportarlo desde el ordenador origen: ./export-conversations.sh"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -400,7 +428,12 @@ echo -e "    ${CYAN}cd data4n6-backend && mvn package -DskipTests -q${NC}"
 echo ""
 echo -e "  ${BOLD}Abrir Claude Code:${NC}"
 echo -e "    ${CYAN}cd $ROOT && claude${NC}"
-echo -e "    El contexto de conversaciones anteriores ya está cargado."
+echo ""
+echo -e "  ${BOLD}Nota sobre el contexto:${NC}"
+echo -e "    Se han instalado los archivos de ${BOLD}memoria${NC} del proyecto (patrones,"
+echo -e "    preferencias, estado). Claude los cargará automáticamente."
+echo -e "    El historial de conversaciones (${CYAN}/resume${NC}) es local a cada máquina"
+echo -e "    y no se puede transferir — simplemente abre una conversación nueva."
 echo ""
 echo -e "  ${BOLD}Gestionar contenedores:${NC}"
 echo -e "    Parar:    ${CYAN}cd data4n6-backend && $DOCKER_CMD compose down${NC}"
