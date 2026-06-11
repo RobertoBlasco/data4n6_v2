@@ -13,7 +13,7 @@ import {
   lucideChevronLeft, lucideChevronRight,
   lucideChevronsLeft, lucideChevronsRight,
   lucideChevronUp, lucideChevronDown,
-  lucidePrinter,
+  lucidePrinter, lucideCheck,
 } from '@ng-icons/lucide';
 import { provideIcons } from '@ng-icons/core';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -27,36 +27,45 @@ const BASE = 'http://localhost:8080/api/v1';
 
 interface LineaPrestamo {
   id: string;
-  articuloId:          string | null;
-  articuloSerialNumber: string | null;
-  tipoMaterialId:      string | null;
-  tipoMaterialNombre:  string | null;
-  marcaId:             string | null;
-  marcaNombre:         string | null;
-  modeloId:            string | null;
-  modeloDescripcion:   string | null;
-  almacenId:           string | null;
-  almacenNombre:       string | null;
+  articuloId:              string | null;
+  articuloSerialNumber:    string | null;
+  tipoMaterialId:          string | null;
+  tipoMaterialNombre:      string | null;
+  marcaId:                 string | null;
+  marcaNombre:             string | null;
+  modeloId:                string | null;
+  modeloDescripcion:       string | null;
+  almacenId:               string | null;
+  almacenNombre:           string | null;
+  devuelta:                boolean;
+  ordenDevolucionReferencia: string | null;
+  fechaDevolucion:         string | null;
+  agenteDevolucionNombre:  string | null;
+  unidadDevolucionNombre:  string | null;
 }
 
 interface OrdenPrestamo {
   id: string;
-  numeroReferencia:   string;
-  aprobadoPor:        string | null;
-  aprobadoEn:         string;
-  fechaInicio:        string | null;
-  fechaFin:           string | null;
-  agenteId:    string | null;
-  agenteNombre: string | null;
-  unidadId:    string | null;
-  unidadNombre: string | null;
-  fechaDevolucion:    string | null;
-  estadoOrdenId:      string | null;
-  estadoOrdenNombre:  string | null;
-  casosId:            string | null;
-  casosReference:     string | null;
-  numLineas:          number;
-  numLineasDevueltas: number;
+  numeroReferencia:      string;
+  aprobadoPor:           string | null;
+  aprobadoEn:            string;
+  fechaInicio:           string | null;
+  fechaFin:              string | null;
+  agenteOrigenId:        string | null;
+  agenteOrigenNombre:    string | null;
+  unidadOrigenId:        string | null;
+  unidadOrigenNombre:    string | null;
+  agenteDestinoId:       string | null;
+  agenteDestinoNombre:   string | null;
+  unidadDestinoId:       string | null;
+  unidadDestinoNombre:   string | null;
+  fechaDevolucion:       string | null;
+  estadoOrdenId:         string | null;
+  estadoOrdenNombre:     string | null;
+  casosId:               string | null;
+  casosReference:        string | null;
+  numLineas:             number;
+  numLineasDevueltas:    number;
 }
 
 const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
@@ -79,32 +88,32 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
     lucideChevronLeft, lucideChevronRight,
     lucideChevronsLeft, lucideChevronsRight,
     lucideChevronUp, lucideChevronDown,
-    lucidePrinter,
+    lucidePrinter, lucideCheck,
   })],
   template: `
-    <div class="h-full flex flex-col min-h-0 overflow-hidden border-2 border-primary rounded-lg bg-background">
+    <div [class]="containerCls">
 
       <!-- ── Cabecera ──────────────────────────────────────────────────────────── -->
-      <div class="flex items-center justify-between pl-4 pr-2 h-11 shrink-0 border-b border-border" [ngClass]="toolbarColor">
+      <div [class]="toolbarCls">
 
         @if (selectionCount() === 0) {
-          <h1 class="text-sm font-semibold flex items-center gap-1.5">
+          <h1 class="font-semibold flex items-center gap-1.5">
             <ng-icon hlmIcon size="sm" name="lucidePackageOpen" />{{ gridTitle() }}
           </h1>
           <div class="flex items-center gap-0.5">
-            <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Recargar" (click)="reload()">
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Recargar" (click)="reload()">
               <ng-icon hlmIcon size="sm" name="lucideRefreshCw" />
             </button>
-            <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Exportar">
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Exportar">
               <ng-icon hlmIcon size="sm" name="lucideDownload" />
             </button>
             <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-            <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Columnas">
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Columnas">
               <ng-icon hlmIcon size="sm" name="lucideLayoutList" />
             </button>
             <div class="relative">
               <button hlmBtn variant="ghost" size="icon"
-                class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
+                [class]="btnNewCls"
                 [class.bg-primary-foreground/20]="showViewPicker()"
                 title="Cambiar vista"
                 (click)="toggleViewPicker()"
@@ -131,7 +140,7 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
               }
             </div>
             <button hlmBtn variant="ghost" size="icon"
-              class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
+              [class]="btnNewCls"
               [class.bg-primary-foreground/20]="showAdvancedFilters()"
               title="Filtros avanzados"
               (click)="showAdvancedFilters.set(!showAdvancedFilters())"
@@ -139,13 +148,13 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
               <ng-icon hlmIcon size="sm" name="lucideSlidersHorizontal" />
             </button>
             <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-            <button hlmBtn variant="action" size="sm" class="h-7" (click)="goNew()">
-              <ng-icon hlmIcon size="sm" name="lucidePlus" class="mr-1" />Nueva orden
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Nueva orden" (click)="goNew()">
+              <ng-icon hlmIcon size="sm" name="lucidePlus" />
             </button>
           </div>
 
         } @else {
-          <span class="text-sm">{{ selectionCount() }} seleccionado{{ selectionCount() !== 1 ? 's' : '' }}</span>
+          <span>{{ selectionCount() }} seleccionado{{ selectionCount() !== 1 ? 's' : '' }}</span>
           <div class="flex items-center gap-0.5">
             @if (selectionCount() === 1) {
               <button hlmBtn variant="ghost" size="sm" class="h-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
@@ -157,7 +166,7 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
               <ng-icon hlmIcon size="sm" name="lucideDownload" class="mr-1" />Exportar
             </button>
             <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-            <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Deseleccionar" (click)="clearSelection()">
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Deseleccionar" (click)="clearSelection()">
               <ng-icon hlmIcon size="sm" name="lucideX" />
             </button>
           </div>
@@ -171,7 +180,7 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
           <ng-icon hlmIcon size="sm" name="lucideSearch"
             class="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           <input
-            class="w-full h-8 pl-8 pr-8 rounded-md border border-primary bg-action/5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            class="w-full h-8 pl-8 pr-8 rounded-md border border-primary bg-action/5 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             placeholder="Buscar por referencia, adjudicatario, estado..."
             [value]="searchInput()"
             (input)="onSearchInput($any($event.target).value)"
@@ -187,7 +196,7 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
       <!-- ── Filtros avanzados ──────────────────────────────────────────────────── -->
       @if (showAdvancedFilters()) {
         <div class="px-3 py-2 shrink-0 border-b border-border bg-muted/30">
-          <p class="text-xs text-muted-foreground italic">Sin filtros avanzados configurados</p>
+          <p class="text-muted-foreground italic">Sin filtros avanzados configurados</p>
         </div>
       }
 
@@ -197,18 +206,18 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
           <div class="flex items-center justify-center py-12"><hlm-spinner /></div>
         }
         @if (error() && !loading()) {
-          <div class="m-4 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">{{ error() }}</div>
+          <div class="m-4 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-destructive">{{ error() }}</div>
         }
         @if (!loading() && !error() && totalRecords() === 0 && !searchQuery()) {
           <div class="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
             <ng-icon hlmIcon size="lg" name="lucidePackageOpen" class="opacity-25" />
-            <p class="text-sm">No hay órdenes de préstamo registradas</p>
+            <p>No hay órdenes de préstamo registradas</p>
           </div>
         }
         @if (!loading() && !error() && totalRecords() === 0 && searchQuery()) {
           <div class="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
             <ng-icon hlmIcon size="lg" name="lucideSearch" class="opacity-25" />
-            <p class="text-sm">Sin resultados para "{{ searchQuery() }}"</p>
+            <p>Sin resultados para "{{ searchQuery() }}"</p>
             <button hlmBtn variant="outline" size="sm" (click)="clearSearch()">Limpiar búsqueda</button>
           </div>
         }
@@ -234,16 +243,28 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
                     @else if (sortDir('numeroReferencia') === 'desc') { <ng-icon hlmIcon size="sm" name="lucideChevronDown" /> }
                   </div>
                 </th>
-                <th hlmTh class="cursor-pointer select-none" (click)="toggleSort('agenteNombre', $event)">
-                  <div class="flex items-center gap-1">Agente
-                    @if (sortDir('agenteNombre') === 'asc')  { <ng-icon hlmIcon size="sm" name="lucideChevronUp" /> }
-                    @else if (sortDir('agenteNombre') === 'desc') { <ng-icon hlmIcon size="sm" name="lucideChevronDown" /> }
+                <th hlmTh class="w-28 cursor-pointer select-none" (click)="toggleSort('unidadOrigenNombre', $event)">
+                  <div class="flex items-center gap-1">U. Emisora
+                    @if (sortDir('unidadOrigenNombre') === 'asc')  { <ng-icon hlmIcon size="sm" name="lucideChevronUp" /> }
+                    @else if (sortDir('unidadOrigenNombre') === 'desc') { <ng-icon hlmIcon size="sm" name="lucideChevronDown" /> }
                   </div>
                 </th>
-                <th hlmTh class="cursor-pointer select-none" (click)="toggleSort('unidadNombre', $event)">
-                  <div class="flex items-center gap-1">Unidad
-                    @if (sortDir('unidadNombre') === 'asc')  { <ng-icon hlmIcon size="sm" name="lucideChevronUp" /> }
-                    @else if (sortDir('unidadNombre') === 'desc') { <ng-icon hlmIcon size="sm" name="lucideChevronDown" /> }
+                <th hlmTh class="w-28 cursor-pointer select-none" (click)="toggleSort('agenteOrigenNombre', $event)">
+                  <div class="flex items-center gap-1">Ag. Emisor
+                    @if (sortDir('agenteOrigenNombre') === 'asc')  { <ng-icon hlmIcon size="sm" name="lucideChevronUp" /> }
+                    @else if (sortDir('agenteOrigenNombre') === 'desc') { <ng-icon hlmIcon size="sm" name="lucideChevronDown" /> }
+                  </div>
+                </th>
+                <th hlmTh class="w-28 cursor-pointer select-none" (click)="toggleSort('unidadDestinoNombre', $event)">
+                  <div class="flex items-center gap-1">U. Receptora
+                    @if (sortDir('unidadDestinoNombre') === 'asc')  { <ng-icon hlmIcon size="sm" name="lucideChevronUp" /> }
+                    @else if (sortDir('unidadDestinoNombre') === 'desc') { <ng-icon hlmIcon size="sm" name="lucideChevronDown" /> }
+                  </div>
+                </th>
+                <th hlmTh class="w-28 cursor-pointer select-none" (click)="toggleSort('agenteDestinoNombre', $event)">
+                  <div class="flex items-center gap-1">Ag. Receptor
+                    @if (sortDir('agenteDestinoNombre') === 'asc')  { <ng-icon hlmIcon size="sm" name="lucideChevronUp" /> }
+                    @else if (sortDir('agenteDestinoNombre') === 'desc') { <ng-icon hlmIcon size="sm" name="lucideChevronDown" /> }
                   </div>
                 </th>
                 <th hlmTh class="w-32 cursor-pointer select-none" (click)="toggleSort('casosReference', $event)">
@@ -252,10 +273,10 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
                     @else if (sortDir('casosReference') === 'desc') { <ng-icon hlmIcon size="sm" name="lucideChevronDown" /> }
                   </div>
                 </th>
-                <th hlmTh class="w-28 cursor-pointer select-none" (click)="toggleSort('fechaDevolucion', $event)">
-                  <div class="flex items-center gap-1">F. devolución
-                    @if (sortDir('fechaDevolucion') === 'asc')  { <ng-icon hlmIcon size="sm" name="lucideChevronUp" /> }
-                    @else if (sortDir('fechaDevolucion') === 'desc') { <ng-icon hlmIcon size="sm" name="lucideChevronDown" /> }
+                <th hlmTh class="w-28 cursor-pointer select-none" (click)="toggleSort('fechaFin', $event)">
+                  <div class="flex items-center gap-1">Fecha Completado
+                    @if (sortDir('fechaFin') === 'asc')  { <ng-icon hlmIcon size="sm" name="lucideChevronUp" /> }
+                    @else if (sortDir('fechaFin') === 'desc') { <ng-icon hlmIcon size="sm" name="lucideChevronDown" /> }
                   </div>
                 </th>
                 <th hlmTh class="w-24 cursor-pointer select-none text-right" (click)="toggleSort('numLineas', $event)">
@@ -292,14 +313,16 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
                         [name]="expandedIds().has(o.id) ? 'lucideChevronDown' : 'lucideChevronRight'" />
                     </button>
                   </td>
-                  <td hlmTd class="text-xs text-primary">{{ formatDate(o.aprobadoEn) }}</td>
-                  <td hlmTd class="font-mono text-xs text-primary">{{ o.numeroReferencia }}</td>
-                  <td hlmTd class="text-xs text-primary">{{ o.agenteNombre ?? '—' }}</td>
-                  <td hlmTd class="text-xs text-primary">{{ o.unidadNombre ?? '—' }}</td>
-                  <td hlmTd class="font-mono text-xs text-primary">{{ o.casosReference ?? '—' }}</td>
-                  <td hlmTd class="text-xs text-primary">{{ formatDate(o.fechaDevolucion) }}</td>
-                  <td hlmTd class="text-right tabular-nums text-primary">{{ o.numLineasDevueltas }}/{{ o.numLineas }}</td>
-                  <td hlmTd [ngClass]="estadoColorClass(o.estadoOrdenNombre)">{{ o.estadoOrdenNombre ?? '—' }}</td>
+                  <td hlmTd>{{ formatDate(o.aprobadoEn) }}</td>
+                  <td hlmTd class="font-mono">{{ o.numeroReferencia }}</td>
+                  <td hlmTd>{{ o.unidadOrigenNombre ?? '—' }}</td>
+                  <td hlmTd>{{ o.agenteOrigenNombre ?? '—' }}</td>
+                  <td hlmTd>{{ o.unidadDestinoNombre ?? '—' }}</td>
+                  <td hlmTd>{{ o.agenteDestinoNombre ?? '—' }}</td>
+                  <td hlmTd class="font-mono">{{ o.casosReference ?? '—' }}</td>
+                  <td hlmTd>{{ formatDate(o.fechaFin) }}</td>
+                  <td hlmTd class="text-right tabular-nums">{{ o.numLineasDevueltas }}/{{ o.numLineas }}</td>
+                  <td hlmTd>{{ o.estadoOrdenNombre ?? '—' }}</td>
                   <td hlmTd class="w-8 text-right pr-1">
                     <button hlmBtn variant="ghost" size="icon" class="size-6 text-muted-foreground hover:text-[#005a3b]"
                       title="Imprimir recibo" (click)="printRecibo(o.id); $event.stopPropagation()">
@@ -314,26 +337,35 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
                         @if (loadingLines().has(o.id)) {
                           <div class="flex items-center justify-center py-4"><hlm-spinner /></div>
                         } @else if ((linesCache().get(o.id) ?? []).length === 0) {
-                          <p class="text-xs text-muted-foreground italic py-2">Sin líneas registradas</p>
+                          <p class="text-muted-foreground italic py-2">Sin líneas registradas</p>
                         } @else {
-                          <table class="w-full text-xs">
+                          <table class="w-full">
                             <thead>
                               <tr class="border-b border-border">
+                                <th class="text-left font-normal py-1 pr-3 w-5"></th>
                                 <th class="text-left font-normal py-1 pr-3 w-36">Tipo material</th>
                                 <th class="text-left font-normal py-1 pr-3 w-32">Marca</th>
                                 <th class="text-left font-normal py-1 pr-3">Modelo</th>
                                 <th class="text-left font-normal py-1 pr-3 w-36 font-mono">N.º serie</th>
-                                <th class="text-left font-normal py-1">Almacén</th>
+                                <th class="text-left font-normal py-1 pr-3 w-28">Devuelto por</th>
+                                <th class="text-left font-normal py-1">Unidad</th>
                               </tr>
                             </thead>
                             <tbody>
                               @for (l of linesCache().get(o.id)!; track l.id) {
-                                <tr class="border-b border-border/50 last:border-0">
+                                <tr class="border-b border-border/50 last:border-0"
+                                  [class.opacity-60]="!l.devuelta">
+                                  <td class="py-1 pr-3">
+                                    @if (l.devuelta) {
+                                      <ng-icon hlmIcon size="sm" name="lucideCheck" class="text-green-600" />
+                                    }
+                                  </td>
                                   <td class="py-1 pr-3">{{ l.tipoMaterialNombre ?? '—' }}</td>
                                   <td class="py-1 pr-3">{{ l.marcaNombre ?? '—' }}</td>
                                   <td class="py-1 pr-3">{{ l.modeloDescripcion ?? '—' }}</td>
                                   <td class="py-1 pr-3 font-mono">{{ l.articuloSerialNumber ?? '—' }}</td>
-                                  <td class="py-1">{{ l.almacenNombre ?? '—' }}</td>
+                                  <td class="py-1 pr-3">{{ l.agenteDevolucionNombre ?? '—' }}</td>
+                                  <td class="py-1">{{ l.unidadDevolucionNombre ?? '—' }}</td>
                                 </tr>
                               }
                             </tbody>
@@ -351,10 +383,10 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
 
       <!-- ── Paginación ────────────────────────────────────────────────────────── -->
       @if (!loading() && !error() && totalRecords() > 0) {
-        <div class="flex items-center justify-between px-4 h-10 shrink-0 border-t border-border text-xs text-muted-foreground" [ngClass]="footerColor">
+        <div [class]="footerCls">
           <span>{{ displayFrom() }}–{{ displayTo() }} / {{ totalRecords() }}</span>
           <div class="flex items-center gap-0.5">
-            <select class="h-6 rounded border border-input bg-background px-1 text-xs focus:outline-none cursor-pointer"
+            <select class="h-6 rounded border border-input bg-background px-1 focus:outline-none cursor-pointer"
               [value]="pageSize()" (change)="setPageSize(+$any($event.target).value)">
               @for (s of pageSizes; track s) { <option [value]="s">{{ s }}</option> }
             </select>
@@ -367,7 +399,7 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes-prestamo';
             @for (p of pageNumbers(); track p) {
               @if (p === '...') { <span class="px-1">…</span> }
               @else {
-                <button hlmBtn [variant]="p === currentPage() + 1 ? 'default' : 'ghost'" size="icon" class="size-6 text-xs" (click)="setPage(+p - 1)">{{ p }}</button>
+                <button hlmBtn [variant]="p === currentPage() + 1 ? 'default' : 'ghost'" size="icon" class="size-6" (click)="setPage(+p - 1)">{{ p }}</button>
               }
             }
             <button hlmBtn variant="ghost" size="icon" class="size-6" [disabled]="currentPage() >= totalPages() - 1" (click)="setPage(currentPage() + 1)">
@@ -437,7 +469,7 @@ export class LoansComponent extends GridBase<OrdenPrestamo> implements OnInit {
     const loading = new Set(this.loadingLines());
     loading.add(id);
     this.loadingLines.set(loading);
-    this.http.get<LineaPrestamo[]>(`${API}/${id}/lineas`).subscribe({
+    this.http.get<LineaPrestamo[]>(`${API}/${id}/lineas-detalle`).subscribe({
       next: lines => {
         const cmp = (a: string | null, b: string | null) =>
           (a ?? '').localeCompare(b ?? '', undefined, { sensitivity: 'base' });

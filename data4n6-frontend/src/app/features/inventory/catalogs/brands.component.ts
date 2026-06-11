@@ -69,29 +69,29 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
            [style.height.%]="topPanelPct()">
 
         <!-- Cabecera -->
-        <div class="flex items-center justify-between pl-4 pr-2 h-11 shrink-0 border-b border-border" [ngClass]="toolbarColor">
+        <div [class]="toolbarCls">
 
           @if (selectionCount() === 0) {
             <h1 class="text-sm font-semibold flex items-center gap-1.5">
               <ng-icon hlmIcon size="sm" name="lucideTag" />{{ gridTitle() }}
             </h1>
             <div class="flex items-center gap-0.5">
-              <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Recargar" (click)="reload()">
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Recargar" (click)="reload()">
                 <ng-icon hlmIcon size="sm" name="lucideRefreshCw" />
               </button>
-              <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Exportar">
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Exportar">
                 <ng-icon hlmIcon size="sm" name="lucideDownload" />
               </button>
-              <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Importar">
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Importar">
                 <ng-icon hlmIcon size="sm" name="lucideUpload" />
               </button>
               <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-              <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Columnas">
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Columnas">
                 <ng-icon hlmIcon size="sm" name="lucideLayoutList" />
               </button>
               <div class="relative">
                 <button hlmBtn variant="ghost" size="icon"
-                  class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
+                  [class]="btnNewCls"
                   [class.bg-primary-foreground/20]="showViewPicker()"
                   title="Cambiar vista"
                   (click)="toggleViewPicker()"
@@ -118,7 +118,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
                 }
               </div>
               <button hlmBtn variant="ghost" size="icon"
-                class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
+                [class]="btnNewCls"
                 [class.bg-primary-foreground/20]="showAdvancedFilters()"
                 title="Filtros avanzados"
                 (click)="showAdvancedFilters.set(!showAdvancedFilters())"
@@ -126,10 +126,9 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
                 <ng-icon hlmIcon size="sm" name="lucideSlidersHorizontal" />
               </button>
               <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-              <button hlmBtn variant="action" size="sm" class="h-7" (click)="openCreateBrand()">
-                <ng-icon hlmIcon size="sm" name="lucidePlus" class="mr-1" />
-                Nueva Marca
-              </button>
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Nueva Marca" (click)="openCreateBrand()">
+              <ng-icon hlmIcon size="sm" name="lucidePlus" />
+            </button>
             </div>
 
           } @else {
@@ -143,7 +142,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
                 <ng-icon hlmIcon size="sm" name="lucideDownload" class="mr-1" />Exportar
               </button>
               <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-              <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Deseleccionar" (click)="clearSelection()">
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Deseleccionar" (click)="clearSelection()">
                 <ng-icon hlmIcon size="sm" name="lucideX" />
               </button>
             </div>
@@ -295,7 +294,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
 
         <!-- Paginación -->
         @if (!loading() && !error() && totalRecords() > 0) {
-          <div class="flex items-center justify-between px-4 h-10 shrink-0 border-t border-border text-xs" [ngClass]="footerColor">
+          <div [class]="footerCls">
             <span>{{ displayFrom() }}–{{ displayTo() }} / {{ totalRecords() }}</span>
             <div class="flex items-center gap-0.5">
               <select class="h-6 rounded border border-input bg-background px-1 text-xs focus:outline-none cursor-pointer"
@@ -334,29 +333,29 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
       <div class="flex flex-col min-h-0 rounded-b-lg border-2 border-primary bg-background overflow-hidden flex-1">
 
         <!-- Cabecera -->
-        <div class="flex items-center justify-between pl-4 pr-2 h-11 shrink-0 border-b border-border" [ngClass]="toolbarColor">
+        <div [class]="toolbarCls">
 
           @if (modelSelectionCount() === 0) {
             <h2 class="text-sm font-semibold flex items-center gap-1.5">
               <ng-icon hlmIcon size="sm" name="lucideCpu" />Modelos@if (selectedBrand()) {&nbsp;— {{ selectedBrand()!.name }}}
             </h2>
             <div class="flex items-center gap-0.5">
-              <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Recargar" [disabled]="!selectedBrand()" (click)="reloadModelos()">
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Recargar" [disabled]="!selectedBrand()" (click)="reloadModelos()">
                 <ng-icon hlmIcon size="sm" name="lucideRefreshCw" />
               </button>
-              <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Exportar" [disabled]="!selectedBrand()">
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Exportar" [disabled]="!selectedBrand()">
                 <ng-icon hlmIcon size="sm" name="lucideDownload" />
               </button>
-              <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Importar" [disabled]="!selectedBrand()">
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Importar" [disabled]="!selectedBrand()">
                 <ng-icon hlmIcon size="sm" name="lucideUpload" />
               </button>
               <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-              <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Columnas" [disabled]="!selectedBrand()">
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Columnas" [disabled]="!selectedBrand()">
                 <ng-icon hlmIcon size="sm" name="lucideLayoutList" />
               </button>
               <div class="relative">
                 <button hlmBtn variant="ghost" size="icon"
-                  class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
+                  [class]="btnNewCls"
                   [class.bg-primary-foreground/20]="showModelViewPicker()"
                   title="Cambiar vista"
                   [disabled]="!selectedBrand()"
@@ -384,7 +383,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
                 }
               </div>
               <button hlmBtn variant="ghost" size="icon"
-                class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
+                [class]="btnNewCls"
                 [class.bg-primary-foreground/20]="showModelFilters()"
                 title="Filtros avanzados"
                 [disabled]="!selectedBrand()"
@@ -393,10 +392,9 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
                 <ng-icon hlmIcon size="sm" name="lucideSlidersHorizontal" />
               </button>
               <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-              <button hlmBtn variant="action" size="sm" class="h-7" [disabled]="!selectedBrand()" (click)="openCreateModelo()">
-                <ng-icon hlmIcon size="sm" name="lucidePlus" class="mr-1" />
-                Nuevo Modelo
-              </button>
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Nuevo Modelo" [disabled]="!selectedBrand()" (click)="openCreateModelo()">
+              <ng-icon hlmIcon size="sm" name="lucidePlus" />
+            </button>
             </div>
 
           } @else {
@@ -409,7 +407,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
                 <ng-icon hlmIcon size="sm" name="lucideDownload" class="mr-1" />Exportar
               </button>
               <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-              <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Deseleccionar" (click)="clearModelSelection()">
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Deseleccionar" (click)="clearModelSelection()">
                 <ng-icon hlmIcon size="sm" name="lucideX" />
               </button>
             </div>
@@ -601,7 +599,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
           <p class="text-sm py-2">Se eliminará <strong>{{ brandToDelete()?.name }}</strong>. Esta acción no se puede deshacer.</p>
           <div hlmDialogFooter class="gap-2">
             <button hlmBtn variant="outline" class="border-destructive bg-destructive/80 text-white hover:bg-destructive/90 hover:text-white" hlmDialogClose>Cancelar</button>
-            <button hlmBtn variant="destructive" (click)="confirmDeleteBrand()">Eliminar</button>
+            <button hlmBtn variant="outline" [class]="btnDestructiveCls" (click)="confirmDeleteBrand()">Eliminar</button>
           </div>
         </hlm-dialog-content>
       </ng-template>
@@ -664,7 +662,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
           <p class="text-sm py-2">Se eliminará <strong>{{ modeloToDelete()?.description ?? 'este modelo' }}</strong>. Esta acción no se puede deshacer.</p>
           <div hlmDialogFooter class="gap-2">
             <button hlmBtn variant="outline" class="border-destructive bg-destructive/80 text-white hover:bg-destructive/90 hover:text-white" hlmDialogClose>Cancelar</button>
-            <button hlmBtn variant="destructive" (click)="confirmDeleteModelo()">Eliminar</button>
+            <button hlmBtn variant="outline" [class]="btnDestructiveCls" (click)="confirmDeleteModelo()">Eliminar</button>
           </div>
         </hlm-dialog-content>
       </ng-template>

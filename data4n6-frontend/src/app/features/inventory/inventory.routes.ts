@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { formNavigationGuard } from '../../shared/form/form-navigation.guard';
 
 export const inventoryRoutes: Routes = [
   {
@@ -15,16 +16,19 @@ export const inventoryRoutes: Routes = [
     path: 'items/new',
     loadComponent: () =>
       import('./items/item-form.component').then(m => m.ItemFormComponent),
+    canDeactivate: [formNavigationGuard],
   },
   {
     path: 'items/:id/edit',
     loadComponent: () =>
       import('./items/item-form.component').then(m => m.ItemFormComponent),
+    canDeactivate: [formNavigationGuard],
   },
   {
     path: 'items/:id',
     loadComponent: () =>
       import('./items/item-form.component').then(m => m.ItemFormComponent),
+    canDeactivate: [formNavigationGuard],
   },
   {
     path: 'warehouses',
@@ -45,16 +49,19 @@ export const inventoryRoutes: Routes = [
     path: 'orders/loans/new',
     loadComponent: () =>
       import('./orders/loans/loan-form.component').then(m => m.LoanFormComponent),
+    canDeactivate: [formNavigationGuard],
   },
   {
     path: 'orders/loans/:id/devolucion',
     loadComponent: () =>
       import('./orders/loans/devolucion-form.component').then(m => m.DevolucionFormComponent),
+    canDeactivate: [formNavigationGuard],
   },
   {
     path: 'orders/loans/:id',
     loadComponent: () =>
       import('./orders/loans/loan-form.component').then(m => m.LoanFormComponent),
+    canDeactivate: [formNavigationGuard],
   },
   {
     path: 'orders/loans',
@@ -65,6 +72,7 @@ export const inventoryRoutes: Routes = [
     path: 'orders/returns/new',
     loadComponent: () =>
       import('./orders/returns/return-form.component').then(m => m.ReturnFormComponent),
+    canDeactivate: [formNavigationGuard],
   },
   {
     path: 'orders/returns',
@@ -105,6 +113,7 @@ export const inventoryRoutes: Routes = [
     path: 'materials/:id',
     loadComponent: () =>
       import('./catalogs/material-form.component').then(m => m.MaterialFormComponent),
+    canDeactivate: [formNavigationGuard],
   },
   {
     path: 'admin/event-types',

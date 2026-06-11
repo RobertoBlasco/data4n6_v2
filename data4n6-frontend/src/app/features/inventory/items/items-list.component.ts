@@ -45,6 +45,12 @@ interface Articulo {
   ultimoMovimiento:      string | null;
   ultimaOrdenId:         string | null;
   ultimaOrdenReferencia: string | null;
+  totalMismoTipo:        number;
+  disponiblesMismoTipo:  number;
+  numNotas:              number;
+  numFotos:              number;
+  numDocumentos:         number;
+  ultimaNota:            string | null;
 }
 
 type DialogState = 'open' | 'closed' | null;
@@ -75,29 +81,29 @@ const ARTICULOS_API = 'http://localhost:8080/api/v1/inventory/articulos';
     lucideChevronUp, lucideChevronDown,
   })],
   template: `
-    <div class="h-full flex flex-col min-h-0 overflow-hidden border-2 border-primary rounded-lg bg-background">
+    <div [class]="containerCls">
 
       <!-- ── Cabecera ──────────────────────────────────────────────────────────── -->
-      <div class="flex items-center justify-between pl-4 pr-2 h-11 shrink-0 border-b border-border" [ngClass]="toolbarColor">
+      <div [class]="toolbarCls">
 
         @if (selectionCount() === 0) {
-          <h1 class="text-sm font-semibold flex items-center gap-1.5">
+          <h1 class="font-semibold flex items-center gap-1.5">
             <ng-icon hlmIcon size="sm" name="lucidePackage" />{{ gridTitle() }}
           </h1>
           <div class="flex items-center gap-0.5">
-            <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Recargar" (click)="reload()">
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Recargar" (click)="reload()">
               <ng-icon hlmIcon size="sm" name="lucideRefreshCw" />
             </button>
-            <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Exportar">
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Exportar">
               <ng-icon hlmIcon size="sm" name="lucideDownload" />
             </button>
             <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-            <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Columnas">
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Columnas">
               <ng-icon hlmIcon size="sm" name="lucideLayoutList" />
             </button>
             <div class="relative">
               <button hlmBtn variant="ghost" size="icon"
-                class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
+                [class]="btnNewCls"
                 [class.bg-primary-foreground/20]="showViewPicker()"
                 title="Cambiar vista"
                 (click)="toggleViewPicker()"
@@ -124,7 +130,7 @@ const ARTICULOS_API = 'http://localhost:8080/api/v1/inventory/articulos';
               }
             </div>
             <button hlmBtn variant="ghost" size="icon"
-              class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
+              [class]="btnNewCls"
               [class.bg-primary-foreground/20]="showAdvancedFilters()"
               title="Filtros avanzados"
               (click)="showAdvancedFilters.set(!showAdvancedFilters())"
@@ -134,7 +140,7 @@ const ARTICULOS_API = 'http://localhost:8080/api/v1/inventory/articulos';
           </div>
 
         } @else {
-          <span class="text-sm">{{ selectionCount() }} seleccionado{{ selectionCount() !== 1 ? 's' : '' }}</span>
+          <span>{{ selectionCount() }} seleccionado{{ selectionCount() !== 1 ? 's' : '' }}</span>
           <div class="flex items-center gap-0.5">
             @if (selectionCount() === 1) {
               <button hlmBtn variant="ghost" size="sm" class="h-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
@@ -146,7 +152,7 @@ const ARTICULOS_API = 'http://localhost:8080/api/v1/inventory/articulos';
               <ng-icon hlmIcon size="sm" name="lucideDownload" class="mr-1" />Exportar
             </button>
             <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-            <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Deseleccionar" (click)="clearSelection()">
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Deseleccionar" (click)="clearSelection()">
               <ng-icon hlmIcon size="sm" name="lucideX" />
             </button>
           </div>
@@ -160,7 +166,7 @@ const ARTICULOS_API = 'http://localhost:8080/api/v1/inventory/articulos';
           <ng-icon hlmIcon size="sm" name="lucideSearch"
             class="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           <input
-            class="w-full h-8 pl-8 pr-8 rounded-md border border-primary bg-action/5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            class="w-full h-8 pl-8 pr-8 rounded-md border border-primary bg-action/5 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             placeholder="Buscar por número de serie, categoría, marca..."
             [value]="searchInput()"
             (input)="onSearchInput($any($event.target).value)"
@@ -176,7 +182,7 @@ const ARTICULOS_API = 'http://localhost:8080/api/v1/inventory/articulos';
       <!-- ── Filtros avanzados ──────────────────────────────────────────────────── -->
       @if (showAdvancedFilters()) {
         <div class="px-3 py-2 shrink-0 border-b border-border bg-muted/30 space-y-2">
-          <!-- Fila de filtros -->
+          <!-- Fila de filtros: Estado y Tipo -->
           <div class="flex items-center gap-2 flex-wrap">
             <span class="text-xs text-muted-foreground whitespace-nowrap">Estado:</span>
             @for (estado of ESTADOS; track estado) {
@@ -193,9 +199,21 @@ const ARTICULOS_API = 'http://localhost:8080/api/v1/inventory/articulos';
                 {{ estado }}
               </button>
             }
+            <div class="h-4 w-px bg-border mx-1"></div>
+            <span class="text-xs text-muted-foreground whitespace-nowrap">Tipo:</span>
+            <select
+              class="h-6 rounded border border-input bg-background px-2 text-xs focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
+              (change)="onTipoMaterialSelectChange($any($event.target).value); $any($event.target).value = ''">
+              <option value="">Seleccionar...</option>
+              @for (tipo of tiposMaterialDisponibles(); track tipo) {
+                <option [value]="tipo" [disabled]="filterTiposMaterial().has(tipo)">
+                  {{ tipo }}{{ filterTiposMaterial().has(tipo) ? ' ✓' : '' }}
+                </option>
+              }
+            </select>
           </div>
           <!-- Chips activos -->
-          @if (filterEstados().size > 0) {
+          @if (filterEstados().size > 0 || filterTiposMaterial().size > 0) {
             <div class="flex items-center gap-1.5 flex-wrap">
               <span class="text-xs text-muted-foreground">Activos:</span>
               @for (estado of filterEstados(); track estado) {
@@ -206,8 +224,16 @@ const ARTICULOS_API = 'http://localhost:8080/api/v1/inventory/articulos';
                   </button>
                 </span>
               }
+              @for (tipo of filterTiposMaterial(); track tipo) {
+                <span class="flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-[#005a3b] text-white">
+                  {{ tipo }}
+                  <button (click)="removeFilterTipoMaterial(tipo)" class="hover:opacity-70 transition-opacity">
+                    <ng-icon hlmIcon size="xs" name="lucideX" />
+                  </button>
+                </span>
+              }
               <button class="text-xs text-muted-foreground underline hover:text-foreground transition-colors"
-                (click)="clearFilterEstados()">
+                (click)="clearAllFilters()">
                 Limpiar todo
               </button>
             </div>
@@ -221,19 +247,19 @@ const ARTICULOS_API = 'http://localhost:8080/api/v1/inventory/articulos';
           <div class="flex items-center justify-center py-12"><hlm-spinner /></div>
         }
         @if (error() && !loading()) {
-          <div class="m-4 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">{{ error() }}</div>
+          <div class="m-4 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-destructive">{{ error() }}</div>
         }
         @if (!loading() && !error() && totalRecords() === 0 && !searchQuery() && filterEstados().size === 0) {
           <div class="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
             <ng-icon hlmIcon size="lg" name="lucidePackage" class="opacity-25" />
-            <p class="text-sm">No hay artículos registrados</p>
+            <p>No hay artículos registrados</p>
             <p class="text-xs">Los artículos se dan de alta mediante órdenes de entrada</p>
           </div>
         }
         @if (!loading() && !error() && totalRecords() === 0 && (searchQuery() || filterEstados().size > 0)) {
           <div class="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
             <ng-icon hlmIcon size="lg" name="lucideSearch" class="opacity-25" />
-            <p class="text-sm">Sin resultados para los filtros activos</p>
+            <p>Sin resultados para los filtros activos</p>
             <div class="flex gap-2">
               @if (searchQuery()) {
                 <button hlmBtn variant="outline" size="sm" (click)="clearSearch()">Limpiar búsqueda</button>
@@ -258,9 +284,9 @@ const ARTICULOS_API = 'http://localhost:8080/api/v1/inventory/articulos';
                       [checked]="selectedIds().has(item.id)"
                       (click)="toggleSelectRange(item.id, $index, $event)" />
                     <ng-icon hlmIcon name="lucidePackage" size="sm" class="text-primary shrink-0" />
-                    <span class="text-sm leading-tight truncate">{{ item.serialNumber ?? '—' }}</span>
+                    <span class="leading-tight truncate">{{ item.serialNumber ?? '—' }}</span>
                   </div>
-                  <div class="text-xs text-muted-foreground space-y-0.5 flex-1">
+                  <div class="text-muted-foreground space-y-0.5 flex-1">
                     @if (item.tipoMaterialNombre) { <p>{{ item.tipoMaterialNombre }}</p> }
                     @if (item.brandName) { <p>{{ item.brandName }}@if (item.modeloDescripcion) { · {{ item.modeloDescripcion }} }</p> }
                     @if (item.almacenNombre) { <p>{{ item.almacenNombre }}</p> }
@@ -355,6 +381,30 @@ const ARTICULOS_API = 'http://localhost:8080/api/v1/inventory/articulos';
                       @else if (sortDir('ultimaOrdenReferencia') === 'desc') { <ng-icon hlmIcon size="sm" name="lucideChevronDown" /> }
                     </div>
                   </th>
+                  <th hlmTh class="w-20 cursor-pointer select-none text-center" (click)="toggleSort('numNotas', $event)" title="Número de notas">
+                    <div class="flex items-center justify-center gap-1">Notas
+                      @if (sortDir('numNotas') === 'asc') { <ng-icon hlmIcon size="sm" name="lucideChevronUp" /> }
+                      @else if (sortDir('numNotas') === 'desc') { <ng-icon hlmIcon size="sm" name="lucideChevronDown" /> }
+                    </div>
+                  </th>
+                  <th hlmTh class="w-20 cursor-pointer select-none text-center" (click)="toggleSort('numFotos', $event)" title="Número de fotos">
+                    <div class="flex items-center justify-center gap-1">Fotos
+                      @if (sortDir('numFotos') === 'asc') { <ng-icon hlmIcon size="sm" name="lucideChevronUp" /> }
+                      @else if (sortDir('numFotos') === 'desc') { <ng-icon hlmIcon size="sm" name="lucideChevronDown" /> }
+                    </div>
+                  </th>
+                  <th hlmTh class="w-24 cursor-pointer select-none text-center" (click)="toggleSort('numDocumentos', $event)" title="Número de documentos">
+                    <div class="flex items-center justify-center gap-1">Docs
+                      @if (sortDir('numDocumentos') === 'asc') { <ng-icon hlmIcon size="sm" name="lucideChevronUp" /> }
+                      @else if (sortDir('numDocumentos') === 'desc') { <ng-icon hlmIcon size="sm" name="lucideChevronDown" /> }
+                    </div>
+                  </th>
+                  <th hlmTh class="w-48 cursor-pointer select-none" (click)="toggleSort('ultimaNota', $event)">
+                    <div class="flex items-center gap-1">Última nota
+                      @if (sortDir('ultimaNota') === 'asc') { <ng-icon hlmIcon size="sm" name="lucideChevronUp" /> }
+                      @else if (sortDir('ultimaNota') === 'desc') { <ng-icon hlmIcon size="sm" name="lucideChevronDown" /> }
+                    </div>
+                  </th>
                 </tr>
               </thead>
               <tbody hlmTBody>
@@ -380,19 +430,23 @@ const ARTICULOS_API = 'http://localhost:8080/api/v1/inventory/articulos';
                     <td hlmTd>{{ item.modeloDescripcion ?? '—' }}</td>
                     }
                     @if (isColumnVisible('serialNumber')) {
-                    <td hlmTd class="font-mono text-xs">{{ item.serialNumber ?? '—' }}</td>
+                    <td hlmTd class="font-mono">{{ item.serialNumber ?? '—' }}</td>
                     }
                     @if (isColumnVisible('almacenNombre')) {
                     <td hlmTd>{{ item.almacenNombre ?? '—' }}</td>
                     }
                     @if (isColumnVisible('estadoActual')) {
-                    <td hlmTd [ngClass]="estadoColorClass(item.estadoActual)">{{ item.estadoActual ?? '—' }}</td>
+                    <td hlmTd>{{ item.estadoActual ?? '—' }}</td>
                     }
-                    <td hlmTd class="text-xs">{{ item.descripcionEstado ?? '—' }}</td>
-                    <td hlmTd class="text-xs text-center tabular-nums">{{ item.numPrestamos || '—' }}</td>
-                    <td hlmTd class="text-xs text-center">{{ item.numMovimientos || '—' }}</td>
-                    <td hlmTd class="text-xs text-center">{{ item.ultimoMovimiento ? (item.ultimoMovimiento | date:'dd/MM/yy') : '—' }}</td>
-                    <td hlmTd class="font-mono text-xs">{{ item.ultimaOrdenReferencia ?? '—' }}</td>
+                    <td hlmTd class="">{{ item.descripcionEstado ?? '—' }}</td>
+                    <td hlmTd class="text-center tabular-nums">{{ item.numPrestamos || '—' }}</td>
+                    <td hlmTd class="text-center">{{ item.numMovimientos || '—' }}</td>
+                    <td hlmTd class="text-center">{{ item.ultimoMovimiento ? (item.ultimoMovimiento | date:'dd/MM/yy') : '—' }}</td>
+                    <td hlmTd class="font-mono">{{ item.ultimaOrdenReferencia ?? '—' }}</td>
+                    <td hlmTd class="text-center tabular-nums">{{ item.numNotas }}</td>
+                    <td hlmTd class="text-center tabular-nums">{{ item.numFotos }}</td>
+                    <td hlmTd class="text-center tabular-nums">{{ item.numDocumentos }}</td>
+                    <td hlmTd class="truncate" [title]="item.ultimaNota ?? ''">{{ item.ultimaNota ?? '—' }}</td>
                   </tr>
                 }
               </tbody>
@@ -404,10 +458,10 @@ const ARTICULOS_API = 'http://localhost:8080/api/v1/inventory/articulos';
 
       <!-- ── Paginación ────────────────────────────────────────────────────────── -->
       @if (!loading() && !error() && totalRecords() > 0) {
-        <div class="flex items-center justify-between px-4 h-10 shrink-0 border-t border-border text-xs text-muted-foreground" [ngClass]="footerColor">
+        <div [class]="footerCls">
           <span>{{ displayFrom() }}–{{ displayTo() }} / {{ totalRecords() }}</span>
           <div class="flex items-center gap-0.5">
-            <select class="h-6 rounded border border-input bg-background px-1 text-xs focus:outline-none cursor-pointer"
+            <select class="h-6 rounded border border-input bg-background px-1 focus:outline-none cursor-pointer"
               [value]="pageSize()" (change)="setPageSize(+$any($event.target).value)">
               @for (s of pageSizes; track s) { <option [value]="s">{{ s }}</option> }
             </select>
@@ -420,7 +474,7 @@ const ARTICULOS_API = 'http://localhost:8080/api/v1/inventory/articulos';
             @for (p of pageNumbers(); track p) {
               @if (p === '...') { <span class="px-1">…</span> }
               @else {
-                <button hlmBtn [variant]="p === currentPage() + 1 ? 'default' : 'ghost'" size="icon" class="size-6 text-xs" (click)="setPage(+p - 1)">{{ p }}</button>
+                <button hlmBtn [variant]="p === currentPage() + 1 ? 'default' : 'ghost'" size="icon" class="size-6" (click)="setPage(+p - 1)">{{ p }}</button>
               }
             }
             <button hlmBtn variant="ghost" size="icon" class="size-6" [disabled]="currentPage() >= totalPages() - 1" (click)="setPage(currentPage() + 1)">
@@ -442,11 +496,11 @@ const ARTICULOS_API = 'http://localhost:8080/api/v1/inventory/articulos';
 
           <div class="bg-primary text-primary-foreground flex items-center gap-2 px-4 h-11 -mx-6 -mt-6 mb-4 rounded-t-lg">
             <ng-icon hlmIcon size="sm" name="lucidePackage" />
-            <h2 class="text-sm font-semibold">Nuevo artículo</h2>
+            <h2 class="font-semibold">Nuevo artículo</h2>
           </div>
 
           @if (formError()) {
-            <div class="mb-4 rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
+            <div class="mb-4 rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-destructive">
               {{ formError() }}
             </div>
           }
@@ -541,9 +595,20 @@ export class ItemsListComponent extends GridBase<Articulo> implements OnInit {
   readonly ESTADOS = ['Almacén', 'Prestado', 'Adjudicado', 'Baja', 'En reparación'] as const;
   readonly filterEstados = signal<Set<string>>(new Set());
 
+  // ── Tipo Material filter ──────────────────────────────────────────────────
+  readonly filterTiposMaterial = signal<Set<string>>(new Set());
+  readonly tiposMaterialDisponibles = computed(() => {
+    const tipos = new Set<string>();
+    for (const item of this.allItems()) {
+      if (item.tipoMaterialNombre) tipos.add(item.tipoMaterialNombre);
+    }
+    return Array.from(tipos).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+  });
+
   override readonly filteredItems = computed(() => {
     const q      = this.searchQuery().toLowerCase().trim();
     const estados = this.filterEstados();
+    const tipos = this.filterTiposMaterial();
     let items    = this.allItems();
     if (q) {
       items = items.filter(item =>
@@ -554,6 +619,9 @@ export class ItemsListComponent extends GridBase<Articulo> implements OnInit {
     }
     if (estados.size > 0) {
       items = items.filter(item => estados.has(item.estadoActual ?? ''));
+    }
+    if (tipos.size > 0) {
+      items = items.filter(item => tipos.has(item.tipoMaterialNombre ?? ''));
     }
     const criteria = this.sortCriteria();
     if (criteria.length) {
@@ -587,6 +655,31 @@ export class ItemsListComponent extends GridBase<Articulo> implements OnInit {
   clearFilterEstados(): void {
     this.filterEstados.set(new Set());
     this.currentPage.set(0);
+  }
+
+  toggleFilterTipoMaterial(tipo: string): void {
+    const next = new Set(this.filterTiposMaterial());
+    next.has(tipo) ? next.delete(tipo) : next.add(tipo);
+    this.filterTiposMaterial.set(next);
+    this.currentPage.set(0);
+  }
+
+  removeFilterTipoMaterial(tipo: string): void {
+    const next = new Set(this.filterTiposMaterial());
+    next.delete(tipo);
+    this.filterTiposMaterial.set(next);
+    this.currentPage.set(0);
+  }
+
+  clearAllFilters(): void {
+    this.filterEstados.set(new Set());
+    this.filterTiposMaterial.set(new Set());
+    this.currentPage.set(0);
+  }
+
+  onTipoMaterialSelectChange(tipo: string): void {
+    if (!tipo) return;
+    this.toggleFilterTipoMaterial(tipo);
   }
 
   private readonly selectAllCbRef = viewChild<ElementRef<HTMLInputElement>>('selectAllCb');

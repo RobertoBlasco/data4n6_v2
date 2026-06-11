@@ -20,5 +20,11 @@ public record ArticuloResponse(
         UUID   ultimaOrdenId,
         String ultimaOrdenReferencia,
         long   numPrestamos,
-        java.time.Instant fechaUltimoPrestamo
+        java.time.Instant fechaUltimoPrestamo,
+        long   totalMismoTipo,
+        long   disponiblesMismoTipo,
+        long   numNotas,
+        long   numFotos,
+        long   numDocumentos,
+        String ultimaNota
 ) {}

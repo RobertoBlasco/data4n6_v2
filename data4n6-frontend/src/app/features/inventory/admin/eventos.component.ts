@@ -102,30 +102,30 @@ type DialogState = 'open' | 'closed' | null;
            [style.height.%]="topPanelPct()">
 
         <!-- ── Cabecera ────────────────────────────────────────────────────── -->
-        <div class="flex items-center justify-between pl-4 pr-2 h-11 shrink-0 border-b border-border" [ngClass]="toolbarColor">
+        <div [class]="toolbarCls">
 
           @if (selectionCount() === 0) {
             <h1 class="text-sm font-semibold flex items-center gap-1.5">
               <ng-icon hlmIcon size="sm" name="lucideCalendar" />{{ gridTitle() }}
             </h1>
             <div class="flex items-center gap-0.5">
-              <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Recargar" (click)="reload()">
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Recargar" (click)="reload()">
                 <ng-icon hlmIcon size="sm" name="lucideRefreshCw" />
               </button>
-              <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Exportar">
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Exportar">
                 <ng-icon hlmIcon size="sm" name="lucideDownload" />
               </button>
-              <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Importar">
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Importar">
                 <ng-icon hlmIcon size="sm" name="lucideUpload" />
               </button>
               <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-              <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Columnas">
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Columnas">
                 <ng-icon hlmIcon size="sm" name="lucideLayoutList" />
               </button>
               <div class="relative">
                 <button
                   hlmBtn variant="ghost" size="icon"
-                  class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
+                  [class]="btnNewCls"
                   [class.bg-primary-foreground/20]="showViewPicker()"
                   title="Cambiar Vista"
                   (click)="toggleViewPicker()"
@@ -155,7 +155,7 @@ type DialogState = 'open' | 'closed' | null;
               </div>
               <button
                 hlmBtn variant="ghost" size="icon"
-                class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
+                [class]="btnNewCls"
                 [class.bg-primary-foreground/20]="showAdvancedFilters()"
                 title="Filtros avanzados"
                 (click)="showAdvancedFilters.set(!showAdvancedFilters())"
@@ -163,10 +163,9 @@ type DialogState = 'open' | 'closed' | null;
                 <ng-icon hlmIcon size="sm" name="lucideSlidersHorizontal" />
               </button>
               <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-              <button hlmBtn variant="action" size="sm" class="h-7" (click)="openCreate()">
-                <ng-icon hlmIcon size="sm" name="lucidePlus" class="mr-1" />
-                Nuevo {{ labelSingular }}
-              </button>
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Nuevo {{ labelSingular }}" (click)="openCreate()">
+              <ng-icon hlmIcon size="sm" name="lucidePlus" />
+            </button>
             </div>
 
           } @else {
@@ -180,7 +179,7 @@ type DialogState = 'open' | 'closed' | null;
                 <ng-icon hlmIcon size="sm" name="lucideDownload" class="mr-1" />Exportar
               </button>
               <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-              <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Deseleccionar" (click)="clearSelection()">
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Deseleccionar" (click)="clearSelection()">
                 <ng-icon hlmIcon size="sm" name="lucideX" />
               </button>
             </div>
@@ -341,7 +340,7 @@ type DialogState = 'open' | 'closed' | null;
 
         <!-- ── Pie (paginación) ────────────────────────────────────────────── -->
         @if (!loading() && !error() && totalRecords() > 0) {
-          <div class="flex items-center justify-between px-3 h-10 shrink-0 border-t border-border text-xs text-muted-foreground" [ngClass]="footerColor">
+          <div [class]="footerCls">
             <span>{{ displayFrom() }}–{{ displayTo() }} / {{ totalRecords() }}</span>
             <div class="flex items-center gap-1">
               <select class="h-6 rounded border border-input bg-background px-1 text-xs focus:outline-none cursor-pointer"
@@ -384,7 +383,7 @@ type DialogState = 'open' | 'closed' | null;
       <div class="flex flex-col min-h-0 rounded-b-lg border-2 border-primary bg-background overflow-hidden flex-1">
 
         <!-- Cabecera del panel de transiciones -->
-        <div class="flex items-center justify-between pl-4 pr-2 h-11 shrink-0 border-b border-border" [ngClass]="toolbarColor">
+        <div [class]="toolbarCls">
           <h2 class="text-sm font-semibold truncate">
             @if (selectedEvento()) {
               Transiciones — {{ selectedEvento()!.nombre }}
@@ -540,7 +539,7 @@ type DialogState = 'open' | 'closed' | null;
           <p class="text-sm text-muted-foreground py-2">Se eliminará <strong>{{ eventoToDelete()?.nombre }}</strong>. Esta acción no se puede deshacer.</p>
           <div hlmDialogFooter class="gap-2">
             <button hlmBtn variant="outline" class="border-destructive bg-destructive/80 text-white hover:bg-destructive/90 hover:text-white" hlmDialogClose>Cancelar</button>
-            <button hlmBtn variant="destructive" (click)="confirmDelete()">Eliminar</button>
+            <button hlmBtn variant="outline" [class]="btnDestructiveCls" (click)="confirmDelete()">Eliminar</button>
           </div>
         </hlm-dialog-content>
       </ng-template>

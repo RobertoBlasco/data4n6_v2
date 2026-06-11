@@ -18,6 +18,12 @@ public class AppService {
         return repository.findAll().stream().map(this::toResponse).toList();
     }
 
+    public AppResponse findByName(String name) {
+        return repository.findByName(name)
+            .map(this::toResponse)
+            .orElseThrow(() -> new IllegalArgumentException("App not found: " + name));
+    }
+
     private AppResponse toResponse(App a) {
         return new AppResponse(a.getId(), a.getName(), a.getDisplayName(), a.getDescription(), a.getIcono());
     }

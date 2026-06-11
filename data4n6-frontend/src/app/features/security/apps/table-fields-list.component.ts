@@ -46,15 +46,17 @@ interface TableField {
     lucideExternalLink, lucideTrash2,
   })],
   template: `
-    <div class="h-full flex flex-col min-h-0 overflow-hidden border-2 border-primary rounded-lg bg-background">
+    <div [class]="containerCls">
 
-      <div class="flex items-center justify-between pl-4 pr-2 h-11 shrink-0 border-b border-border" [ngClass]="toolbarColor">
+      <div [class]="toolbarCls">
         @if (selectionCount() === 0) {
           <h1 class="text-sm font-semibold flex items-center gap-1.5"><ng-icon hlmIcon size="sm" name="lucideLayers" />{{ gridTitle() }}</h1>
           <div class="flex items-center gap-0.5">
-            <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" (click)="reload()"><ng-icon hlmIcon size="sm" name="lucideRefreshCw" /></button>
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" (click)="reload()"><ng-icon hlmIcon size="sm" name="lucideRefreshCw" /></button>
             <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-            <button hlmBtn variant="action" size="sm" class="h-7"><ng-icon hlmIcon size="sm" name="lucidePlus" class="mr-1" />Nuevo</button>
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Nuevo">
+              <ng-icon hlmIcon size="sm" name="lucidePlus" />
+            </button>
           </div>
         } @else {
           <span class="text-sm">{{ selectionCount() }} seleccionado{{ selectionCount() !== 1 ? 's' : '' }}</span>
@@ -65,7 +67,7 @@ interface TableField {
             }
             <button hlmBtn variant="ghost" size="sm" class="h-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"><ng-icon hlmIcon size="sm" name="lucideDownload" class="mr-1" />Exportar</button>
             <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-            <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" (click)="clearSelection()"><ng-icon hlmIcon size="sm" name="lucideX" /></button>
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" (click)="clearSelection()"><ng-icon hlmIcon size="sm" name="lucideX" /></button>
           </div>
         }
       </div>
@@ -144,7 +146,7 @@ interface TableField {
       </div>
 
       @if (!loading() && !error() && totalRecords() > 0) {
-        <div class="flex items-center justify-between px-4 h-10 shrink-0 border-t border-border text-xs" [ngClass]="footerColor">
+        <div [class]="footerCls">
           <span>{{ displayFrom() }}–{{ displayTo() }} / {{ totalRecords() }}</span>
           <div class="flex items-center gap-0.5">
             <select class="h-6 rounded border border-input bg-background px-1 text-xs focus:outline-none cursor-pointer" [value]="pageSize()" (change)="setPageSize(+$any($event.target).value)">

@@ -80,28 +80,28 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
       <div class="flex flex-col min-h-0 rounded-t-lg border-2 border-primary bg-background overflow-hidden"
            [style.height.%]="topPanelPct()">
 
-        <div class="flex items-center justify-between pl-4 pr-2 h-11 shrink-0 border-b border-border" [ngClass]="toolbarColor">
+        <div [class]="toolbarCls">
           @if (selectionCount() === 0) {
             <h1 class="text-sm font-semibold flex items-center gap-1.5">
               <ng-icon hlmIcon size="sm" name="lucideFlaskConical" />{{ gridTitle() }}
             </h1>
             <div class="flex items-center gap-0.5">
-              <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Recargar" (click)="reload()">
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Recargar" (click)="reload()">
                 <ng-icon hlmIcon size="sm" name="lucideRefreshCw" />
               </button>
-              <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Exportar">
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Exportar">
                 <ng-icon hlmIcon size="sm" name="lucideDownload" />
               </button>
-              <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Importar">
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Importar">
                 <ng-icon hlmIcon size="sm" name="lucideUpload" />
               </button>
               <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-              <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Columnas">
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Columnas">
                 <ng-icon hlmIcon size="sm" name="lucideLayoutList" />
               </button>
               <div class="relative">
                 <button hlmBtn variant="ghost" size="icon"
-                  class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
+                  [class]="btnNewCls"
                   [class.bg-primary-foreground/20]="showViewPicker()"
                   title="Cambiar vista" (click)="toggleViewPicker()">
                   <ng-icon hlmIcon size="sm" [name]="activeView().icon" />
@@ -123,15 +123,15 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
                 }
               </div>
               <button hlmBtn variant="ghost" size="icon"
-                class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
+                [class]="btnNewCls"
                 [class.bg-primary-foreground/20]="showAdvancedFilters()"
                 title="Filtros avanzados" (click)="showAdvancedFilters.set(!showAdvancedFilters())">
                 <ng-icon hlmIcon size="sm" name="lucideSlidersHorizontal" />
               </button>
               <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-              <button hlmBtn variant="action" size="sm" class="h-7" (click)="openCreateMaterial()">
-                <ng-icon hlmIcon size="sm" name="lucidePlus" class="mr-1" />Nuevo {{ labelSingular.toLowerCase() }}
-              </button>
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Nuevo {{ labelSingular.toLowerCase() }}" (click)="openCreateMaterial()">
+              <ng-icon hlmIcon size="sm" name="lucidePlus" />
+            </button>
             </div>
           } @else {
             <span class="text-sm">{{ selectionCount() }} seleccionado{{ selectionCount() !== 1 ? 's' : '' }}</span>
@@ -150,7 +150,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
                 <ng-icon hlmIcon size="sm" name="lucideDownload" class="mr-1" />Exportar
               </button>
               <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-              <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Deseleccionar" (click)="clearSelection()">
+              <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Deseleccionar" (click)="clearSelection()">
                 <ng-icon hlmIcon size="sm" name="lucideX" />
               </button>
             </div>
@@ -288,7 +288,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
         </div>
 
         @if (!loading() && !error() && totalRecords() > 0) {
-          <div class="flex items-center justify-between px-4 h-10 shrink-0 border-t border-border text-xs" [ngClass]="footerColor">
+          <div [class]="footerCls">
             <span>{{ displayFrom() }}–{{ displayTo() }} / {{ totalRecords() }}</span>
             <div class="flex items-center gap-0.5">
               <select class="h-6 rounded border border-input bg-background px-1 text-xs focus:outline-none cursor-pointer"
@@ -327,28 +327,28 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
         <!-- ── Panel izquierdo: Marcas asociadas ───────────────────────────── -->
         <div class="flex flex-col min-h-0 overflow-hidden border-r border-border" [style.width.%]="leftPanelPct()">
 
-          <div class="flex items-center justify-between pl-4 pr-2 h-11 shrink-0 border-b border-border" [ngClass]="toolbarColor">
+          <div [class]="toolbarCls">
             @if (assocSelectionCount() === 0) {
               <h2 class="text-sm font-semibold truncate">
                 Marcas@if (selectedMaterial()) {&nbsp;— {{ selectedMaterial()!.name }}}
               </h2>
               <div class="flex items-center gap-0.5 shrink-0">
-                <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Recargar" [disabled]="!selectedMaterial()" (click)="reloadAssocs()">
+                <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Recargar" [disabled]="!selectedMaterial()" (click)="reloadAssocs()">
                   <ng-icon hlmIcon size="sm" name="lucideRefreshCw" />
                 </button>
-                <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Exportar" [disabled]="!selectedMaterial()">
+                <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Exportar" [disabled]="!selectedMaterial()">
                   <ng-icon hlmIcon size="sm" name="lucideDownload" />
                 </button>
-                <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Importar" [disabled]="!selectedMaterial()">
+                <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Importar" [disabled]="!selectedMaterial()">
                   <ng-icon hlmIcon size="sm" name="lucideUpload" />
                 </button>
                 <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-                <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Columnas" [disabled]="!selectedMaterial()">
+                <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Columnas" [disabled]="!selectedMaterial()">
                   <ng-icon hlmIcon size="sm" name="lucideLayoutList" />
                 </button>
                 <div class="relative">
                   <button hlmBtn variant="ghost" size="icon"
-                    class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
+                    [class]="btnNewCls"
                     [class.bg-primary-foreground/20]="showAssocViewPicker()"
                     title="Cambiar vista" [disabled]="!selectedMaterial()"
                     (click)="showAssocViewPicker.set(!showAssocViewPicker())">
@@ -372,18 +372,17 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
                   }
                 </div>
                 <button hlmBtn variant="ghost" size="icon"
-                  class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
+                  [class]="btnNewCls"
                   [class.bg-primary-foreground/20]="showAssocFilters()"
                   title="Filtros avanzados" [disabled]="!selectedMaterial()"
                   (click)="showAssocFilters.set(!showAssocFilters())">
                   <ng-icon hlmIcon size="sm" name="lucideSlidersHorizontal" />
                 </button>
                 <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-                <button hlmBtn variant="action" size="sm" class="h-7"
-                  [disabled]="!selectedMaterial() || availableBrands().length === 0"
+                <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Añadir" [disabled]="!selectedMaterial() || availableBrands().length === 0"
                   (click)="openCreateAssoc()">
-                  <ng-icon hlmIcon size="sm" name="lucidePlus" class="mr-1" />Añadir
-                </button>
+              <ng-icon hlmIcon size="sm" name="lucidePlus" />
+            </button>
               </div>
             } @else {
               <span class="text-sm">{{ assocSelectionCount() }} seleccionada{{ assocSelectionCount() !== 1 ? 's' : '' }}</span>
@@ -392,7 +391,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
                   <ng-icon hlmIcon size="sm" name="lucideTrash2" class="mr-1" />Eliminar
                 </button>
                 <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-                <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Deseleccionar" (click)="clearAssocSelection()">
+                <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Deseleccionar" (click)="clearAssocSelection()">
                   <ng-icon hlmIcon size="sm" name="lucideX" />
                 </button>
               </div>
@@ -519,28 +518,28 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
         <!-- ── Panel derecho: Modelos ──────────────────────────────────────── -->
         <div class="flex flex-col min-h-0 overflow-hidden flex-1">
 
-          <div class="flex items-center justify-between pl-4 pr-2 h-11 shrink-0 border-b border-border" [ngClass]="toolbarColor">
+          <div [class]="toolbarCls">
             @if (modelSelectionCount() === 0) {
               <h2 class="text-sm font-semibold truncate">
                 Modelos@if (selectedAssocMarca()) {&nbsp;— {{ selectedAssocMarca()!.marcaNombre }}}
               </h2>
               <div class="flex items-center gap-0.5 shrink-0">
-                <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Recargar" [disabled]="!selectedAssocMarca()" (click)="reloadModelos()">
+                <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Recargar" [disabled]="!selectedAssocMarca()" (click)="reloadModelos()">
                   <ng-icon hlmIcon size="sm" name="lucideRefreshCw" />
                 </button>
-                <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Exportar" [disabled]="!selectedAssocMarca()">
+                <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Exportar" [disabled]="!selectedAssocMarca()">
                   <ng-icon hlmIcon size="sm" name="lucideDownload" />
                 </button>
-                <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Importar" [disabled]="!selectedAssocMarca()">
+                <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Importar" [disabled]="!selectedAssocMarca()">
                   <ng-icon hlmIcon size="sm" name="lucideUpload" />
                 </button>
                 <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-                <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Columnas" [disabled]="!selectedAssocMarca()">
+                <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Columnas" [disabled]="!selectedAssocMarca()">
                   <ng-icon hlmIcon size="sm" name="lucideLayoutList" />
                 </button>
                 <div class="relative">
                   <button hlmBtn variant="ghost" size="icon"
-                    class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
+                    [class]="btnNewCls"
                     [class.bg-primary-foreground/20]="showModelViewPicker()"
                     title="Cambiar vista" [disabled]="!selectedAssocMarca()"
                     (click)="showModelViewPicker.set(!showModelViewPicker())">
@@ -564,16 +563,16 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
                   }
                 </div>
                 <button hlmBtn variant="ghost" size="icon"
-                  class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
+                  [class]="btnNewCls"
                   [class.bg-primary-foreground/20]="showModelFilters()"
                   title="Filtros avanzados" [disabled]="!selectedAssocMarca()"
                   (click)="showModelFilters.set(!showModelFilters())">
                   <ng-icon hlmIcon size="sm" name="lucideSlidersHorizontal" />
                 </button>
                 <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-                <button hlmBtn variant="action" size="sm" class="h-7" [disabled]="!selectedAssocMarca()" (click)="openCreateModelo()">
-                  <ng-icon hlmIcon size="sm" name="lucidePlus" class="mr-1" />Nuevo
-                </button>
+                <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Nuevo" [disabled]="!selectedAssocMarca()" (click)="openCreateModelo()">
+              <ng-icon hlmIcon size="sm" name="lucidePlus" />
+            </button>
               </div>
             } @else {
               <span class="text-sm">{{ modelSelectionCount() }} seleccionado{{ modelSelectionCount() !== 1 ? 's' : '' }}</span>
@@ -582,7 +581,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
                   <ng-icon hlmIcon size="sm" name="lucideTrash2" class="mr-1" />Eliminar
                 </button>
                 <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-                <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Deseleccionar" (click)="clearModelSelection()">
+                <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Deseleccionar" (click)="clearModelSelection()">
                   <ng-icon hlmIcon size="sm" name="lucideX" />
                 </button>
               </div>
@@ -759,7 +758,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
           <p class="text-sm py-2">Se eliminará <strong>{{ materialToDelete()?.name }}</strong>. Esta acción no se puede deshacer.</p>
           <div hlmDialogFooter class="gap-2">
             <button hlmBtn variant="outline" class="border-destructive bg-destructive/80 text-white hover:bg-destructive/90 hover:text-white" hlmDialogClose>Cancelar</button>
-            <button hlmBtn variant="destructive" (click)="confirmDeleteMaterial()">Eliminar</button>
+            <button hlmBtn variant="outline" [class]="btnDestructiveCls" (click)="confirmDeleteMaterial()">Eliminar</button>
           </div>
         </hlm-dialog-content>
       </ng-template>
@@ -811,7 +810,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
           <p class="text-sm py-2">Se desasociará <strong>{{ assocToDelete()?.marcaNombre }}</strong> de este tipo de material.</p>
           <div hlmDialogFooter class="gap-2">
             <button hlmBtn variant="outline" class="border-destructive bg-destructive/80 text-white hover:bg-destructive/90 hover:text-white" hlmDialogClose>Cancelar</button>
-            <button hlmBtn variant="destructive" (click)="confirmDeleteAssoc()">Eliminar</button>
+            <button hlmBtn variant="outline" [class]="btnDestructiveCls" (click)="confirmDeleteAssoc()">Eliminar</button>
           </div>
         </hlm-dialog-content>
       </ng-template>
@@ -862,7 +861,7 @@ type ModelViewId = typeof MODEL_VIEWS[number]['id'];
           <p class="text-sm py-2">Se eliminará <strong>{{ modeloToDelete()?.description ?? 'este modelo' }}</strong>. Esta acción no se puede deshacer.</p>
           <div hlmDialogFooter class="gap-2">
             <button hlmBtn variant="outline" class="border-destructive bg-destructive/80 text-white hover:bg-destructive/90 hover:text-white" hlmDialogClose>Cancelar</button>
-            <button hlmBtn variant="destructive" (click)="confirmDeleteModelo()">Eliminar</button>
+            <button hlmBtn variant="outline" [class]="btnDestructiveCls" (click)="confirmDeleteModelo()">Eliminar</button>
           </div>
         </hlm-dialog-content>
       </ng-template>

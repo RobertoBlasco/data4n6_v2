@@ -48,7 +48,7 @@ interface OrdenPrestamoDetail {
   agenteDestinoId: string | null; agenteDestinoNombre: string | null;
   fechaInicio: string | null;
   fechaDevolucion: string | null;
-  casosId: string | null; casosReference: string | null;
+  casosId: string | null; casosReference: string | null; casosTitle: string | null;
 }
 
 @Component({
@@ -67,7 +67,8 @@ interface OrdenPrestamoDetail {
 
       <app-spa-form-header
         [icon]="formIcon()"
-        [readonly]="isView() ? true : (numeroReferencia() ? false : null)"
+        [readonly]="isView() ? true : formMode()"
+        [hideBack]="hideBackButton()"
         [label]="headerLabel()"
         [backRoute]="resolvedBackRoute()" />
 
@@ -96,7 +97,11 @@ interface OrdenPrestamoDetail {
                   <input hlmInput readonly class="w-full" style="background-color: #f0f0f0" [value]="unidadOrigenNombre() || '—'" />
                 } @else {
                   <app-fk-combobox endpoint="/catalog/units" [baseUrl]="BASE"
-                    [value]="unidadOrigenId()" (valueChange)="unidadOrigenId.set($event)" />
+                    [value]="unidadOrigenId()"
+                    [canCreate]="true" createLabel="Nueva unidad"
+                    [refreshKey]="unitRefreshKey()"
+                    (valueChange)="unidadOrigenId.set($event)"
+                    (create)="openCreateUnit('origen')" />
                   @if (origenError()) {
                     <p class="text-xs text-destructive mt-1">Obligatoria.</p>
                   }
@@ -131,7 +136,11 @@ interface OrdenPrestamoDetail {
                   <input hlmInput readonly class="w-full" style="background-color: #f0f0f0" [value]="unidadDestinoNombre() || '—'" />
                 } @else {
                   <app-fk-combobox endpoint="/catalog/units" [baseUrl]="BASE"
-                    [value]="unidadDestinoId()" (valueChange)="unidadDestinoId.set($event)" />
+                    [value]="unidadDestinoId()"
+                    [canCreate]="true" createLabel="Nueva unidad"
+                    [refreshKey]="unitRefreshKey()"
+                    (valueChange)="unidadDestinoId.set($event)"
+                    (create)="openCreateUnit('destino')" />
                   @if (destinoError()) {
                     <p class="text-xs text-destructive mt-1">Se requiere unidad u agente.</p>
                   }
@@ -175,12 +184,17 @@ interface OrdenPrestamoDetail {
                 [value]="fechaDevolucion()" (change)="fechaDevolucion.set($any($event.target).value)" />
               <label hlmLabel class="pt-2 whitespace-nowrap">Caso</label>
               @if (isView()) {
-                <input hlmInput readonly class="w-full" style="background-color: #f0f0f0" [value]="casosReference() || '—'" />
+                <div class="flex gap-2">
+                  <input hlmInput readonly class="w-1/3" style="background-color: #f0f0f0" [value]="casosReference() || '—'" />
+                  <input hlmInput readonly class="flex-1" style="background-color: #f0f0f0" [value]="casosTitle() || '—'" />
+                </div>
               } @else {
-                <div class="space-y-2">
-                  <app-fk-combobox endpoint="/cases" displayField="reference" [baseUrl]="BASE"
+                <div class="flex gap-2">
+                  <app-fk-combobox class="w-1/3" endpoint="/api/v1/cases"
+                    [baseUrl]="'http://localhost:8080'" displayField="reference"
                     [value]="casosId()" (valueChange)="casosId.set($event)" />
-                  <app-fk-combobox endpoint="/cases" displayField="title" [baseUrl]="BASE"
+                  <app-fk-combobox class="flex-1" endpoint="/api/v1/cases"
+                    [baseUrl]="'http://localhost:8080'" displayField="title"
                     [value]="casosId()" (valueChange)="casosId.set($event)" />
                 </div>
               }
@@ -431,7 +445,7 @@ interface OrdenPrestamoDetail {
       <div class="shrink-0 border-t border-border px-6 py-3 flex items-center gap-2 bg-background">
         <div class="flex-1"></div>
         @if (!isView()) {
-          <button hlmBtn variant="destructive" size="sm" (click)="cancel()" [disabled]="saving()">
+          <button hlmBtn variant="outline" class="h-8 shrink-0 text-red-600 border-red-400 hover:bg-red-50" size="sm" (click)="cancel()" [disabled]="saving()">
             Cancelar
           </button>
           <button hlmBtn size="sm" [disabled]="saving()" (click)="save()">
@@ -439,20 +453,43 @@ interface OrdenPrestamoDetail {
             Guardar orden
           </button>
         } @else {
-          <button hlmBtn variant="destructive" size="sm" (click)="cancel()">
+          <button hlmBtn variant="outline" class="h-8 shrink-0 text-red-600 border-red-400 hover:bg-red-50" size="sm" (click)="cancel()">
             Volver
           </button>
           @if (estadoOrdenNombre() === 'Pendiente') {
             <button hlmBtn size="sm"
-              [disabled]="savingDevolucion() || articulosADevolver().length === 0"
+              [disabled]="articulosADevolver().length === 0"
               (click)="registrarDevolucion()">
-              @if (savingDevolucion()) { <hlm-spinner class="mr-1.5 size-3.5" /> }
-              @else { <ng-icon hlmIcon size="sm" name="lucideUndo2" class="mr-1" /> }
+              <ng-icon hlmIcon size="sm" name="lucideUndo2" class="mr-1" />
               Registrar devolución ({{ articulosADevolver().length }})
             </button>
           }
         }
       </div>
+
+    <!-- Diálogo confirmación devolución -->
+    @if (showConfirmDevolucion()) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+        (mousedown.self)="showConfirmDevolucion.set(false)">
+        <div class="bg-background rounded-lg shadow-xl w-96 p-6 space-y-4">
+          <div class="flex items-center gap-2">
+            <ng-icon hlmIcon name="lucideUndo2" size="sm" class="text-[#005a3b]" />
+            <h3 class="font-medium text-[#005a3b] uppercase tracking-wide" style="font-size:10px">Registrar devolución</h3>
+          </div>
+          <p>Se abrirá el formulario de devolución con los {{ articulosADevolver().length }} artículo{{ articulosADevolver().length !== 1 ? 's' : '' }} seleccionado{{ articulosADevolver().length !== 1 ? 's' : '' }}. Podrás indicar la unidad, el agente y la fecha antes de confirmar.</p>
+          <div class="flex justify-end gap-2 pt-2">
+            <button hlmBtn variant="outline" class="h-8 shrink-0 text-red-600 border-red-400 hover:bg-red-50" size="sm"
+              (click)="showConfirmDevolucion.set(false)">
+              Cancelar
+            </button>
+            <button hlmBtn size="sm" (click)="confirmarDevolucion()">
+              <ng-icon hlmIcon size="sm" name="lucideUndo2" class="mr-1" />
+              Continuar
+            </button>
+          </div>
+        </div>
+      </div>
+    }
 
     <!-- Diálogo alta rápida de agente -->
     @if (showAgentDialog() && !isView()) {
@@ -493,13 +530,61 @@ interface OrdenPrestamoDetail {
           </div>
 
           <div class="flex justify-end gap-2 pt-2">
-            <button hlmBtn variant="destructive" size="sm"
+            <button hlmBtn variant="outline" class="h-8 shrink-0 text-red-600 border-red-400 hover:bg-red-50" size="sm"
               [disabled]="savingAgent()" (click)="closeAgentDialog()">
               Cancelar
             </button>
             <button hlmBtn size="sm"
               [disabled]="savingAgent()" (click)="saveAgent()">
               @if (savingAgent()) { <hlm-spinner class="mr-1.5 size-3.5" /> }
+              Alta
+            </button>
+          </div>
+
+        </div>
+      </div>
+    }
+
+    <!-- Diálogo alta rápida de unidad -->
+    @if (showUnitDialog() && !isView()) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+        (mousedown.self)="closeUnitDialog()">
+        <div class="bg-background rounded-lg shadow-xl w-96 p-6 space-y-4">
+
+          <div class="flex items-center gap-2">
+            <ng-icon hlmIcon name="lucideBuilding2" size="sm" class="text-[#005a3b]" />
+            <h3 class="text-sm font-medium text-[#005a3b] uppercase tracking-wide">Nueva unidad</h3>
+          </div>
+
+          @if (unitDialogError()) {
+            <div class="rounded border border-destructive/20 bg-destructive/10 p-3 text-xs text-destructive">
+              {{ unitDialogError() }}
+            </div>
+          }
+
+          <div class="space-y-3">
+            <div class="space-y-1">
+              <label hlmLabel>Nombre <span class="text-destructive">*</span></label>
+              <input hlmInput class="w-full" placeholder="Nombre de la unidad"
+                [value]="newUnitName()"
+                (input)="newUnitName.set($any($event.target).value)" />
+            </div>
+            <div class="space-y-1">
+              <label hlmLabel>Descripción</label>
+              <input hlmInput class="w-full" placeholder="Descripción"
+                [value]="newUnitDescription()"
+                (input)="newUnitDescription.set($any($event.target).value)" />
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-2 pt-2">
+            <button hlmBtn variant="outline" class="h-8 shrink-0 text-red-600 border-red-400 hover:bg-red-50" size="sm"
+              [disabled]="savingUnit()" (click)="closeUnitDialog()">
+              Cancelar
+            </button>
+            <button hlmBtn size="sm"
+              [disabled]="savingUnit()" (click)="saveUnit()">
+              @if (savingUnit()) { <hlm-spinner class="mr-1.5 size-3.5" /> }
               Alta
             </button>
           </div>
@@ -540,6 +625,7 @@ export class LoanFormComponent extends FormBase implements OnInit {
   readonly unidadDestinoNombre = signal('');
   readonly agenteDestinoNombre = signal('');
   readonly casosReference      = signal('');
+  readonly casosTitle          = signal('');
 
   readonly agenteOrigenEndpoint  = computed(() =>
     this.unidadOrigenId()  ? `/catalog/agents?unitId=${this.unidadOrigenId()}`  : '/catalog/agents'
@@ -604,8 +690,9 @@ export class LoanFormComponent extends FormBase implements OnInit {
       LoanFormComponent.cmpStr(a.serialNumber,       b.serialNumber)
     )
   );
-  readonly savingDevolucion       = signal(false);
-  readonly devolucionError        = signal<string | null>(null);
+  readonly savingDevolucion         = signal(false);
+  readonly devolucionError          = signal<string | null>(null);
+  readonly showConfirmDevolucion    = signal(false);
   readonly resumenPorTipo = computed(() => {
     const map = new Map<string, number>();
     for (const a of this.articulosSeleccionados()) {
@@ -631,16 +718,56 @@ export class LoanFormComponent extends FormBase implements OnInit {
   readonly savingAgent        = signal(false);
   readonly agentDialogError   = signal<string | null>(null);
 
+  readonly unitRefreshKey     = signal(0);
+  readonly showUnitDialog     = signal<'origen' | 'destino' | null>(null);
+  readonly newUnitName        = signal('');
+  readonly newUnitDescription = signal('');
+  readonly savingUnit         = signal(false);
+  readonly unitDialogError    = signal<string | null>(null);
+
+  private readonly initialFormState = signal<string | null>(null);
+
   private agentDialogUnitId(): string {
     return this.showAgentDialog() === 'origen'
       ? this.unidadOrigenId()
       : this.unidadDestinoId();
   }
 
+  private captureFormState(): string {
+    return JSON.stringify({
+      unidadOrigenId: this.unidadOrigenId(),
+      agenteOrigenId: this.agenteOrigenId(),
+      unidadDestinoId: this.unidadDestinoId(),
+      agenteDestinoId: this.agenteDestinoId(),
+      fechaInicio: this.fechaInicio(),
+      fechaDevolucion: this.fechaDevolucion(),
+      casosId: this.casosId(),
+      articulosIds: this.articulosSeleccionados().map(a => a.id),
+    });
+  }
+
   constructor() {
     super();
     effect(() => { this.unidadOrigenId();  untracked(() => { if (!this.isView()) this.agenteOrigenId.set(''); }); });
     effect(() => { this.unidadDestinoId(); untracked(() => { if (!this.isView()) this.agenteDestinoId.set(''); }); });
+
+    // Detectar cambios comparando con estado inicial
+    effect(() => {
+      if (this.isView()) return; // Solo en modo edición/alta
+
+      const currentState = this.captureFormState();
+      const initialState = this.initialFormState();
+
+      if (initialState === null) {
+        // Primera ejecución: guardar estado inicial
+        untracked(() => this.initialFormState.set(currentState));
+      } else {
+        // Comparar estado actual con inicial
+        untracked(() => {
+          this.hasUnsavedChanges.set(currentState !== initialState);
+        });
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -661,6 +788,7 @@ export class LoanFormComponent extends FormBase implements OnInit {
           this.unidadDestinoNombre.set(o.unidadDestinoNombre ?? '');
           this.agenteDestinoNombre.set(o.agenteDestinoNombre ?? '');
           this.casosReference.set(o.casosReference ?? '');
+          this.casosTitle.set(o.casosTitle ?? '');
           this.fechaInicio.set(o.fechaInicio ? o.fechaInicio.substring(0, 10) : '');
           this.fechaDevolucion.set(o.fechaDevolucion ?? '');
           this.casosId.set(o.casosId ?? '');
@@ -702,7 +830,10 @@ export class LoanFormComponent extends FormBase implements OnInit {
       articulosIds:    this.articulosSeleccionados().map(a => a.id),
     };
     this.http.post(API_PRESTAMOS, body).subscribe({
-      next:  () => this.router.navigate(['/inventory/orders/loans']),
+      next:  () => {
+        this.hasUnsavedChanges.set(false); // Limpiar estado de cambios
+        this.router.navigate(['/inventory/orders/loans']);
+      },
       error: () => { this.saveError.set('Error al guardar la orden de préstamo.'); this.saving.set(false); },
     });
   }
@@ -748,6 +879,43 @@ export class LoanFormComponent extends FormBase implements OnInit {
     });
   }
 
+  openCreateUnit(side: 'origen' | 'destino'): void {
+    this.newUnitName.set('');
+    this.newUnitDescription.set('');
+    this.unitDialogError.set(null);
+    this.showUnitDialog.set(side);
+  }
+
+  closeUnitDialog(): void { this.showUnitDialog.set(null); }
+
+  saveUnit(): void {
+    const name = this.newUnitName().trim();
+    if (!name) { this.unitDialogError.set('El nombre es obligatorio.'); return; }
+
+    this.savingUnit.set(true);
+    this.unitDialogError.set(null);
+
+    const body = {
+      nombre:      name,
+      descripcion: this.newUnitDescription().trim() || null,
+    };
+
+    this.http.post<{ id: string }>(`${BASE}/catalog/units`, body).subscribe({
+      next: unit => {
+        const side = this.showUnitDialog()!;
+        this.unitRefreshKey.update(k => k + 1);
+        if (side === 'origen')  this.unidadOrigenId.set(unit.id);
+        else                    this.unidadDestinoId.set(unit.id);
+        this.savingUnit.set(false);
+        this.showUnitDialog.set(null);
+      },
+      error: () => {
+        this.unitDialogError.set('Error al crear la unidad.');
+        this.savingUnit.set(false);
+      },
+    });
+  }
+
   removeArticulo(id: string): void {
     this.articulosSeleccionados.update(list => list.filter(a => a.id !== id));
   }
@@ -764,17 +932,17 @@ export class LoanFormComponent extends FormBase implements OnInit {
   }
 
   registrarDevolucion(): void {
+    if (this.articulosADevolver().length === 0) return;
+    this.showConfirmDevolucion.set(true);
+  }
+
+  confirmarDevolucion(): void {
     const ids = this.articulosADevolver().map(a => a.id);
-    if (ids.length === 0) return;
     const ordenId = this.route.snapshot.paramMap.get('id')!;
-    this.savingDevolucion.set(true);
-    this.devolucionError.set(null);
-    this.http.post(`${BASE}/inventory/ordenes-devolucion`, {
-      ordenPrestamoId: ordenId,
-      lineaPrestamoIds: ids,
-    }).subscribe({
-      next:  () => this.router.navigate(['/inventory/orders/loans']),
-      error: () => { this.devolucionError.set('Error al registrar la devolución.'); this.savingDevolucion.set(false); },
-    });
+    this.showConfirmDevolucion.set(false);
+    this.router.navigate(
+      ['/inventory/orders/loans', ordenId, 'devolucion'],
+      { state: { preselectedIds: ids } }
+    );
   }
 }

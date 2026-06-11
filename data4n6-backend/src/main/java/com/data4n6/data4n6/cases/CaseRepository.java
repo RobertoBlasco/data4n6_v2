@@ -9,12 +9,12 @@ import java.util.UUID;
 
 public interface CaseRepository extends JpaRepository<Case, UUID> {
 
-    @Query("SELECT c FROM Case c JOIN FETCH c.status WHERE c.deletedAt IS NULL ORDER BY c.createdAt DESC")
+    @Query("SELECT c FROM Case c LEFT JOIN FETCH c.status WHERE c.deletedAt IS NULL ORDER BY c.createdAt DESC")
     List<Case> findAllActive();
 
-    @Query("SELECT c FROM Case c JOIN FETCH c.status LEFT JOIN FETCH c.outcome WHERE c.id = :id AND c.deletedAt IS NULL")
+    @Query("SELECT c FROM Case c LEFT JOIN FETCH c.status LEFT JOIN FETCH c.outcome WHERE c.id = :id AND c.deletedAt IS NULL")
     Optional<Case> findActiveById(UUID id);
 
-    @Query("SELECT c FROM Case c JOIN FETCH c.status WHERE c.domain.id = :domainId AND c.deletedAt IS NULL ORDER BY c.createdAt DESC")
+    @Query("SELECT c FROM Case c LEFT JOIN FETCH c.status WHERE c.domain.id = :domainId AND c.deletedAt IS NULL ORDER BY c.createdAt DESC")
     List<Case> findAllActiveByDomain(UUID domainId);
 }

@@ -1,141 +1,245 @@
-# Grid Templates (PrimeNG p-table)
+# Grid Templates
 
-Componentes reutilizables basados en PrimeNG `p-table` con una jerarquía de herencia que permite extender funcionalidad sin duplicar lógica.
-
----
-
-## Jerarquía de componentes
-
-```
-GridBaseComponent
-       ↑
-GridExpandableComponent    (añade expansión de filas)
-       ↑
-GridGroupedComponent       (añade agrupación de filas y columnas)
-```
-
-Cada componente hereda inputs y lógica del padre via `extends`. Cada uno define su propio template añadiendo únicamente las partes específicas.
+Arquitectura de rejillas basada en **Tailwind CSS + Spartan** y Angular signals.
 
 ---
 
-## Estrategia de templates
+## Jerarquía
 
-**Opción B — Templates proyectados.** El componente acepta templates via `ng-template` con referencias nombradas (`#header`, `#body`, etc.). El componente gestiona internamente todo el plumbing de PrimeNG.
+```
+GridBase (clase abstracta)          ← shared/grid/grid-base.ts
+    └── GridDialogBase              ← shared/grid/grid-dialog-base.ts
+
+HistoricalGridComponent             ← shared/components/historical-grid/
+SectionHeaderComponent              ← shared/components/historical-grid/
+```
+
+---
+
+## GridBase
+
+Clase abstracta que implementa toda la lógica común de las rejillas principales: carga de datos, búsqueda, ordenación multi-columna, paginación, selección múltiple y carga de metadatos desde `t900_app_tables`.
+
+**Archivo:** `src/app/shared/grid/grid-base.ts`
+
+### Propiedades abstractas (obligatorias en cada subclase)
+
+```typescript
+protected abstract readonly gridId:        string;  // clave única para localStorage
+protected abstract readonly labelSingular: string;  // fallback singular
+protected abstract readonly labelPlural:   string;  // fallback plural
+protected abstract readonly icon:          string;  // nombre del icono lucide
+```
+
+### Propiedad opcional
+
+```typescript
+protected readonly colMetaTableName: string | null = null;
+```
+
+Cuando se define, `loadGridPrefs()` carga automáticamente:
+- `tableMeta` — metadatos de `t900_app_tables` (displayName, nombrePlural…)
+- `colMetaFields` — definición de columnas de `t900_table_fields`
+
+### Signals expuestos al template
+
+| Signal | Tipo | Descripción |
+|---|---|---|
+| `tableMeta` | `AppTable \| null` | Metadatos de la tabla desde `t900_app_tables` |
+| `gridTitle` | `string` (computed) | `nombrePlural ?? displayName ?? labelPlural` |
+| `allItems` | `T[]` | Todos los registros cargados |
+| `filteredItems` | `T[]` (computed) | Tras aplicar búsqueda y ordenación |
+| `pageItems` | `T[]` (computed) | Página actual |
+| `loading` | `boolean` | Cargando datos |
+| `error` | `string \| null` | Mensaje de error |
+| `searchInput` | `string` | Valor actual del campo de búsqueda |
+| `searchQuery` | `string` | Valor debounced (300ms) |
+| `sortCriteria` | `SortCriterion[]` | Criterios de ordenación activos |
+| `selectedIds` | `Set<string>` | IDs seleccionados |
+| `selectionCount` | `number` (computed) | Número de elementos seleccionados |
+| `singleSelected` | `T \| null` (computed) | El elemento seleccionado si es exactamente 1 |
+| `allSelected` | `boolean` (computed) | Todos los de la página seleccionados |
+| `someSelected` | `boolean` (computed) | Algunos (tri-estado para el checkbox de cabecera) |
+| `currentPage` | `number` | Página actual (base 0) |
+| `pageSize` | `number` | Registros por página |
+| `totalRecords` | `number` (computed) | Total tras filtro |
+| `totalPages` | `number` (computed) | Páginas totales |
+| `pageNumbers` | `(number \| '...')[]` (computed) | Números de página para mostrar |
+| `displayFrom` / `displayTo` | `number` (computed) | Rango visible ("15–30 de 142") |
+| `colMetaFields` | `TableField[]` | Definición de columnas |
+| `activeView` | `GridViewDef` | Vista activa (GRID, CARD…) |
+
+### Métodos del template
+
+| Método | Descripción |
+|---|---|
+| `reload()` | Recarga los datos |
+| `onSearchInput(value)` | Actualiza la búsqueda |
+| `clearSearch()` | Limpia la búsqueda |
+| `toggleSort(field, $event)` | Ordena por columna; Shift+click añade criterio |
+| `sortDir(field)` | `'asc' \| 'desc' \| null` para el indicador visual |
+| `setPage(n)` | Navega a la página n |
+| `setPageSize(n)` | Cambia el tamaño de página (persiste en localStorage) |
+| `toggleSelectAll()` | Selecciona/deselecciona todos de la página |
+| `toggleSelectRange(id, idx, $event)` | Selección con Shift para rangos |
+| `clearSelection()` | Limpia la selección |
+| `loadGridPrefs()` | Carga pageSize de localStorage y tableMeta/colMeta |
+
+### Método abstracto
+
+```typescript
+protected abstract load(): void;
+```
+
+Cada subclase implementa la llamada HTTP y actualiza `allItems`.
+
+### Colores estándar
+
+```typescript
+toolbarColor   = 'bg-[#005a3b] text-white'
+headerColor    = 'bg-surface-warm'
+footerColor    = 'bg-surface-warm'
+rowStripeClass = 'bg-surface-primary'
+rowHoverClass  = 'hover:!bg-action/25'
+```
+
+### Patrón de cabecera (selección)
+
+Todas las rejillas implementan este patrón en el header:
 
 ```html
-<app-grid-base [data]="persons()" [loading]="loadingRight()">
-  <ng-template #header>
-    <tr>
-      <th>Nombre</th>
-      <th>Rol</th>
-    </tr>
-  </ng-template>
-  <ng-template #body let-row>
-    <tr>
-      <td>{{ row.lastName }}, {{ row.firstName }}</td>
-      <td>{{ row.roleName }}</td>
-    </tr>
-  </ng-template>
-</app-grid-base>
+@if (selectionCount() === 0) {
+  <!-- Título + controles normales -->
+  <h1>{{ gridTitle() }}</h1>
+} @else {
+  <!-- Modo selección: acciones en este orden exacto -->
+  <span>{{ selectionCount() }} seleccionado(s)</span>
+  <button ...>Eliminar</button>                          <!-- siempre (salvo órdenes) -->
+  @if (selectionCount() === 1) {
+    <button lucideExternalLink>Ir formulario</button>    <!-- solo con 1 seleccionado -->
+  }
+  <button lucideDownload>Exportar</button>               <!-- siempre -->
+  <!-- divisor -->
+  <button lucideX (click)="clearSelection()">✕</button>  <!-- siempre -->
+}
+```
+
+> **Regla:** Las rejillas de órdenes (`t600_*`) NO incluyen el botón Eliminar — las órdenes son inmutables una vez creadas.
+
+### Ejemplo de subclase mínima
+
+```typescript
+@Component({ ... })
+export class MiRejillaComponent extends GridBase<MiEntidad> implements OnInit {
+  protected override readonly gridId        = 'mi-rejilla';
+  protected override readonly labelSingular = 'Elemento';
+  protected override readonly labelPlural   = 'Elementos';
+  protected override readonly icon          = 'lucideTag';
+  protected override readonly colMetaTableName = 't200_mi_tabla'; // opcional
+
+  override ngOnInit(): void {
+    this.loadGridPrefs();
+    this.sortCriteria.set([{ field: 'nombre', dir: 'asc' }]);
+    this.load();
+  }
+
+  protected override load(): void {
+    this.loading.set(true);
+    this.http.get<MiEntidad[]>(API).subscribe({
+      next:  data => { this.allItems.set(data); this.loading.set(false); },
+      error: ()   => { this.error.set('Error al cargar'); this.loading.set(false); },
+    });
+  }
+}
 ```
 
 ---
 
-## GridBaseComponent
+## GridDialogBase
 
-Componente base con el 80% de las funcionalidades comunes.
+Extiende `GridBase`. Para catálogos simples que incluyen diálogo de alta/edición integrado en la misma pantalla.
+
+**Archivo:** `src/app/shared/grid/grid-dialog-base.ts`
+
+Añade la gestión del estado del diálogo y los botones del patrón de alta:
+
+| Botón | Comportamiento |
+|---|---|
+| Cancelar | Cierra el diálogo sin guardar |
+| Alta + Siguiente | Guarda y deja el diálogo abierto y limpio |
+| Alta | Guarda y cierra el diálogo |
+
+---
+
+## HistoricalGridComponent
+
+Rejilla histórica para mostrar dentro de formularios SPA. Proyecta `<thead>` y `<tbody>` directamente; gestiona internamente el spinner y el estado vacío.
+
+**Archivo:** `src/app/shared/components/historical-grid/historical-grid.component.ts`
 
 ### Inputs
 
-| Input | Tipo | Default | PrimeNG prop | Descripción |
-|---|---|---|---|---|
-| `data` | `any[]` | `[]` | `[value]` | Array de datos a mostrar |
-| `loading` | `boolean` | `false` | `[loading]` | Muestra spinner de carga |
-| `header` | `boolean` | `true` | template `#header` | Muestra/oculta la cabecera |
-| `footer` | `boolean` | `false` | template `#footer` | Muestra/oculta el pie |
-| `paginator` | `boolean` | `false` | `[paginator]` | Activa paginación. Solo tiene efecto si `footer=true` |
-| `sortMultiple` | `boolean` | `false` | `sortMode="multiple"` | Permite ordenar por múltiples columnas simultáneamente |
-| `sortField` | `string` | — | `[sortField]` | Campo por el que ordenar inicialmente (presort) |
-| `sortOrder` | `1 \| -1` | `1` | `[sortOrder]` | Dirección del presort: 1 ascendente, -1 descendente |
-| `globalFilterFields` | `string[]` | — | `[globalFilterFields]` | Campos sobre los que actúa la búsqueda global. Si tiene valores y `header=true`, se renderiza el campo de búsqueda automáticamente |
-| `selection` | `'row' \| 'checkbox' \| null` | `null` | `selectionMode` | Modo de selección. `'checkbox'` añade columna de checks a la izquierda |
-| `scroll` | `boolean` | `false` | `[scrollable]` + `scrollHeight` | Activa scroll vertical. Interacción con `paginator` a definir en implementación |
-| `horizontalScroll` | `boolean` | `false` | `[scrollable]` | Activa scroll horizontal. Independiente del paginador |
-| `resizableColumns` | `boolean` | `false` | `[resizableColumns]` | Permite redimensionar columnas arrastrando sus bordes |
-
-### Outputs
-
-| Output | PrimeNG evento | Descripción |
+| Input | Tipo | Descripción |
 |---|---|---|
-| `(rowSelect)` | `(onRowSelect)` | Emite al seleccionar una fila |
-| `(rowUnselect)` | `(onRowUnselect)` | Emite al deseleccionar una fila |
+| `loading` | `boolean` | Muestra spinner |
+| `empty` | `boolean` | Muestra estado vacío |
+| `emptyMessage` | `string` | Texto del estado vacío |
 
-### Templates proyectados
+### Uso
 
-| Referencia | Descripción |
-|---|---|
-| `#header` | Fila(s) de cabecera (`<tr><th>...</th></tr>`). Cada `<th>` puede usar `pSortableColumn="field"` para habilitar sort en esa columna |
-| `#body let-row` | Fila de datos (`<tr><td>...</td></tr>`) |
+```html
+<app-section-header title="Historial de movimientos" icon="lucideHistory" />
+<app-historical-grid
+  [loading]="loadingHistorial()"
+  [empty]="historial().length === 0"
+  emptyMessage="Sin movimientos registrados">
+  <thead class="bg-[#005a3b] text-white">
+    <tr>
+      <th class="text-left font-normal px-3 py-1.5 w-36">Fecha</th>
+      <th class="text-left font-normal px-3 py-1.5">Evento</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (m of historial(); track m.id; let odd = $odd) {
+      <tr class="border-b border-border/40 last:border-0" [class.bg-surface-primary]="odd">
+        <td class="px-3 py-1.5 text-[#005a3b]">{{ m.fecha }}</td>
+        <td class="px-3 py-1.5 text-[#005a3b]">{{ m.tipo }}</td>
+      </tr>
+    }
+  </tbody>
+</app-historical-grid>
+```
 
-### Notas
-
-- `sortMultiple` solo tiene sentido si alguna columna usa `pSortableColumn`
-- `paginator` solo tiene efecto si `footer=true`
-- `globalFilterFields` solo renderiza el buscador si `header=true`
-- El campo de búsqueda global lo renderiza el componente internamente — el usuario no necesita añadirlo al template
-
----
-
-## GridExpandableComponent
-
-Extiende `GridBaseComponent`. Añade la posibilidad de expandir filas mostrando contenido detallado.
-
-### Inputs adicionales
-
-| Input | Tipo | Default | PrimeNG prop | Descripción |
-|---|---|---|---|---|
-| `rowExpansion` | `boolean` | `false` | `[expandedRowKeys]` | Activa la expansión de filas |
-| `dataKey` | `string` | — | `[dataKey]` | Campo identificador único de cada fila. Requerido cuando `rowExpansion=true` |
-
-### Templates adicionales
-
-| Referencia | Descripción |
-|---|---|
-| `#expandedRow let-row` | Contenido que se muestra al expandir una fila |
-
-### Outputs adicionales
-
-| Output | PrimeNG evento | Descripción |
-|---|---|---|
-| `(rowExpand)` | `(onRowExpand)` | Emite al expandir una fila |
-| `(rowCollapse)` | `(onRowCollapse)` | Emite al colapsar una fila |
+Se usa siempre junto a `SectionHeaderComponent`.
 
 ---
 
-## GridGroupedComponent
+## SectionHeaderComponent
 
-Extiende `GridExpandableComponent`. Añade agrupación de filas y columnas.
+Cabecera de sección reutilizable: icono + título en mayúsculas + línea separadora + botón `+` opcional.
 
-### Inputs adicionales
+**Archivo:** `src/app/shared/components/historical-grid/section-header.component.ts`
 
-| Input | Tipo | Default | PrimeNG prop | Descripción |
-|---|---|---|---|---|
-| `rowGroup` | `'subheader' \| 'rowspan' \| null` | `null` | `[rowGroupMode]` + `[groupRowsBy]` | Modo de agrupación de filas |
-| `groupRowsBy` | `string` | — | `[groupRowsBy]` | Campo por el que agrupar las filas |
-| `expandableRowGroups` | `boolean` | `false` | `[expandableRowGroups]` | Permite expandir/colapsar grupos. Solo aplica con `rowGroup='subheader'` |
-| `columnGroup` | `boolean` | `false` | `<p-columnGroup>` en template | Habilita agrupación de columnas con rowspan/colspan en cabecera |
+### Inputs
 
-### Templates adicionales
+| Input | Tipo | Default | Descripción |
+|---|---|---|---|
+| `title` | `string` | requerido | Texto del título |
+| `icon` | `string` | requerido | Nombre del icono lucide |
+| `showAdd` | `boolean` | `false` | Muestra el botón `+` |
 
-| Referencia | Descripción |
+### Output
+
+| Output | Descripción |
 |---|---|
-| `#groupHeader let-row` | Cabecera de grupo (cuando `rowGroup='subheader'`) |
-| `#groupFooter let-row` | Pie de grupo (cuando `rowGroup='subheader'`) |
+| `(add)` | Emite al pulsar el botón `+` |
 
----
+### Uso
 
-## Pendiente de diseñar
-
-- **Filtro por columna** — más opciones, más complejo. Se diseñará en una iteración posterior.
-- **Interacción scroll + paginator** — cuando ambos están activos hay que definir si el scroll es sobre el área de datos con altura fija o si el paginador limita las filas.
-- **columnResizeMode** — decidir si exponer `'fit'` o `'expand'` como opción o fijar uno por defecto.
+```html
+<app-section-header
+  title="Documentos"
+  icon="lucideFileText"
+  [showAdd]="true"
+  (add)="openDialog()" />
+```

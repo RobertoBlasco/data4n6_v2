@@ -46,21 +46,21 @@ interface DocumentType { id: string; name: string | null; description: string | 
     lucideChevronUp, lucideChevronDown,
   })],
   template: `
-    <div class="h-full flex flex-col min-h-0 overflow-hidden border-2 border-primary rounded-lg bg-background">
+    <div [class]="containerCls">
 
       <!-- Cabecera -->
-      <div class="flex items-center justify-between pl-4 pr-2 h-11 shrink-0 border-b border-border" [ngClass]="toolbarColor">
+      <div [class]="toolbarCls">
         @if (selectionCount() === 0) {
           <h1 class="text-sm font-semibold flex items-center gap-1.5">
             <ng-icon hlmIcon size="sm" name="lucideFileText" />{{ gridTitle() }}
           </h1>
           <div class="flex items-center gap-0.5">
-            <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Recargar" (click)="reload()">
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Recargar" (click)="reload()">
               <ng-icon hlmIcon size="sm" name="lucideRefreshCw" />
             </button>
             <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-            <button hlmBtn variant="action" size="sm" class="h-7" (click)="openCreate()">
-              <ng-icon hlmIcon size="sm" name="lucidePlus" class="mr-1" />Nuevo tipo
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Nuevo tipo" (click)="openCreate()">
+              <ng-icon hlmIcon size="sm" name="lucidePlus" />
             </button>
           </div>
         } @else {
@@ -80,7 +80,7 @@ interface DocumentType { id: string; name: string | null; description: string | 
               <ng-icon hlmIcon size="sm" name="lucideDownload" class="mr-1" />Exportar
             </button>
             <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-            <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Deseleccionar" (click)="clearSelection()">
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Deseleccionar" (click)="clearSelection()">
               <ng-icon hlmIcon size="sm" name="lucideX" />
             </button>
           </div>
@@ -158,7 +158,7 @@ interface DocumentType { id: string; name: string | null; description: string | 
 
       <!-- Paginación -->
       @if (!loading() && !error() && totalRecords() > 0) {
-        <div class="flex items-center justify-between px-4 h-10 shrink-0 border-t border-border text-xs" [ngClass]="footerColor">
+        <div [class]="footerCls">
           <span>{{ displayFrom() }}–{{ displayTo() }} / {{ totalRecords() }}</span>
           <div class="flex items-center gap-0.5">
             <select class="h-6 rounded border border-input bg-background px-1 text-xs focus:outline-none cursor-pointer"
@@ -201,7 +201,7 @@ interface DocumentType { id: string; name: string | null; description: string | 
             </label>
           </div>
           <div hlmDialogFooter class="gap-2 mt-4">
-            <button hlmBtn variant="destructive" hlmDialogClose>Cancelar</button>
+            <button hlmBtn variant="outline" [class]="btnDestructiveCls" hlmDialogClose>Cancelar</button>
             <button hlmBtn variant="outline" class="border-[#005a3b] text-[#005a3b]" [disabled]="saving()" (click)="saveAndNew()">Alta + Siguiente</button>
             <button hlmBtn [disabled]="saving()" (click)="save()">
               @if (saving()) { <hlm-spinner class="mr-1" /> } Alta
@@ -222,7 +222,7 @@ interface DocumentType { id: string; name: string | null; description: string | 
           <p class="text-sm py-2">Se eliminará <strong>{{ deleteItem()?.name }}</strong>. Esta acción no se puede deshacer.</p>
           <div hlmDialogFooter class="gap-2">
             <button hlmBtn variant="outline" class="border-destructive bg-destructive/80 text-white hover:bg-destructive/90 hover:text-white" hlmDialogClose>Cancelar</button>
-            <button hlmBtn variant="destructive" (click)="confirmDelete()">Eliminar</button>
+            <button hlmBtn variant="outline" [class]="btnDestructiveCls" (click)="confirmDelete()">Eliminar</button>
           </div>
         </hlm-dialog-content>
       </ng-template>

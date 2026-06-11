@@ -199,7 +199,7 @@ interface AlmacenMin { id: string; name: string; }
       <!-- Footer -->
       <div class="shrink-0 border-t border-border px-6 py-3 flex items-center gap-2 bg-background">
         <div class="flex-1"></div>
-        <button hlmBtn variant="destructive" size="sm" (click)="cancel()" [disabled]="saving()">
+        <button hlmBtn variant="outline" class="h-8 shrink-0 text-red-600 border-red-400 hover:bg-red-50" size="sm" (click)="cancel()" [disabled]="saving()">
           Cancelar
         </button>
         <button hlmBtn size="sm" [disabled]="saving()" (click)="save()">

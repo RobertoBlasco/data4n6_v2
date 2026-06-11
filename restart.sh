@@ -55,14 +55,14 @@ kill_port() {
 
 wait_backend() {
   info "Esperando que el backend arranque..."
-  for i in $(seq 1 60); do
+  for i in $(seq 1 90); do
     if curl -sf http://localhost:8080/actuator/health > /dev/null 2>&1; then
       ok "Backend listo (${i}s)"
       return 0
     fi
     sleep 1
   done
-  die "El backend no arrancó en 60 segundos. Revisa: tail -50 $BACKEND_LOG"
+  die "El backend no arrancó en 90 segundos. Revisa: tail -50 $BACKEND_LOG"
 }
 
 echo ""
@@ -79,8 +79,12 @@ sleep 1
 
 # ── Backend ───────────────────────────────────────────────────────────────────
 info "Arrancando backend → $BACKEND_LOG"
-cd "$BACKEND"
-nohup mvn clean spring-boot:run < /dev/null > "$BACKEND_LOG" 2>&1 &
+JAR="$BACKEND/target/data4n6-backend-0.0.1-SNAPSHOT.jar"
+if [[ ! -f "$JAR" ]]; then
+  info "JAR no encontrado — compilando (esto tardará ~15 min la primera vez)..."
+  cd "$BACKEND" && mvn package -DskipTests -q
+fi
+nohup java -jar "$JAR" < /dev/null > "$BACKEND_LOG" 2>&1 &
 wait_backend
 
 # ── Frontend ──────────────────────────────────────────────────────────────────

@@ -167,6 +167,11 @@ public class OrdenDevolucionService {
         var od = new OrdenDevolucion();
         od.setOrden(orden);
         od.setOrdenPrestamo(prestamo.getOrden());
+        od.setAgenteOrigenId(request.agenteOrigenId());
+        od.setUnidadOrigenId(request.unidadOrigenId());
+        od.setAgenteDestinoId(request.agenteDestinoId());
+        od.setUnidadDestinoId(request.unidadDestinoId());
+        od.setFechaDevolucion(request.fechaDevolucion());
         devolucionRepository.save(od);
 
         String descBase = "Devolución préstamo " + prestamo.getOrden().getNumeroReferencia();
@@ -202,6 +207,7 @@ public class OrdenDevolucionService {
 
         if (completado) {
             prestamo.getOrden().setEstadoOrden(estadoCompletada);
+            prestamo.getOrden().setFechaFin(Instant.now());
             ordenRepository.save(prestamo.getOrden());
         }
 
@@ -316,6 +322,7 @@ public class OrdenDevolucionService {
 
             if (completado) {
                 prestamoOrden.setEstadoOrden(estadoCompletada);
+                prestamoOrden.setFechaFin(Instant.now());
                 ordenRepository.save(prestamoOrden);
             }
 

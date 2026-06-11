@@ -39,7 +39,7 @@ type SortField = 'serialNumber' | 'tipoMaterialNombre' | 'brandName' | 'modeloDe
       <!-- Disponibles -->
       <div class="border-2 border-border rounded-md flex flex-col min-h-0 flex-1">
         <div class="overflow-auto flex-1">
-          <table class="w-full text-xs border-collapse">
+          <table class="w-full border-collapse">
             <thead class="sticky top-0 z-10 bg-[#005a3b] text-white">
               <tr>
                 <th class="text-left font-normal px-3 py-1.5 cursor-pointer select-none"
@@ -105,20 +105,20 @@ type SortField = 'serialNumber' | 'tipoMaterialNombre' | 'brandName' | 'modeloDe
             <tbody>
               @if (articulosOrdenados().length === 0) {
                 <tr>
-                  <td colspan="8" class="px-3 py-4 text-[#005a3b] text-center italic">Sin artículos disponibles</td>
+                  <td colspan="8" class="px-3 py-4 text-center italic text-muted-foreground">Sin artículos disponibles</td>
                 </tr>
               } @else {
                 @for (a of articulosOrdenados(); track a.id; let odd = $odd) {
                   <tr class="cursor-pointer hover:!bg-action/25 transition-colors border-b border-border/40 last:border-0 group"
                     [class.bg-surface-primary]="odd"
                     (click)="add(a)">
-                    <td class="px-3 py-1.5 text-[#005a3b] truncate">{{ a.tipoMaterialNombre ?? '—' }}</td>
-                    <td class="px-3 py-1.5 text-[#005a3b] truncate">{{ a.brandName ?? '—' }}</td>
-                    <td class="px-3 py-1.5 text-[#005a3b] truncate">{{ a.modeloDescripcion ?? '—' }}</td>
-                    <td class="px-3 py-1.5 font-mono text-[#005a3b] text-center truncate max-w-[7rem]">{{ a.serialNumber ?? '—' }}</td>
-                    <td class="px-3 py-1.5 text-[#005a3b] truncate">{{ a.descripcionEstado ?? '—' }}</td>
-                    <td class="px-3 py-1.5 text-center tabular-nums text-[#005a3b]">{{ a.numPrestamos ?? 0 }}</td>
-                    <td class="px-3 py-1.5 text-center text-[#005a3b] whitespace-nowrap">{{ formatDate(a.fechaUltimoPrestamo) }}</td>
+                    <td class="px-3 py-1.5 truncate">{{ a.tipoMaterialNombre ?? '—' }}</td>
+                    <td class="px-3 py-1.5 truncate">{{ a.brandName ?? '—' }}</td>
+                    <td class="px-3 py-1.5 truncate">{{ a.modeloDescripcion ?? '—' }}</td>
+                    <td class="px-3 py-1.5 font-mono text-center truncate max-w-[7rem]">{{ a.serialNumber ?? '—' }}</td>
+                    <td class="px-3 py-1.5 truncate">{{ a.descripcionEstado ?? '—' }}</td>
+                    <td class="px-3 py-1.5 text-center tabular-nums">{{ a.numPrestamos ?? 0 }}</td>
+                    <td class="px-3 py-1.5 text-center whitespace-nowrap">{{ formatDate(a.fechaUltimoPrestamo) }}</td>
                     <td class="px-2 py-1.5">
                       <ng-icon hlmIcon size="sm" name="lucideChevronRight"
                         class="text-[#005a3b] opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -135,7 +135,7 @@ type SortField = 'serialNumber' | 'tipoMaterialNombre' | 'brandName' | 'modeloDe
           <div class="relative flex-1">
             <ng-icon hlmIcon size="sm" name="lucideSearch"
               class="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-            <input hlmInput class="w-full pl-8 h-8 text-xs" placeholder="Buscar..."
+            <input hlmInput class="w-full pl-8 h-8" placeholder="Buscar..."
               #searchRef
               (input)="search.set(searchRef.value)" />
           </div>
@@ -152,11 +152,11 @@ type SortField = 'serialNumber' | 'tipoMaterialNombre' | 'brandName' | 'modeloDe
       @if (showSelected()) {
       <div class="border-2 border-primary rounded-md flex flex-col min-h-0">
         <div class="px-3 py-2 border-b border-border bg-muted/30 shrink-0">
-          <span class="text-xs font-medium text-[#005a3b]">Seleccionados ({{ value().length }})</span>
+          <span class="font-medium">Seleccionados ({{ value().length }})</span>
         </div>
         <div class="overflow-auto flex-1" style="max-height: 360px">
           @if (value().length === 0) {
-            <p class="px-3 py-6 text-xs text-[#005a3b] text-center italic">
+            <p class="px-3 py-6 text-center italic text-muted-foreground">
               Haz clic en un artículo de la izquierda para añadirlo
             </p>
           } @else {
@@ -166,8 +166,8 @@ type SortField = 'serialNumber' | 'tipoMaterialNombre' | 'brandName' | 'modeloDe
                 <div class="flex items-center gap-2 px-3 py-1.5"
                   [class.bg-surface-primary]="odd && swapCandidateId() !== a.id"
                   [class.bg-action/10]="swapCandidateId() === a.id">
-                  <span class="font-mono text-xs text-[#005a3b] w-28 shrink-0 truncate">{{ a.serialNumber ?? '—' }}</span>
-                  <span class="text-xs text-[#005a3b] flex-1 truncate">
+                  <span class="font-mono w-28 shrink-0 truncate">{{ a.serialNumber ?? '—' }}</span>
+                  <span class="flex-1 truncate">
                     {{ [a.tipoMaterialNombre, a.brandName, a.modeloDescripcion].filter(x => !!x).join(' · ') || '—' }}
                   </span>
                   <button hlmBtn variant="ghost" size="icon"
@@ -188,12 +188,12 @@ type SortField = 'serialNumber' | 'tipoMaterialNombre' | 'brandName' | 'modeloDe
                 @if (swapCandidateId() === a.id) {
                   <div class="bg-action/5 border-t border-border/40 px-3 py-1.5">
                     @if (swapCandidates().length === 0) {
-                      <p class="text-xs text-muted-foreground italic py-1">No hay otros números de serie disponibles para este tipo/marca/modelo.</p>
+                      <p class="text-muted-foreground italic py-1">No hay otros números de serie disponibles para este tipo/marca/modelo.</p>
                     } @else {
-                      <p class="text-xs text-muted-foreground mb-1">Selecciona el nuevo N.º de serie:</p>
+                      <p class="text-muted-foreground mb-1">Selecciona el nuevo N.º de serie:</p>
                       <div class="flex flex-col gap-0.5 max-h-32 overflow-auto">
                         @for (alt of swapCandidates(); track alt.id) {
-                          <button class="text-left text-xs px-2 py-1 rounded hover:bg-[#005a3b] hover:text-white text-[#005a3b] font-mono transition-colors"
+                          <button class="text-left px-2 py-1 rounded hover:bg-[#005a3b] hover:text-white font-mono transition-colors"
                             (click)="swapArticulo(a.id, alt)">
                             {{ alt.serialNumber ?? '(sin serie)' }}
                           </button>
@@ -219,16 +219,16 @@ type SortField = 'serialNumber' | 'tipoMaterialNombre' | 'brandName' | 'modeloDe
 
           <div class="flex items-center gap-2">
             <ng-icon hlmIcon name="lucidePackagePlus" size="sm" class="text-[#005a3b]" />
-            <h3 class="text-sm font-medium text-[#005a3b] uppercase tracking-wide">Selección rápida</h3>
+            <h3 class="font-medium text-[#005a3b] uppercase tracking-wide">Selección rápida</h3>
           </div>
 
-          <p class="text-xs text-muted-foreground">
+          <p class="text-muted-foreground">
             Indica cuántos artículos de cada tipo quieres añadir. Se seleccionarán automáticamente los primeros disponibles.
           </p>
 
           <!-- Tabla de tipos -->
           <div class="border border-border rounded-md overflow-hidden">
-            <table class="w-full text-xs">
+            <table class="w-full">
               <thead class="bg-[#005a3b] text-white">
                 <tr>
                   <th class="text-left font-normal px-3 py-1.5">Tipo</th>
@@ -244,11 +244,11 @@ type SortField = 'serialNumber' | 'tipoMaterialNombre' | 'brandName' | 'modeloDe
                 }
                 @for (item of quickSelectTypes(); track item.tipo; let odd = $odd) {
                   <tr class="border-t border-border/40" [class.bg-surface-primary]="odd">
-                    <td class="px-3 py-2 text-[#005a3b] truncate">{{ item.tipo }}</td>
+                    <td class="px-3 py-2 truncate">{{ item.tipo }}</td>
                     <td class="px-3 py-2 text-right tabular-nums text-muted-foreground">{{ item.disponibles }}</td>
                     <td class="px-3 py-1.5 text-center">
                       <input type="number" min="0" [max]="item.disponibles"
-                        class="w-14 h-7 text-xs text-center rounded border border-border bg-action/5 text-[#005a3b] focus:outline-none focus:ring-1 focus:ring-primary tabular-nums"
+                        class="w-14 h-7 text-center rounded border border-border bg-action/5 focus:outline-none focus:ring-1 focus:ring-primary tabular-nums"
                         style="background-color: #f0f0f0"
                         [value]="quickSelectQty().get(item.tipo) ?? 0"
                         (input)="setQty(item.tipo, +$any($event.target).value)" />
@@ -261,13 +261,13 @@ type SortField = 'serialNumber' | 'tipoMaterialNombre' | 'brandName' | 'modeloDe
 
           <!-- Total seleccionado -->
           @if (quickSelectTotal() > 0) {
-            <p class="text-xs text-[#005a3b] font-medium">
+            <p class="font-medium">
               Se añadirán {{ quickSelectTotal() }} artículo{{ quickSelectTotal() !== 1 ? 's' : '' }} a la selección.
             </p>
           }
 
           <div class="flex justify-end gap-2 pt-1">
-            <button hlmBtn variant="destructive" size="sm" (click)="showQuickSelect.set(false)">
+            <button hlmBtn variant="outline" class="h-8 shrink-0 text-red-600 border-red-400 hover:bg-red-50" size="sm" (click)="showQuickSelect.set(false)">
               Cancelar
             </button>
             <button hlmBtn size="sm" [disabled]="quickSelectTotal() === 0" (click)="applyQuickSelect()">

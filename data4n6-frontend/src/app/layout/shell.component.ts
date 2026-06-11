@@ -43,6 +43,12 @@ import {
   lucideUserCheck,
   lucideIdCard,
   lucidePackageCheck,
+  lucideTruck,
+  lucideBoxes,
+  lucideColumns,
+  lucideFileCheck,
+  lucideGitMerge,
+  lucideHistory,
 } from '@ng-icons/lucide';
 import { AppTableService } from '../core/services/app-table.service';
 import { AppTable } from '../core/models/app-table.model';
@@ -247,6 +253,7 @@ function buildInventoryNavGroups(adminTables: AppTable[], catalogTables: AppTabl
       lucideShield, lucideClipboardList, lucideUserCheck, lucideIdCard,
       lucidePackagePlus, lucideArrowDownToLine, lucidePackageOpen, lucideHand, lucideArchive, lucidePackageCheck,
       lucideBox, lucideLayers, lucideLink, lucideLogIn, lucideZap, lucideDatabase,
+      lucideTruck, lucideBoxes, lucideColumns, lucideFileCheck, lucideGitMerge, lucideHistory,
     }),
   ],
   template: `

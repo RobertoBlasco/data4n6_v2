@@ -22,9 +22,11 @@ import com.data4n6.inventory.orden.dto.LineaOrdenPrestamoDetalleResponse;
 import com.data4n6.inventory.orden.dto.LineaOrdenPrestamoResponse;
 import com.data4n6.inventory.orden.dto.OrdenPrestamoRequest;
 import com.data4n6.inventory.orden.dto.OrdenPrestamoResponse;
+import com.data4n6.inventory.orden.OrdenDevolucion;
 import com.data4n6.inventory.orden.repository.LineaOrdenDevolucionRepository;
 import com.data4n6.inventory.orden.repository.LineaOrdenPrestamoRepository;
 import com.data4n6.inventory.orden.repository.LineaOrdenRepository;
+import com.data4n6.inventory.orden.repository.OrdenDevolucionRepository;
 import com.data4n6.inventory.orden.repository.OrdenPrestamoRepository;
 import com.data4n6.inventory.orden.repository.OrdenRepository;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +49,7 @@ public class OrdenPrestamoService {
     private final LineaOrdenRepository            lineaOrdenRepository;
     private final LineaOrdenPrestamoRepository    lineaPrestamoRepository;
     private final LineaOrdenDevolucionRepository  lineaDevolucionRepository;
+    private final OrdenDevolucionRepository       ordenDevolucionRepository;
     private final EventoHistorialRepository       eventoHistorialRepository;
     private final ArticuloRepository              articuloRepository;
     private final EventoRepository                eventoRepository;
@@ -95,27 +98,64 @@ public class OrdenPrestamoService {
 
         var lineaOrdenIds = lineas.stream()
                 .map(lp -> lp.getLineaOrden().getId())
-                .collect(java.util.stream.Collectors.toSet());
+                .collect(Collectors.toSet());
 
         Map<UUID, LineaOrdenDevolucion> devMap = lineaDevolucionRepository
                 .findByLineaOrdenPrestamoIdIn(lineaOrdenIds)
                 .stream()
-                .collect(java.util.stream.Collectors.toMap(
+                .collect(Collectors.toMap(
                         ld -> ld.getLineaOrdenPrestamo().getId(),
                         ld -> ld));
 
+        // Load OrdenDevolucion entities to resolve agent/unit names
+        var devOrdenIds = devMap.values().stream()
+                .map(ld -> ld.getLineaOrden().getOrden().getId())
+                .collect(Collectors.toSet());
+        Map<UUID, OrdenDevolucion> ordenDevMap = devOrdenIds.isEmpty() ? Map.of() :
+                ordenDevolucionRepository.findAllById(devOrdenIds)
+                        .stream().collect(Collectors.toMap(OrdenDevolucion::getId, od -> od));
+
+        var agentIds = ordenDevMap.values().stream()
+                .map(OrdenDevolucion::getAgenteOrigenId).filter(Objects::nonNull).toList();
+        var unitIds  = ordenDevMap.values().stream()
+                .map(OrdenDevolucion::getUnidadOrigenId).filter(Objects::nonNull).toList();
+        Map<UUID, Agent> agentMap = agentIds.isEmpty() ? Map.of() :
+                agentRepository.findAllById(agentIds).stream()
+                        .collect(Collectors.toMap(Agent::getId, a -> a));
+        Map<UUID, Unit>  unitMap  = unitIds.isEmpty() ? Map.of() :
+                unitRepository.findAllById(unitIds).stream()
+                        .collect(Collectors.toMap(Unit::getId, u -> u));
+
         return lineas.stream()
                 .map(lp -> {
-                    var ld       = devMap.get(lp.getLineaOrden().getId());
-                    boolean dev  = ld != null;
-                    String  ref  = dev ? ld.getLineaOrden().getOrden().getNumeroReferencia() : null;
-                    var     fecha = dev ? ld.getLineaOrden().getOrden().getAprobadoEn() : null;
-                    return toDetalleResponse(lp, dev, ref, fecha);
+                    var ld    = devMap.get(lp.getLineaOrden().getId());
+                    boolean dev = ld != null;
+                    String ref  = dev ? ld.getLineaOrden().getOrden().getNumeroReferencia() : null;
+                    var fecha   = dev ? ld.getLineaOrden().getOrden().getAprobadoEn() : null;
+                    String agenteNombre = null;
+                    String unidadNombre = null;
+                    UUID   devOrdenId   = null;
+                    if (dev) {
+                        var od = ordenDevMap.get(ld.getLineaOrden().getOrden().getId());
+                        if (od != null) {
+                            devOrdenId = od.getId();
+                            if (od.getAgenteOrigenId() != null) {
+                                var a = agentMap.get(od.getAgenteOrigenId());
+                                if (a != null) agenteNombre = (a.getCallSign() + " " + a.getFirstName() + " " + a.getLastName()).trim();
+                            }
+                            if (od.getUnidadOrigenId() != null) {
+                                var u = unitMap.get(od.getUnidadOrigenId());
+                                if (u != null) unidadNombre = u.getName();
+                            }
+                        }
+                    }
+                    return toDetalleResponse(lp, dev, devOrdenId, ref, fecha, agenteNombre, unidadNombre);
                 }).toList();
     }
 
     private LineaOrdenPrestamoDetalleResponse toDetalleResponse(
-            LineaOrdenPrestamo lp, boolean devuelta, String ordenDevRef, java.time.Instant fechaDev) {
+            LineaOrdenPrestamo lp, boolean devuelta, UUID ordenDevolucionId, String ordenDevRef,
+            java.time.Instant fechaDev, String agenteDevNombre, String unidadDevNombre) {
         var lo  = lp.getLineaOrden();
         var art = lo.getArticulo();
         var tm  = art.getTipoMaterial();
@@ -135,8 +175,11 @@ public class OrdenPrestamoService {
                 alm != null ? alm.getId()         : null,
                 alm != null ? alm.getName()       : null,
                 devuelta,
+                ordenDevolucionId,
                 ordenDevRef,
-                fechaDev);
+                fechaDev,
+                agenteDevNombre,
+                unidadDevNombre);
     }
 
     @Transactional
@@ -295,7 +338,8 @@ public class OrdenPrestamoService {
                 estado != null ? estado.getId()      : null,
                 estado != null ? estado.getNombre()  : null,
                 op.getCasosId(),
-                caso   != null ? caso.getReference() : null,
+                caso != null ? caso.getReference() : null,
+                caso != null ? caso.getTitle()     : null,
                 counts.getOrDefault(orden.getId(), 0L),
                 devueltas.getOrDefault(orden.getId(), 0L));
     }

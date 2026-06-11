@@ -100,7 +100,9 @@ export class FkComboboxComponent {
   readonly canCreate    = input<boolean>(false);
   readonly createLabel  = input<string>('Nuevo');
   readonly refreshKey   = input<number>(0);
+  readonly sorted       = input<boolean>(true);
   readonly valueChange  = output<string>();
+  readonly labelChange  = output<string>();
   readonly create       = output<void>();
 
   private readonly options = signal<FkOption[]>([]);
@@ -138,10 +140,14 @@ export class FkComboboxComponent {
       .subscribe({
         next: items => {
           const field = this.displayField();
-          this.options.set(items.map(i => ({
+          const mapped = items.map(i => ({
             id: String(i['id'] ?? ''),
             displayName: String(i[field] ?? i['displayName'] ?? i['nombre'] ?? i['name'] ?? i['descripcion'] ?? i['id'] ?? ''),
-          })));
+          }));
+          if (this.sorted()) {
+            mapped.sort((a, b) => a.displayName.localeCompare(b.displayName, undefined, { sensitivity: 'base' }));
+          }
+          this.options.set(mapped);
         },
       });
   }
@@ -163,6 +169,7 @@ export class FkComboboxComponent {
 
   select(opt: FkOption): void {
     this.valueChange.emit(opt.id);
+    this.labelChange.emit(opt.displayName);
     this.search.set('');
     this.focused.set(false);
   }

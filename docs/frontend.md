@@ -79,6 +79,49 @@ Todo diálogo de alta simple expone **tres acciones**, siempre en este orden:
 
 **Nunca** declarar `font-family`, `font-size` ni `line-height` en componentes individuales — se hereda automáticamente.
 
+### Tamaños de fuente estándar
+
+**Tamaño base: 13px** — definido en `html { font-size: 13px }` en `src/styles.css`
+
+Este es el tamaño por defecto que se hereda en **todos** los componentes de la aplicación. **No usar clases de tamaño** (`text-xs`, `text-sm`, etc.) excepto en casos muy específicos.
+
+### Color de fuente estándar
+
+**Color base: `oklch(0.25 0 0)` ≈ `#3f3f3f`** — negro suave, no agresivo
+
+Definido en `--foreground` en `src/styles.css`. Se aplica automáticamente vía `text-foreground` en el `body`.
+
+Este color se usa por defecto en:
+- Texto general de la aplicación
+- Menús y navegación
+- Rejillas y tablas (excepto cuando usan `text-primary` verde)
+- Formularios
+
+**No usar clases de color** (`text-gray-800`, `text-black`, etc.) para texto general — usar las variables CSS del tema:
+- `text-foreground` → negro suave por defecto (13px heredado)
+- `text-primary` → verde `#005a3b` para énfasis
+- `text-muted-foreground` → gris medio para texto secundario
+
+| Elemento | Tamaño | Clase Tailwind | Notas |
+|---|---|---|---|
+| **Base global** | 13px | Sin clase (hereda) | Rejillas, tablas, formularios, menús |
+| **Logo D4N6** | 12px | `text-xs` | Único caso especial |
+| **Textos pequeños** | 10px | `text-[10px]` | Solo cuando sea estrictamente necesario |
+| **Badges / chips** | 10-11px | `text-[10px]` o `text-xs` | Según contexto |
+
+**Regla general:** Si no hay una razón específica para cambiar el tamaño, **no añadir ninguna clase de tamaño** y dejar que herede los 13px base.
+
+```html
+<!-- ✅ Correcto — hereda 13px -->
+<span>Texto normal</span>
+<td class="px-3 py-1.5">Celda de tabla</td>
+<button class="px-3 py-1.5">Botón del menú</button>
+
+<!-- ❌ Incorrecto — no forzar tamaños sin razón -->
+<span class="text-sm">Texto normal</span>
+<td class="px-3 py-1.5 text-xs">Celda de tabla</td>
+```
+
 ### Iconos (`ng-icon` + `hlmIcon`)
 
 `HlmIcon` controla el tamaño mediante la variable CSS `--ng-icon__size`, **no** mediante clases Tailwind. Las clases `size-4`, `size-3`, etc. **no tienen efecto** sobre el tamaño real del icono. Usar siempre el input `size`:
@@ -144,6 +187,16 @@ import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 | `HlmTr` | `tr[hlmTr]` | `hover:bg-muted/50 border-b transition-colors` | ídem |
 | `HlmTh` | `th[hlmTh]` | `h-8 px-2 font-medium` | ídem — **aquí se cambia la altura de cabecera** |
 | `HlmTd` | `td[hlmTd]` | `py-1 px-2` | ídem — **aquí se cambia el padding de celda** |
+
+**Línea ámbar en toolbar de rejillas:**
+
+Todas las toolbars verdes (cabecera con título y botones) deben llevar una línea ámbar de 4px debajo:
+
+```html
+<div class="flex items-center justify-between pl-4 pr-2 h-11 shrink-0 border-b-4 border-[#f4c430]" [ngClass]="toolbarColor">
+```
+
+El color `#f4c430` es el amarillo dorado corporativo (mismo que el logo y los activos en el menú). Esta línea separa visualmente la toolbar del contenido de la rejilla.
 
 ### Estructura completa de una rejilla de página
 

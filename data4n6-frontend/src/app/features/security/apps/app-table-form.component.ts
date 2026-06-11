@@ -154,7 +154,7 @@ interface AppTableResponse {
       </div>
 
       <app-spa-form-footer>
-        <button hlmBtn variant="destructive" size="sm" class="h-7" (click)="openDelete()">
+        <button hlmBtn variant="outline" class="h-7 shrink-0 text-red-600 border-red-400 hover:bg-red-50" size="sm" (click)="openDelete()">
           <ng-icon hlmIcon size="sm" name="lucideTrash2" class="mr-1" />Eliminar
         </button>
         <button hlmBtn size="sm" class="h-7" [disabled]="saving()" (click)="save()">
@@ -175,7 +175,7 @@ interface AppTableResponse {
           <p class="text-sm text-muted-foreground py-2">Se eliminará <strong>{{ fTableName() }}</strong>. Esta acción no se puede deshacer.</p>
           <div hlmDialogFooter class="gap-2">
             <button hlmBtn variant="outline" class="border-destructive bg-destructive/80 text-white hover:bg-destructive/90 hover:text-white" hlmDialogClose>Cancelar</button>
-            <button hlmBtn variant="destructive" (click)="confirmDelete()">Eliminar</button>
+            <button hlmBtn variant="outline" class="h-8 shrink-0 text-red-600 border-red-400 hover:bg-red-50" (click)="confirmDelete()">Eliminar</button>
           </div>
         </hlm-dialog-content>
       </ng-template>

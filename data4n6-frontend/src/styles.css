@@ -12,29 +12,29 @@
 
   /* Brand: Guardia Civil green #005a3b */
   --action: oklch(0.796 0.18 83);       /* #f1b800 amber */
-  --action-foreground: oklch(0.145 0 0);
+  --action-foreground: oklch(0.25 0 0);
   --surface-warm: oklch(0.96 0.008 83);    /* #f4f2ee warm gray-amber */
   --surface-primary: oklch(0.91 0.014 163); /* bg-primary/15 on white — zebra rows */
   --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --foreground: oklch(0.25 0 0);            /* #3f3f3f negro suave (era 0.145 = #252525 muy oscuro) */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.25 0 0);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.25 0 0);
   --primary: #005a3b;
   --primary-foreground: #ffffff;
   --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
+  --secondary-foreground: oklch(0.25 0 0);
   --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
+  --muted-foreground: oklch(0.556 0 0);     /* gris medio para textos secundarios */
   --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --accent-foreground: oklch(0.25 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: #005a3b;
   --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-foreground: oklch(0.25 0 0);
   --sidebar-primary: #005a3b;
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.97 0 0);
@@ -46,7 +46,7 @@
 
 :root.dark {
   --action: oklch(0.796 0.18 83);       /* #f1b800 amber — same in dark mode */
-  --action-foreground: oklch(0.145 0 0);
+  --action-foreground: oklch(0.25 0 0);
   --surface-warm: oklch(0.20 0.008 83);    /* dark mode: warm dark surface */
   --surface-primary: oklch(0.22 0.014 163); /* dark mode: zebra rows */
   --background: oklch(0.145 0 0);

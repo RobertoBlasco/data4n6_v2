@@ -56,7 +56,7 @@ const API = 'http://localhost:8080/api/v1/inventory/tipos-material';
         [icon]="formIcon()" [label]="formTitle() || labelSingular" [description]="entityDescription()"
         [readonly]="item() ? false : null"
         [backRoute]="resolvedBackRoute()">
-        <button hlmBtn variant="destructive" size="sm" class="h-7"
+        <button hlmBtn variant="outline" class="h-7 shrink-0 text-red-600 border-red-400 hover:bg-red-50" size="sm"
           [disabled]="loading() || saving()"
           (click)="openDelete()">
           <ng-icon hlmIcon size="sm" name="lucideTrash2" class="mr-1" />

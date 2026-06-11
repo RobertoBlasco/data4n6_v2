@@ -71,28 +71,28 @@ interface OrdenDevolucion {
     lucideExternalLink,
   })],
   template: `
-    <div class="h-full flex flex-col min-h-0 overflow-hidden border-2 border-primary rounded-lg bg-background">
+    <div [class]="containerCls">
 
       <!-- ── Cabecera ──────────────────────────────────────────────────────────── -->
-      <div class="flex items-center justify-between pl-4 pr-2 h-11 shrink-0 border-b border-border" [ngClass]="toolbarColor">
+      <div [class]="toolbarCls">
 
         @if (selectionCount() === 0) {
           <h1 class="text-sm font-semibold flex items-center gap-1.5">
             <ng-icon hlmIcon size="sm" name="lucidePackageCheck" />{{ gridTitle() }}
           </h1>
           <div class="flex items-center gap-0.5">
-            <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Recargar" (click)="reload()">
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Recargar" (click)="reload()">
               <ng-icon hlmIcon size="sm" name="lucideRefreshCw" />
             </button>
-            <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Exportar">
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Exportar">
               <ng-icon hlmIcon size="sm" name="lucideDownload" />
             </button>
             <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-            <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Columnas">
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Columnas">
               <ng-icon hlmIcon size="sm" name="lucideLayoutList" />
             </button>
             <button hlmBtn variant="ghost" size="icon"
-              class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
+              [class]="btnNewCls"
               [class.bg-primary-foreground/20]="showAdvancedFilters()"
               title="Filtros avanzados"
               (click)="showAdvancedFilters.set(!showAdvancedFilters())"
@@ -100,13 +100,8 @@ interface OrdenDevolucion {
               <ng-icon hlmIcon size="sm" name="lucideSlidersHorizontal" />
             </button>
             <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-            <button hlmBtn variant="action" size="sm" class="h-7" [disabled]="checkingNew()" (click)="goNew()">
-              @if (checkingNew()) {
-                <hlm-spinner class="mr-1" />
-              } @else {
-                <ng-icon hlmIcon size="sm" name="lucidePlus" class="mr-1" />
-              }
-              Nueva orden
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Nueva orden" [disabled]="checkingNew()" (click)="goNew()">
+              @if (checkingNew()) { <hlm-spinner /> } @else { <ng-icon hlmIcon size="sm" name="lucidePlus" /> }
             </button>
           </div>
 
@@ -123,7 +118,7 @@ interface OrdenDevolucion {
               <ng-icon hlmIcon size="sm" name="lucideDownload" class="mr-1" />Exportar
             </button>
             <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-            <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Deseleccionar" (click)="clearSelection()">
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Deseleccionar" (click)="clearSelection()">
               <ng-icon hlmIcon size="sm" name="lucideX" />
             </button>
           </div>
@@ -308,7 +303,7 @@ interface OrdenDevolucion {
 
       <!-- ── Paginación ────────────────────────────────────────────────────────── -->
       @if (!loading() && !error() && totalRecords() > 0) {
-        <div class="flex items-center justify-between px-4 h-10 shrink-0 border-t border-border text-xs text-muted-foreground" [ngClass]="footerColor">
+        <div [class]="footerCls">
           <span>{{ displayFrom() }}–{{ displayTo() }} / {{ totalRecords() }}</span>
           <div class="flex items-center gap-0.5">
             <select class="h-6 rounded border border-input bg-background px-1 text-xs focus:outline-none cursor-pointer"

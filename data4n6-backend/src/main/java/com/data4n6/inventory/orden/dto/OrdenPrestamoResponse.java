@@ -28,6 +28,7 @@ public record OrdenPrestamoResponse(
 
         UUID      casosId,
         String    casosReference,
+        String    casosTitle,
 
         long      numLineas,
         long      numLineasDevueltas

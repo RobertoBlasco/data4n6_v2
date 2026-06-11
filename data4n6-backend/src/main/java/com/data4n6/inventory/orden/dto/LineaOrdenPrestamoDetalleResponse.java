@@ -16,6 +16,9 @@ public record LineaOrdenPrestamoDetalleResponse(
         UUID   almacenId,
         String almacenNombre,
         boolean devuelta,
+        UUID    ordenDevolucionId,
         String  ordenDevolucionReferencia,
-        Instant fechaDevolucion
+        Instant fechaDevolucion,
+        String  agenteDevolucionNombre,
+        String  unidadDevolucionNombre
 ) {}

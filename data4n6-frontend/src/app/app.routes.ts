@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { ShellComponent } from './layout/shell.component';
+import { HorizontalShellComponent } from './layout/horizontal-shell.component';
 
 export const routes: Routes = [
   {
@@ -9,7 +10,7 @@ export const routes: Routes = [
   },
   {
     path: 'inventory',
-    component: ShellComponent,
+    component: HorizontalShellComponent,
     data: { module: 'inventory' },
     children: [
       {

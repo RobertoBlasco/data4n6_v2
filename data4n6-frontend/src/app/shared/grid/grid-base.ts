@@ -20,6 +20,9 @@ export const GRID_VIEW = {
   CARD:        { id: 'CARD',        icon: 'lucideLayoutGrid',      label: 'Tarjetas',          description: 'Vista en tarjetas' },
 } satisfies Record<string, GridViewDef>;
 
+export const BTN_NEW_CLS         = 'size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground';
+export const BTN_DESTRUCTIVE_CLS = 'h-8 shrink-0 text-red-600 border-red-400 hover:bg-red-50';
+
 export interface SortCriterion {
   field: string;
   dir: 'asc' | 'desc';
@@ -34,9 +37,16 @@ export abstract class GridBase<T extends { id: string }> {
 
   protected readonly colMetaTableName: string | null = null;
 
+  readonly btnNewCls         = BTN_NEW_CLS;
+  readonly btnDestructiveCls = BTN_DESTRUCTIVE_CLS;
+
   protected readonly toolbarColor  = 'bg-[#005a3b] text-white';
   protected readonly headerColor   = 'bg-surface-warm';
   protected readonly footerColor   = 'bg-surface-warm';
+
+  readonly containerCls = 'h-full flex flex-col min-h-0 overflow-hidden border-2 border-primary rounded-lg bg-background';
+  readonly toolbarCls   = `flex items-center justify-between pl-4 pr-2 h-11 shrink-0 border-b-4 border-[#f4c430] ${this.toolbarColor}`;
+  readonly footerCls    = `flex items-center justify-between px-4 h-10 shrink-0 border-t border-border text-muted-foreground ${this.footerColor}`;
   protected readonly rowStripeClass   = 'bg-surface-primary';
   protected readonly rowHoverClass    = 'hover:!bg-action/25';
   protected readonly rowSelectedClass = 'bg-action/25';
@@ -249,7 +259,10 @@ export abstract class GridBase<T extends { id: string }> {
   clearSelection(): void { this.selectedIds.set(new Set()); this.lastSelectedIdx.set(-1); }
 
   toggleSelectRange(id: string, index: number, event: MouseEvent): void {
+    event.stopPropagation();
+
     if (event.shiftKey && this.lastSelectedIdx() >= 0) {
+      event.preventDefault(); // Prevenir el cambio del checkbox cuando se usa Shift
       const items = this.pageItems();
       const last  = this.lastSelectedIdx();
       const [from, to] = last <= index ? [last, index] : [index, last];

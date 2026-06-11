@@ -329,7 +329,7 @@ interface AgentRequest {
 
       <app-spa-form-footer>
         @if (isEdit()) {
-          <button hlmBtn variant="destructive" size="sm" class="h-7"
+          <button hlmBtn variant="outline" class="h-7 shrink-0 text-red-600 border-red-400 hover:bg-red-50" size="sm"
             [disabled]="loading() || saving()" (click)="openDelete()">
             <ng-icon hlmIcon size="sm" name="lucideTrash2" class="mr-1" /> Eliminar
           </button>
@@ -382,7 +382,7 @@ interface AgentRequest {
           </div>
 
           <div class="flex justify-end gap-2 pt-2">
-            <button hlmBtn variant="destructive" size="sm"
+            <button hlmBtn variant="outline" class="h-8 shrink-0 text-red-600 border-red-400 hover:bg-red-50" size="sm"
               [disabled]="savingIdentDoc()" (click)="closeIdentDocDialog()">
               Cancelar
             </button>

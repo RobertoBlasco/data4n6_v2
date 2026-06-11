@@ -55,29 +55,29 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes';
     lucideChevronUp, lucideChevronDown,
   })],
   template: `
-    <div class="h-full flex flex-col min-h-0 overflow-hidden border-2 border-primary rounded-lg bg-background">
+    <div [class]="containerCls">
 
       <!-- ── Cabecera ──────────────────────────────────────────────────────────── -->
-      <div class="flex items-center justify-between pl-4 pr-2 h-11 shrink-0 border-b border-border" [ngClass]="toolbarColor">
+      <div [class]="toolbarCls">
 
         @if (selectionCount() === 0) {
-          <h1 class="text-sm font-semibold flex items-center gap-1.5">
+          <h1 class="font-semibold flex items-center gap-1.5">
             <ng-icon hlmIcon size="sm" name="lucideClipboardList" />{{ gridTitle() }}
           </h1>
           <div class="flex items-center gap-0.5">
-            <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Recargar" (click)="reload()">
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Recargar" (click)="reload()">
               <ng-icon hlmIcon size="sm" name="lucideRefreshCw" />
             </button>
-            <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Exportar">
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Exportar">
               <ng-icon hlmIcon size="sm" name="lucideDownload" />
             </button>
             <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-            <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Columnas">
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Columnas">
               <ng-icon hlmIcon size="sm" name="lucideLayoutList" />
             </button>
             <div class="relative">
               <button hlmBtn variant="ghost" size="icon"
-                class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
+                [class]="btnNewCls"
                 [class.bg-primary-foreground/20]="showViewPicker()"
                 title="Cambiar vista"
                 (click)="toggleViewPicker()"
@@ -88,7 +88,7 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes';
                 <div class="fixed inset-0 z-40" (click)="showViewPicker.set(false)"></div>
                 <div class="absolute right-0 top-full mt-1 z-50 bg-popover border border-border rounded-md shadow-md py-1 min-w-[160px]">
                   @for (view of gridViews; track view.id) {
-                    <button class="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-muted transition-colors text-left"
+                    <button class="w-full flex items-center gap-2 px-3 py-2 hover:bg-muted transition-colors text-left"
                       [class.font-semibold]="activeView().id === view.id"
                       (click)="setView(view)">
                       <ng-icon hlmIcon size="sm" [name]="view.icon" class="shrink-0" />
@@ -104,7 +104,7 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes';
               }
             </div>
             <button hlmBtn variant="ghost" size="icon"
-              class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
+              [class]="btnNewCls"
               [class.bg-primary-foreground/20]="showAdvancedFilters()"
               title="Filtros avanzados"
               (click)="showAdvancedFilters.set(!showAdvancedFilters())"
@@ -112,14 +112,13 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes';
               <ng-icon hlmIcon size="sm" name="lucideSlidersHorizontal" />
             </button>
             <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-            <button hlmBtn variant="action" size="sm" class="h-7" (click)="goNew()">
-              <ng-icon hlmIcon size="sm" name="lucidePlus" class="mr-1" />
-              Nueva Orden
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Nueva Orden" (click)="goNew()">
+              <ng-icon hlmIcon size="sm" name="lucidePlus" />
             </button>
           </div>
 
         } @else {
-          <span class="text-sm">{{ selectionCount() }} seleccionada{{ selectionCount() !== 1 ? 's' : '' }}</span>
+          <span>{{ selectionCount() }} seleccionada{{ selectionCount() !== 1 ? 's' : '' }}</span>
           <div class="flex items-center gap-0.5">
             @if (selectionCount() === 1) {
               <button hlmBtn variant="ghost" size="sm" class="h-7 hover:bg-primary-foreground/15 hover:text-primary-foreground"
@@ -135,7 +134,7 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes';
               <ng-icon hlmIcon size="sm" name="lucideDownload" class="mr-1" />Exportar
             </button>
             <div class="border-r border-primary-foreground/20 h-4 mx-1"></div>
-            <button hlmBtn variant="ghost" size="icon" class="size-7 hover:bg-primary-foreground/15 hover:text-primary-foreground" title="Deseleccionar" (click)="clearSelection()">
+            <button hlmBtn variant="ghost" size="icon" [class]="btnNewCls" title="Deseleccionar" (click)="clearSelection()">
               <ng-icon hlmIcon size="sm" name="lucideX" />
             </button>
           </div>
@@ -149,7 +148,7 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes';
           <ng-icon hlmIcon size="sm" name="lucideSearch"
             class="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
-            class="w-full h-8 pl-8 pr-8 rounded-md border border-primary bg-action/5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            class="w-full h-8 pl-8 pr-8 rounded-md border border-primary bg-action/5 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             placeholder="Buscar por referencia, tipo, estado..."
             [value]="searchInput()"
             (input)="onSearchInput($any($event.target).value)"
@@ -165,7 +164,7 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes';
       <!-- ── Filtros avanzados ──────────────────────────────────────────────────── -->
       @if (showAdvancedFilters()) {
         <div class="px-3 py-2 shrink-0 border-b border-border bg-muted/30">
-          <p class="text-xs italic">Sin filtros avanzados configurados</p>
+          <p class="italic">Sin filtros avanzados configurados</p>
         </div>
       }
 
@@ -175,12 +174,12 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes';
           <div class="flex items-center justify-center py-12"><hlm-spinner /></div>
         }
         @if (error() && !loading()) {
-          <div class="m-4 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">{{ error() }}</div>
+          <div class="m-4 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-destructive">{{ error() }}</div>
         }
         @if (!loading() && !error() && totalRecords() === 0 && !searchQuery()) {
           <div class="flex flex-col items-center justify-center py-12 gap-3">
             <ng-icon hlmIcon size="lg" name="lucideClipboardList" class="opacity-25" />
-            <p class="text-sm">No hay órdenes registradas</p>
+            <p>No hay órdenes registradas</p>
             <button hlmBtn variant="outline" size="sm" (click)="goNew()">
               <ng-icon hlmIcon name="lucidePlus" class="mr-1.5" />Nueva orden
             </button>
@@ -189,7 +188,7 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes';
         @if (!loading() && !error() && totalRecords() === 0 && searchQuery()) {
           <div class="flex flex-col items-center justify-center py-12 gap-3">
             <ng-icon hlmIcon size="lg" name="lucideSearch" class="opacity-25" />
-            <p class="text-sm">Sin resultados para "{{ searchQuery() }}"</p>
+            <p>Sin resultados para "{{ searchQuery() }}"</p>
             <button hlmBtn variant="outline" size="sm" (click)="clearSearch()">Limpiar búsqueda</button>
           </div>
         }
@@ -247,9 +246,9 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes';
                       [checked]="selectedIds().has(o.id)"
                       (click)="toggleSelectRange(o.id, $index, $event)" />
                   </td>
-                  <td hlmTd class="text-xs">{{ formatDate(o.aprobadoEn) }}</td>
+                  <td hlmTd>{{ formatDate(o.aprobadoEn) }}</td>
                   <td hlmTd>{{ o.tipoEventoNombre ?? '—' }}</td>
-                  <td hlmTd class="font-mono text-xs">{{ o.numeroReferencia }}</td>
+                  <td hlmTd class="font-mono">{{ o.numeroReferencia }}</td>
                   <td hlmTd [ngClass]="estadoColorClass(o.estadoOrdenNombre)">{{ o.estadoOrdenNombre ?? '—' }}</td>
                   <td hlmTd>{{ o.aprobadoPor ?? '—' }}</td>
                 </tr>
@@ -261,10 +260,10 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes';
 
       <!-- ── Paginación ────────────────────────────────────────────────────────── -->
       @if (!loading() && !error() && totalRecords() > 0) {
-        <div class="flex items-center justify-between px-4 h-10 shrink-0 border-t border-border text-xs" [ngClass]="footerColor">
+        <div [class]="footerCls">
           <span>{{ displayFrom() }}–{{ displayTo() }} / {{ totalRecords() }}</span>
           <div class="flex items-center gap-0.5">
-            <select class="h-6 rounded border border-input bg-background px-1 text-xs focus:outline-none cursor-pointer"
+            <select class="h-6 rounded border border-input bg-background px-1 focus:outline-none cursor-pointer"
               [value]="pageSize()" (change)="setPageSize(+$any($event.target).value)">
               @for (s of pageSizes; track s) { <option [value]="s">{{ s }}</option> }
             </select>
@@ -277,7 +276,7 @@ const API = 'http://localhost:8080/api/v1/inventory/ordenes';
             @for (p of pageNumbers(); track p) {
               @if (p === '...') { <span class="px-1">…</span> }
               @else {
-                <button hlmBtn [variant]="p === currentPage() + 1 ? 'default' : 'ghost'" size="icon" class="size-6 text-xs" (click)="setPage(+p - 1)">{{ p }}</button>
+                <button hlmBtn [variant]="p === currentPage() + 1 ? 'default' : 'ghost'" size="icon" class="size-6" (click)="setPage(+p - 1)">{{ p }}</button>
               }
             }
             <button hlmBtn variant="ghost" size="icon" class="size-6" [disabled]="currentPage() >= totalPages() - 1" (click)="setPage(currentPage() + 1)">
